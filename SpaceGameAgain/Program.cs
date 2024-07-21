@@ -1,7 +1,6 @@
 ﻿
 using SimulationFramework;
 using SimulationFramework.Drawing;
-using SkiaSharp;
 using SpaceGame;
 using SpaceGame.Ships;
 using SpaceGame.Planets;
@@ -171,9 +170,10 @@ partial class Program : Simulation
     private void RenderView()
     {
         var canvas = view.GetCanvas();
+        canvas.ResetState();
 
         canvas.PushState();
-        canvas.Antialias(false);
+        canvas.Antialias(true);
         World.Camera.RenderSetup(canvas);
         World.Render(canvas);
         DebugDraw.Flush(canvas);

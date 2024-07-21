@@ -32,9 +32,9 @@ internal abstract class Element
         canvas.PushState();
         canvas.Font(font);
         canvas.FontSize(size);
-        var result = canvas.MeasureText(text, TextBounds.Largest);
+        var result = canvas.MeasureText(text);
         canvas.PopState();
-        return result;
+        return result.Size;
     }
     public static void DrawShadowedText(ICanvas canvas, string text, float size, Vector2 position, Alignment alignment = Alignment.TopLeft)
     {
@@ -43,9 +43,9 @@ internal abstract class Element
         canvas.FontSize(size);
         canvas.Translate(new(size * offset));
         canvas.Fill(ShadowColor);
-        canvas.DrawText(text, position, alignment, origin: TextBounds.Largest);
+        canvas.DrawText(text, position, alignment);
         canvas.Translate(new(-size * offset));
         canvas.Fill(ForegroundColor);
-        canvas.DrawText(text, position, alignment, origin: TextBounds.Largest);
+        canvas.DrawText(text, position, alignment);
     }
 }

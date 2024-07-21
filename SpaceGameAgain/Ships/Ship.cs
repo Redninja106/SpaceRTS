@@ -1,8 +1,6 @@
 ﻿using Silk.NET.Core.Native;
 using SimulationFramework;
 using SimulationFramework.Drawing;
-using SimulationFramework.SkiaSharp;
-using SkiaSharp;
 using SpaceGame.Interaction;
 using SpaceGame.Planets;
 using SpaceGame.Ships;
@@ -46,7 +44,7 @@ internal class Ship : UnitBase
             canvas.DrawCircle(0, 0, MathF.Max(.65f, World.Camera.ScreenDistanceToWorldDistance(2.5f)));
         }
 
-        canvas.Fill(Color.White with { A = 100 });
+        canvas.Fill(Color.White);
         canvas.DrawPolygon(verts);
 
         canvas.PopState();

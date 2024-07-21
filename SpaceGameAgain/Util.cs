@@ -55,7 +55,7 @@ internal static class Util
     {
         var localPoint = polygonTransform.WorldToLocal(pointTransform.LocalToWorld(point));
 
-        var bounds = Polygon.GetBoundingBox(polygon);
+        var bounds = Polygon.GetBoundingRectangle(polygon);
 
         if (!bounds.ContainsPoint(localPoint))
             return false;
