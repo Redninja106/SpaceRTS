@@ -1,0 +1,37 @@
+﻿ - formations
+ - combat
+   - missiles/chainguns should share targets
+ - better camera
+   - zoom level fade in/out
+   - screen space distance awareness (ie for dragging)
+ - ui rework
+   - proper element adding / dynamic guis
+   - popup modals
+   - hover menus
+   - scrolling
+ - right click to deselect, left click move
+ - proper high speed interplanetary travel
+
+ FOR GAMEPLAY:
+ - asteroid mining
+ - headquarters / build limits
+   - can build one headquarters per planet
+   - headquarters prevents other players from building on that planet
+   - can upgrade to a command center or smth to allow another one to be built on same planet
+   - game is lost when all headquartes/command centers are destroyed
+   - can build on any planet
+ - manufactories / part requirements
+ - enemy AI !!!!!!!
+ - win conditions
+ - 
+
+ later on for gameplay:
+ - different ship sizes
+ - stations
+ - fog of war system + radars
+ 
+
+ COOL IDEAS:
+ - laser rays: emitters/reflectors, chain together to increase damage exponentially
+ - world eater: giant ship that eats small moons (and everything on them) for materials
+ - orbital ring: giant ring around planet that has a building grid and free power
