@@ -91,19 +91,19 @@ partial class Program : Simulation
         World.Camera.Transform.Position = planet1.Transform.Position;
         World.Camera.SmoothTransform.Position = planet1.Transform.Position;
 
-        // planet1.Grid.PlaceStructure(World.Structures.Shipyard, new(5, -5), 0, enemies);
-        // planet1.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(3, -3), 0, enemies);
-        // 
-        // planet3.Grid.PlaceStructure(World.Structures.Headquarters, new(0, 0), 1, enemies);
-        // planet3.Grid.PlaceStructure(World.Structures.Shipyard, new(1, 3), 0, enemies);
-        // 
-        // planet3.Grid.PlaceStructure(World.Structures.MissileTurret, new(2, 0), 0, enemies);
-        // planet3.Grid.PlaceStructure(World.Structures.MissileTurret, new(2, 4), 0, enemies);
-        // planet3.Grid.PlaceStructure(World.Structures.MissileTurret, new(-1, 4), 0, enemies);
-        // 
-        // planet3.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(3, 1), 0, enemies);
-        // planet3.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(0, 5), 0, enemies);
-        // planet3.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(-1, 2), 0, enemies);
+        planet1.Grid.PlaceStructure(World.Structures.Shipyard, new(5, -5), 0, enemies);
+        planet1.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(3, -3), 0, enemies);
+        
+        planet3.Grid.PlaceStructure(World.Structures.Headquarters, new(0, 0), 1, enemies);
+        planet3.Grid.PlaceStructure(World.Structures.Shipyard, new(1, 3), 0, enemies);
+        
+        planet3.Grid.PlaceStructure(World.Structures.MissileTurret, new(2, 0), 0, enemies);
+        planet3.Grid.PlaceStructure(World.Structures.MissileTurret, new(2, 4), 0, enemies);
+        planet3.Grid.PlaceStructure(World.Structures.MissileTurret, new(-1, 4), 0, enemies);
+        
+        planet3.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(3, 1), 0, enemies);
+        planet3.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(0, 5), 0, enemies);
+        planet3.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(-1, 2), 0, enemies);
 
         World.Ships.First().Transform.Position = planet1.Transform.Position;
 

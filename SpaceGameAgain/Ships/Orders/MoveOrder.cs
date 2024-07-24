@@ -37,7 +37,7 @@ internal class MoveOrder : Order
     public override void Render(Ship ship, ICanvas canvas)
     {
         canvas.PopState();
-        canvas.Stroke(Color.White with { A = 200 });
+        canvas.Stroke(new Color(200, 200, 200, 200));
         Vector2 shipPos = ship.Transform.Position;
         foreach (var target in targets)
         {

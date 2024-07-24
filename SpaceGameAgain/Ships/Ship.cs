@@ -30,6 +30,7 @@ internal class Ship : UnitBase
 
     public float health = 5;
     public float height;
+    public float speed => World.GetSphereOfInfluence(Transform.Position) == null ? 100 : 20;
 
     public Ship(Team team)
     {
@@ -46,7 +47,7 @@ internal class Ship : UnitBase
             canvas.DrawCircle(0, 0, MathF.Max(.65f, World.Camera.ScreenDistanceToWorldDistance(2.5f)));
         }
 
-        canvas.Fill(Color.White with { A = 100 });
+        canvas.Fill(Color.White);
         canvas.DrawPolygon(verts);
 
         canvas.PopState();

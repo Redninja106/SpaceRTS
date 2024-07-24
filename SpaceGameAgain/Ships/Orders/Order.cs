@@ -26,7 +26,7 @@ internal abstract class Order
                     return false;
             }
 
-            ship.Transform.Position = Util.Step(ship.Transform.Position, targetPosition, 100 * Time.DeltaTime);
+            ship.Transform.Position = Util.Step(ship.Transform.Position, targetPosition, ship.speed * Time.DeltaTime);
             return false;
         }
 
