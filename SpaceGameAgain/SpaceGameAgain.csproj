@@ -8,11 +8,6 @@
     <RootNamespace>SpaceGame</RootNamespace>
 	  <PublishNativeAOT>true</PublishNativeAOT>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="SimulationFramework" Version="0.3.0-alpha.1" />
-    <PackageReference Include="SimulationFramework.Desktop" Version="0.3.0-alpha.1" />
-  </ItemGroup>
 	
 	<ItemGroup>
 		<TrimmerRootAssembly Include="SpaceGameAgain" />

@@ -21,7 +21,7 @@ internal class Label : Element
 
     public override void UpdateSize(float containerWidth, float containerHeight)
     {
-        (Width, Height) = MeasureText(text, Program.font, size);
+        (Width, Height) = Program.font.MeasureText(text, size).Size;
     }
 
     public override void Render(ICanvas canvas)

@@ -42,7 +42,7 @@ internal class TextButton : Element
 
     public override void UpdateSize(float containerWidth, float containerHeight)
     {
-        (Width, Height) = MeasureText(Text, Program.font, TextSize) + new Vector2(2 * Margin);
+        (Width, Height) = Program.font.MeasureText(Text, TextSize).Size + new Vector2(2 * Margin);
 
         if (FitContainer)
         {
