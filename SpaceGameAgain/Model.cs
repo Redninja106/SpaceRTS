@@ -1,6 +1,8 @@
-﻿using SkiaSharp;
+﻿using SimulationFramework.SkiaSharp;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
@@ -39,7 +41,6 @@ internal class Model
         }
     }
 
-
     public void Render(ICanvas canvas, byte? alpha = null, Color? color = null)
     {
         Render(canvas, new()
@@ -71,37 +72,56 @@ internal abstract class Shape
 
 internal class PolygonShape : Shape
 {
-    public Vector2[] Vertices;
+    private Vector2[] vertices;
+    private Vector2[] triangles;
+    private Vector2[] shadowTriangles;
     public Color Color;
 
     public PolygonShape(Vector2[] vertices, Color color)
     {
-        Vertices = vertices;
+        this.vertices = vertices;
+        triangles = Util.Triangulate(vertices);
+        shadowTriangles = new Vector2[triangles.Length * 3];
         Color = color;
     }
 
     public override void Render(ICanvas canvas, RenderParameters parameters)
     {
         canvas.Fill(parameters.GetOverriddenColor(Color));
-        canvas.DrawPolygon(Vertices);
+        canvas.DrawTriangles(triangles);
     }
 
     public override void RenderShadow(ICanvas canvas, Vector2 offset, Color shadowColor)
     {
         canvas.Fill(shadowColor);
 
-        ShadowVertexWriter writer = new(stackalloc Vector2[this.Vertices.Length * 2]);
-        ProjectVerts(Vertices, offset, ref writer);
-        canvas.DrawPolygon(writer.GetBuffer());
+        // for (int i = 0; i < triangles.Length; i+=3)
+        // {
+        //     ProjectTriangle(offset, triangles.AsSpan(i, 3), shadowTriangles.AsSpan(i, 9));
+        // }
+        // canvas.DrawTriangles(shadowTriangles);
+        canvas.Translate(offset);
+        canvas.DrawPolygon(vertices);
 
         base.RenderShadow(canvas, offset, shadowColor);
+    }
+
+    private void ProjectTriangle(Vector2 direction, Span<Vector2> triangle, Span<Vector2> shadowTris)
+    {
+        Debug.Assert(triangle.Length == 3);
+        Debug.Assert(shadowTris.Length == 9);
+
+        for (int i = 0; i < 3; i++)
+        {
+            shadowTris[i] = triangle[i] + direction;
+        }
     }
 
     private static void ProjectVerts(Vector2[] verts, Vector2 offset, ref ShadowVertexWriter writer)
     {
         var offsetAngle = Angle.FromVector(offset);
         int startVertex = 0;
-        while (InShadow(verts, startVertex, offsetAngle))
+        while (InShadow(verts, startVertex, offsetAngle) && startVertex < verts.Length)
         {
             startVertex++;
         }

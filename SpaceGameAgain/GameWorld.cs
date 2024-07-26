@@ -9,7 +9,6 @@ using SpaceGame.Interaction;
 using SpaceGame.Ships;
 using SpaceGame.Planets;
 using SpaceGame.Stations;
-using SpaceGame.Interaction;
 using SpaceGame.Structures;
 using SpaceGame.Teams;
 using SpaceGame.Combat;
@@ -18,11 +17,14 @@ using SpaceGame.GUI;
 using System.Threading.Channels;
 using Silk.NET.OpenGL;
 using SimulationFramework.Desktop;
+using SpaceGame.Networking;
 
 namespace SpaceGame;
 internal class GameWorld
 {
     public static GameWorld World { get; set; }
+
+    public static int TickRate { get; set; }
 
     public List<Ship> Ships { get; } = [];
     public List<Planet> Planets { get; } = [];
@@ -58,8 +60,10 @@ internal class GameWorld
 
     public StructureList Structures { get; } = new();
 
+
     public GameWorld()
     {
+
     }
 
     public void Update(Vector2 viewportMousePosition, bool hasFocus)
@@ -184,5 +188,9 @@ internal class GameWorld
             }
         }
         return smallest;
+    }
+
+    public void Tick()
+    {
     }
 }

@@ -34,8 +34,20 @@ internal class StructureList
         "manufactory",
         40,
         new Model([
-            new PolygonShape(new Rectangle(-.4f, .85f, .9f, 2.9f, Alignment.CenterLeft).ToPolygon(), Color.Blue),
-            new PolygonShape(new Rectangle(-.4f + .9f, .85f, 2.4f - .9f, 1, Alignment.CenterLeft).ToPolygon(), Color.Blue),
+            new PolygonShape([
+                new Vector2(-.4f, 2.2f),
+                new Vector2(-.4f, -.6f),
+                new Vector2(.4f, -.6f),
+                new Vector2(.4f, .85f -.5f),
+                new Vector2(2f, .85f - .5f),
+                new Vector2(2f, .85f + .5f),
+                new Vector2(.4f, .85f + .5f),
+                new Vector2(.4f, 2.2f),
+
+            ], Color.Blue),
+
+            // new PolygonShape(new Rectangle(-.4f, .85f, .9f, 2.9f, Alignment.CenterLeft).ToPolygon(), Color.Blue),
+            // new PolygonShape(new Rectangle(-.4f + .9f, .85f, 2.4f - .9f, 1, Alignment.CenterLeft).ToPolygon(), Color.Blue),
         ]),
         [new(0, 0), new(0, 1), new(1, 0)],
         null

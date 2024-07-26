@@ -1,6 +1,7 @@
 ﻿using SimulationFramework;
 using SimulationFramework.Drawing;
 using SimulationFramework.Input;
+using SpaceGame.Scenes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,12 +22,12 @@ internal class FreeCamera : Camera
 
         Vector2 delta = Vector2.Zero;
 
-        Vector2 zoomTarget = this.ScreenToWorld(Program.ViewportMousePosition, false);
+        Vector2 zoomTarget = this.ScreenToWorld(GameScene.ViewportMousePosition, false);
 
         float zoomFac = MathF.Pow(1.1f, zoom);
         VerticalSize = zoomFac;
 
-        Vector2 newZoomTarget = this.ScreenToWorld(Program.ViewportMousePosition, false);
+        Vector2 newZoomTarget = this.ScreenToWorld(GameScene.ViewportMousePosition, false);
         
         this.Transform.Position += zoomTarget - newZoomTarget;
 

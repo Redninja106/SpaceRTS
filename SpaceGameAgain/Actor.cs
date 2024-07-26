@@ -6,13 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame;
-internal class Actor : ITransformed
+internal class Actor
 {
     public virtual ref Transform Transform => ref transform;
         
     private Transform transform = Transform.Default;
-
-    Transform ITransformed.Transform => this.Transform;
 
     public virtual void Update()
     {
@@ -21,9 +19,8 @@ internal class Actor : ITransformed
     public virtual void Render(ICanvas canvas)
     {
     }
-}
 
-interface ITransformed
-{
-    Transform Transform { get; }
+    public virtual void Tick()
+    {
+    }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SpaceGame.Scenes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -12,7 +13,7 @@ internal class MouseDragHandler
     {
         if (World.rightMouse.Holding)
         {
-            Vector2 mousePos = World.Camera.ScreenToWorld(Program.ViewportMousePosition, false);
+            Vector2 mousePos = World.Camera.ScreenToWorld(GameScene.ViewportMousePosition, false);
             World.Camera.Transform.Position += World.rightMouse.DragStart - mousePos;
         }
     }
