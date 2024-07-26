@@ -72,7 +72,7 @@ internal class StructureInstance : UnitBase
             IsDestroyed = true;
     }
 
-    public override void Update()
+    public override void Update(float tickProgress)
     {
         Behavior?.Update();
     }

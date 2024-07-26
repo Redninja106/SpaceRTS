@@ -8,16 +8,21 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships.Orders;
 internal class MoveOrder : Order
 {
-    public List<Vector2> targets = [];
+    public Vector2[] targets;
+    
+    public MoveOrder()
+    {
+        targets = [];
+    }
 
     public MoveOrder(Vector2 target)
     {
-        targets.Add(target);
+        targets = [target];
     }
 
     public override bool Complete(Ship ship)
     {
-        for (int i = 0; i < targets.Count; i++)
+        for (int i = 0; i < targets.Length; i++)
         {
             var soi = World.GetSphereOfInfluence(targets[i]);
             Transform t = Transform.Default.Translated(targets[i]);
@@ -27,10 +32,10 @@ internal class MoveOrder : Order
 
         if (MoveTo(ship, targets[0]))
         {
-            targets.RemoveAt(0);
+            targets = targets[1..];
         }
 
-        return targets.Count == 0;
+        return targets.Length == 0;
     }
 
 

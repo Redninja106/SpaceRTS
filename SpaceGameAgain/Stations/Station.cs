@@ -15,9 +15,9 @@ internal class Station : Actor
         orbit = new(World.Planets[0], 50, 0, 0);
     }
 
-    public override void Update()
+    public override void Update(float tickProgress)
     {
-        orbit?.Update(this, 0);
+        orbit?.Tick(this, 0);
     }
 
     public override void Render(ICanvas canvas)

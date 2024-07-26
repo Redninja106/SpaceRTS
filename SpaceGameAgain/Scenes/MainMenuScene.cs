@@ -34,7 +34,7 @@ internal class MainMenuScene : Scene
     {
     }
 
-    public override void Update()
+    public override void Update(float tickProgress)
     {
         if (nextMenu != null)
         {

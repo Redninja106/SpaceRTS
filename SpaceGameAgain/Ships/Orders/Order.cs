@@ -1,10 +1,13 @@
-﻿using System;
+﻿using SpaceGame.Networking.Packets;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Ships.Orders;
+
+[PacketBaseClass]
 internal abstract class Order
 {
     public abstract bool Complete(Ship ship);

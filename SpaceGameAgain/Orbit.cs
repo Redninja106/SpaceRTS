@@ -19,7 +19,7 @@ internal class Orbit
         this.phase = phase;
     }
 
-    public void Update(Actor actor, float speed)
+    public void Tick(Actor actor, float speed)
     {
         phase += speed / radius;
         actor.Transform.Position = center.Transform.Position + Angle.ToVector(phase) * radius;

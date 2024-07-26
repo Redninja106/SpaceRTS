@@ -20,7 +20,7 @@ internal class Planet : Actor
         }
         set
         {
-            value?.Update(this, 0);
+            value?.Tick(this, 0);
             SphereOfInfluence.lastPosition = this.Transform.Position;
             this.orbit = value;
         }
@@ -38,9 +38,16 @@ internal class Planet : Actor
         SphereOfInfluence = new(this);
     }
 
-    public override void Update()
+    public override void Update(float tickProgress)
     {
-        Grid.Update();
+        base.Update(tickProgress);
+        Grid.Update(tickProgress);
+    }
+
+    public override void Tick()
+    {
+        base.Tick();
+        Grid.Tick();
     }
 
     public override void Render(ICanvas canvas)
@@ -52,8 +59,8 @@ internal class Planet : Actor
         SphereOfInfluence.Render(canvas);
     }
 
-    public void UpdateOrbit()
+    public void TickOrbit()
     {
-        Orbit?.Update(this, Time.DeltaTime);
+        Orbit?.Tick(this, Time.DeltaTime);
     }
 }

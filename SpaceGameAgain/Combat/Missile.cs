@@ -34,7 +34,7 @@ internal class Missile : Actor, IDestructable
         Velocity = Angle.ToVector(transform.Rotation) * maxSpeed;
     }
 
-    public override void Update()
+    public override void Update(float tickProgress)
     {
         World.GetSphereOfInfluence(Transform.Position)?.ApplyTo(this);
 

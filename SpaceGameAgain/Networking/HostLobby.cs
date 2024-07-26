@@ -50,6 +50,17 @@ internal class HostLobby
             players.Add(playerId, packet.PlayerName);
         }
 
+
+        if (network.ReceivePacket(out CommandListPacket? cmdPacket, out int cmdId))
+        {
+            foreach (var (id, _) in players)
+            {
+                if (id == cmdId)
+                    continue;
+
+                network.SendPacket(id, cmdPacket);
+            }
+        }
     }
 
     public void StartGame()

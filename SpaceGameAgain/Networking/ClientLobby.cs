@@ -36,5 +36,9 @@ internal class ClientLobby
         {
             players.Add(newPlayerPacket.ID, newPlayerPacket.Name);
         }
+        if (network.ReceivePacket(out CommandListPacket? commandListPacket))
+        {
+            World.TurnProcessor.SubmitCommands(commandListPacket);
+        }
     }
 }

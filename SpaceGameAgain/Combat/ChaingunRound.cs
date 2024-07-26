@@ -25,7 +25,7 @@ internal class ChaingunRound : Actor, IDestructable
         this.sphereOfInfluence = sphereOfInfluence;
     }
 
-    public override void Update()
+    public override void Update(float tickProgress)
     {
         sphereOfInfluence?.ApplyTo(ref this.Transform);
         Transform.Position += Transform.Forward * speed * Time.DeltaTime;

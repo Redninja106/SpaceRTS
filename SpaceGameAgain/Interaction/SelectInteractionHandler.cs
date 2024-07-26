@@ -1,4 +1,5 @@
 ﻿using SpaceGame.Asteroids;
+using SpaceGame.Commands;
 using SpaceGame.Interaction;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Formations;
@@ -88,19 +89,33 @@ internal class SelectInteractionHandler : IInteractionContext
 
                 for (int i = 0; i < ships.Count; i++)
                 {
-                    if (!Keyboard.IsKeyDown(Key.LeftShift))
-                    {
-                        ships[i].orders.Clear();
-                    }
+                    Order[] orders;
+                    // if (Keyboard.IsKeyDown(Key.LeftShift)) 
+                    // {
+                    //     orders = ships[i].orders.ToArray();
+                    // }
+                    // else
+                    // {
+                    //     orders = [];
+                    // }
 
-                    if (ships[i].orders.TryPeek(out Order? order) && order is MoveOrder moveOrder)
+                    orders = [new MoveOrder(World.MousePosition + positions[i])];
+
+                    // if (orders.Length > 0 && orders[0] is MoveOrder moveOrder)
+                    // {
+                    //     orders[0] = new MoveOrder() { targets = }
+                    // }
+                    // else
+                    // {
+                    //     ships[i].orders.Enqueue(new MoveOrder(World.MousePosition + positions[i]));
+                    // }
+
+                    World.CommandProcessor.QueueCommand(new UpdateOrdersCommand()
                     {
-                        moveOrder.targets.Add(World.MousePosition + positions[i]);
-                    }
-                    else
-                    {
-                        ships[i].orders.Enqueue(new MoveOrder(World.MousePosition + positions[i]));
-                    }
+                        ship = ships[i],
+                        orders = orders
+                    });
+
                 }
             }
         }

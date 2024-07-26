@@ -72,17 +72,33 @@ internal class Ship : UnitBase
         health--;
     }
 
-    public override void Update()
+    public override void Update(float tickProgress)
     {
+        base.Update(tickProgress);
+    }
+
+    public override bool TestPoint(Vector2 point, Transform transform)
+    {
+        return TestPoint(point, transform, 1f);
+    }
+    public bool TestPoint(Vector2 point, Transform transform, float scale)
+    {
+        return Util.TestPoint(verts, this.Transform, point, transform);
+    }
+
+    public override void Tick()
+    {
+        base.Tick();
+
         if (height < .4f)
-            height += Time.DeltaTime * .5f;
+            height += World.TickDelta * .5f;
 
         foreach (var module in modules)
         {
             module.Update();
         }
 
-        if (orders.Count > 0 && height >= .4f) 
+        if (orders.Count > 0 && height >= .4f)
         {
             var order = orders.Peek();
             if (order.Complete(this))
@@ -100,15 +116,6 @@ internal class Ship : UnitBase
 
         SphereOfInfluence? soi = World.GetSphereOfInfluence(this.Transform.Position);
         soi?.ApplyTo(this);
-    }
-
-    public override bool TestPoint(Vector2 point, Transform transform)
-    {
-        return TestPoint(point, transform, 1f);
-    }
-    public bool TestPoint(Vector2 point, Transform transform, float scale)
-    {
-        return Util.TestPoint(verts, this.Transform, point, transform);
     }
 
     public void RenderShadow(ICanvas canvas, float floorHeight)

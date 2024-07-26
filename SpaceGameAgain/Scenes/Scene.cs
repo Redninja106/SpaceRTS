@@ -8,6 +8,6 @@ namespace SpaceGame.Scenes;
 internal  abstract class Scene
 {
     public abstract void Tick();
-    public abstract void Update();
+    public abstract void Update(float tickProgress);
     public abstract void Render(ICanvas canvas);
 }

@@ -15,7 +15,7 @@ using SimulationFramework.Desktop;
 using SpaceGame.Scenes;
 using SpaceGame.Networking;
 
-ImGuiConsole.SetIntercepts();
+// ImGuiConsole.SetIntercepts();
 running = true;
 DesktopPlatform.Register();
 Start<Program>();
@@ -42,6 +42,7 @@ partial class Program : Simulation
     }
 
     float t;
+    float timeSinceLastTick;
 
     public override void OnRender(ICanvas canvas)
     {
@@ -52,8 +53,10 @@ partial class Program : Simulation
         {
             Scene.Tick();
             t -= 1 / 50f;
+            timeSinceLastTick = 0;
         }
-        Scene.Update();
+        Scene.Update(Math.Clamp(timeSinceLastTick * 50f, 0, 1));
+        timeSinceLastTick += Time.DeltaTime;
         Scene.Render(canvas);
         if (nextScene != null)
         {

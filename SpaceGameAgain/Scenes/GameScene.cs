@@ -1,5 +1,4 @@
-﻿using Silk.NET.Windowing;
-using SpaceGame.GUI;
+﻿using SpaceGame.GUI;
 using SpaceGame.Planets;
 using SpaceGame.Ships.Modules;
 using SpaceGame.Ships;
@@ -10,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace SpaceGame.Scenes;
 internal class GameScene : Scene
@@ -111,22 +109,38 @@ internal class GameScene : Scene
 
     public override void Tick()
     {
-
+        World.Tick();
     }
 
-    public override void Update()
+    public override void Update(float tickProgress)
     {
-    }
+        World.Camera.Update(view.Width, view.Height);
+        Rectangle vp = new(0, 0, view.Width, view.Height);
 
-    public override void Render(ICanvas canvas)
-    {
+        var canvas = Graphics.GetOutputCanvas();
 
         float vpScaleY = canvas.Height / (float)view.Height;
         float vpScaleX = (canvas.Width - (World.LeftSidebar.MinWidth + World.RightSidebar.MinWidth)) / (float)view.Width;
 
         MatrixBuilder viewMatrix = new MatrixBuilder()
             .Translate(canvas.Width / 2f, canvas.Height / 2f)
-        .Scale(MathF.Min(vpScaleX, vpScaleY))
+            .Scale(MathF.Min(vpScaleX, vpScaleY))
+            .Translate(-view.Width / 2f, -view.Height / 2f);
+
+        ViewportMousePosition = Vector2.Transform(Mouse.Position, viewMatrix.InverseMatrix);
+        World.Update(tickProgress, ViewportMousePosition, vp.ContainsPoint(ViewportMousePosition));
+        World.LeftSidebar.Update(canvas.Width, canvas.Height);
+        World.RightSidebar.Update(canvas.Width, canvas.Height);
+    }
+
+    public override void Render(ICanvas canvas)
+    {
+        float vpScaleY = canvas.Height / (float)view.Height;
+        float vpScaleX = (canvas.Width - (World.LeftSidebar.MinWidth + World.RightSidebar.MinWidth)) / (float)view.Width;
+
+        MatrixBuilder viewMatrix = new MatrixBuilder()
+            .Translate(canvas.Width / 2f, canvas.Height / 2f)
+            .Scale(MathF.Min(vpScaleX, vpScaleY))
             .Translate(-view.Width / 2f, -view.Height / 2f);
 
         if (vpScaleY < vpScaleX)
@@ -142,15 +156,6 @@ internal class GameScene : Scene
             World.LeftSidebar.Width = World.LeftSidebar.MinWidth;
             World.RightSidebar.Width = World.RightSidebar.MinWidth;
         }
-
-        World.Camera.Update(view.Width, view.Height);
-        Rectangle vp = new(0, 0, view.Width, view.Height);
-
-
-        ViewportMousePosition = Vector2.Transform(Mouse.Position, viewMatrix.InverseMatrix);
-        World.Update(ViewportMousePosition, vp.ContainsPoint(ViewportMousePosition));
-        World.LeftSidebar.Update(canvas.Width, canvas.Height);
-        World.RightSidebar.Update(canvas.Width, canvas.Height);
 
         if (canvas.Width is 0 && canvas.Height is 0)
             return;

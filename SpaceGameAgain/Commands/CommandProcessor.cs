@@ -14,4 +14,10 @@ internal class CommandProcessor
     {
         commands.Enqueue(command);
     }
+
+    public void Flush()
+    {
+        World.TurnProcessor.SubmitCommands(World.TurnProcessor.CurrentTurn + 2, Program.Lobby!.ClientID, commands.ToArray());
+        commands.Clear();
+    }
 }

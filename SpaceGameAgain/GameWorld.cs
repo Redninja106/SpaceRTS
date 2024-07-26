@@ -18,6 +18,7 @@ using System.Threading.Channels;
 using Silk.NET.OpenGL;
 using SimulationFramework.Desktop;
 using SpaceGame.Networking;
+using SpaceGame.Commands;
 
 namespace SpaceGame;
 internal class GameWorld
@@ -53,27 +54,26 @@ internal class GameWorld
     public ConstructionInteractionContext ConstructionInteractionContext { get; } = new();
     public GameOverviewHandler OverviewHandler { get; } = new();
 
+    public TurnProcessor TurnProcessor { get; } = new();
+    public CommandProcessor CommandProcessor { get; } = new();
+
     public IInteractionContext? CurrentInteractionContext { get; set; }
 
     public MouseState leftMouse = new(MouseButton.Left);
     public MouseState rightMouse = new(MouseButton.Right);
 
     public StructureList Structures { get; } = new();
-
+    public NetworkMap NetworkMap { get; } = new();
 
     public GameWorld()
     {
 
     }
 
-    public void Update(Vector2 viewportMousePosition, bool hasFocus)
+    public void Update(float tickProgress, Vector2 viewportMousePosition, bool hasFocus)
     {
         this.HasFocus = hasFocus;
-        foreach (var planet in Planets)
-        {
-            planet.UpdateOrbit();
-        }
-
+        
         MousePosition = Camera.ScreenToWorld(viewportMousePosition);
 
         leftMouse.Update();
@@ -87,17 +87,42 @@ internal class GameWorld
         var soi = World.GetSphereOfInfluence(Camera.Transform.Position);
         soi?.ApplyTo(ref Camera.Transform);
 
-        UpdateActorList(Planets);
-        UpdateActorList(Stations);
-        UpdateActorList(Ships);
-        UpdateActorList(ChaingunRounds);
-        UpdateActorList(Missiles);
-        UpdateActorList(Asteroids);
+        UpdateActorList(Planets, tickProgress);
+        UpdateActorList(Stations, tickProgress);
+        UpdateActorList(Ships, tickProgress);
+        UpdateActorList(ChaingunRounds, tickProgress);
+        UpdateActorList(Missiles, tickProgress);
+        UpdateActorList(Asteroids, tickProgress);
 
         foreach (var planet in Planets)
         {
             planet.SphereOfInfluence.Update();
         }
+    }
+
+    public void Tick()
+    {
+        if (ticksUntilNextTurn <= 0)
+        {
+            if (TurnProcessor.TryPerformTurn())
+            {
+                ticksUntilNextTurn = 10;
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        foreach (var planet in Planets)
+        {
+            planet.TickOrbit();
+        }
+
+        TickActorList(Planets);
+        TickActorList(Ships);
+
+        ticksUntilNextTurn--;
     }
 
     public void Render(ICanvas canvas)
@@ -120,24 +145,6 @@ internal class GameWorld
             canvas.PopState();
         }
 
-        // foreach (var ship in Ships)
-        // {
-        //     canvas.PushState();
-        //     ship.RenderShadow(canvas, .2f);
-
-        //     // ideas for shadow rendering using stencil buffer?
-        // var gl = GL.GetApi(Application.GetComponent<DesktopPlatform>().Window);
-        //     // rendering shadows
-        // gl.StencilFunc(StencilFunction.Notequal, /*layer*/2, 0xFF);
-        // gl.StencilOp(StencilOp.Keep, StencilOp.Replace, StencilOp.Replace);
-        //     // rendering buildings
-        //     gl.StencilFunc(StencilFunction.Less, /*layer*/2, 0x7F);
-        //     gl.StencilOp(StencilOp.Keep, StencilOp.Replace, StencilOp.Replace);
-
-
-        //     canvas.PopState();
-        // }
-
         RenderActorList(Ships, canvas);
         RenderActorList(ChaingunRounds, canvas);
         RenderActorList(Missiles, canvas);
@@ -147,18 +154,12 @@ internal class GameWorld
         CurrentInteractionContext.Render(canvas, leftMouse, rightMouse);
     }
 
-    private void UpdateActorList<TActor>(List<TActor> actors)
+    private void UpdateActorList<TActor>(List<TActor> actors, float tickProgress)
         where TActor : Actor
     {
         for (int i = 0; i < actors.Count; i++)
         {
-            actors[i].Update();
-
-            if (actors[i] is IDestructable destructable && destructable.IsDestroyed)
-            {
-                actors.RemoveAt(i);
-                i--;
-            }
+            actors[i].Update(tickProgress);
         }
     }
 
@@ -168,9 +169,23 @@ internal class GameWorld
         foreach (var actor in actors)
         {
             canvas.PushState();
-            actor.Transform.ApplyTo(canvas);
+            actor.TweenedTransform.ApplyTo(canvas);
             actor.Render(canvas);
             canvas.PopState();
+        }
+    }
+    private void TickActorList<TActor>(List<TActor> actors)
+        where TActor : Actor
+    {
+        for (int i = 0; i < actors.Count; i++)
+        {
+            actors[i].Tick();
+
+            if (actors[i] is IDestructable destructable && destructable.IsDestroyed)
+            {
+                actors.RemoveAt(i);
+                i--;
+            }
         }
     }
 
@@ -190,7 +205,7 @@ internal class GameWorld
         return smallest;
     }
 
-    public void Tick()
-    {
-    }
+    int ticksUntilNextTurn;
+    internal float TickDelta = 1f/50f;
+
 }

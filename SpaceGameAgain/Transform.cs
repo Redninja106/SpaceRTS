@@ -82,4 +82,13 @@ public struct Transform
     {
         return Vector2.Distance(this.Position, transform.Position);
     }
+
+    public Transform Lerp(Transform a, Transform b, float t)
+    {
+        Transform result = default;
+        result.Position = Vector2.Lerp(a.Position, b.Position, t);
+        result.Rotation = Angle.Lerp(a.Rotation, b.Rotation, t);
+        result.Scale = Vector2.Lerp(a.Scale, b.Scale, t);
+        return result;
+    }
 }

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
-internal class Grid
+internal class Grid : Actor
 {
     public static Vector2[] hexagon = [
         Angle.ToVector(0 * MathF.Tau / 6),
@@ -24,7 +24,7 @@ internal class Grid
 
     public IEnumerable<StructureInstance> Structures => structures;
 
-    public ref Transform Transform => ref parent.Transform;
+    public override ref Transform Transform => ref parent.Transform;
 
     public Grid(Actor parent)
     {
@@ -59,7 +59,7 @@ internal class Grid
         return cells.TryGetValue(coord, out var cell) ? cell : null;
     }
 
-    public void Render(ICanvas canvas)
+    public override void Render(ICanvas canvas)
     {
         canvas.Stroke(Color.LightGray with { A = 50 });
         foreach (var (coord, cell) in cells)
@@ -153,11 +153,11 @@ internal class Grid
         return GetCell(coord);
     }
 
-    public void Update()
+    public override void Update(float tickProgress)
     {
         for (int i = 0; i < structures.Count; i++)
         {
-            structures[i].Update();
+            structures[i].Update(tickProgress);
 
             if (structures[i].IsDestroyed)
             {

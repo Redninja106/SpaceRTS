@@ -29,8 +29,8 @@ internal class Asteroid : UnitBase
         return Vector2.Distance(transform.LocalToWorld(point), this.Transform.Position) < size;
     }
 
-    public override void Update()
+    public override void Update(float tickProgress)
     {
-        Orbit?.Update(this, Time.DeltaTime);
+        Orbit?.Tick(this, Time.DeltaTime);
     }
 }

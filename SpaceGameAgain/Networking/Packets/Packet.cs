@@ -1,4 +1,5 @@
-﻿using SpaceGame.Structures;
+﻿using SpaceGame.Commands;
+using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -52,6 +53,9 @@ internal class Packet
     {
         switch (obj)
         {
+            case long l:
+                WriteValue(stream, ref l);
+                return;
             case int i:
                 WriteValue(stream, ref i);
                 return;
@@ -70,9 +74,21 @@ internal class Packet
                 stream.Write(Encoding.UTF8.GetBytes(s));
                 return;
             case Actor actor:
-                throw new NotImplementedException();
+                int actorID = actor.ID;
+                WriteValue(stream, ref actorID);
+                return;
             default:
                 break;
+        }
+
+        if (type.GetCustomAttribute<PacketBaseClassAttribute>() != null)
+        {
+            string typeName = obj!.GetType().Name;
+            int length = typeName.Length;
+            WriteValue(stream, ref length);
+            stream.Write(Encoding.UTF8.GetBytes(typeName));
+            SerializeFields(obj, obj.GetType(), stream);
+            return;
         }
 
         if (type.IsPrimitive || type.IsValueType)
@@ -129,6 +145,10 @@ internal class Packet
 
     private static object DeserializeFields(Type type, Stream stream)
     {
+        if (type == typeof(long))
+        {
+            return ReadValue<long>(stream);
+        }
         if (type == typeof(int))
         {
             return ReadValue<int>(stream);
@@ -151,6 +171,22 @@ internal class Packet
             byte[] buffer = new byte[length];
             stream.Read(buffer);
             return Encoding.UTF8.GetString(buffer);
+        }
+        if (type.IsSubclassOf(typeof(Actor)))
+        {
+            int id = ReadValue<int>(stream);
+            return World.NetworkMap.GetActor(id);
+            
+        }
+
+        if (type.GetCustomAttribute<PacketBaseClassAttribute>() != null)
+        {
+            int length = ReadValue<int>(stream);
+            byte[] buffer = new byte[length];
+            stream.Read(buffer);
+            var typeName = Encoding.UTF8.GetString(buffer);
+            var actualType = Assembly.GetExecutingAssembly().DefinedTypes.Single(t => t.Name == typeName)!;
+            return DeserializeFields(actualType, stream);
         }
 
         if (type.IsPrimitive || type.IsValueType)
