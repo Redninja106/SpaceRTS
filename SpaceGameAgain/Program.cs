@@ -29,6 +29,7 @@ partial class Program : Simulation
     public static HostLobby? Host;
     public static ClientLobby? Lobby;
     public static bool running;
+    public static float TickDelta = 1f/50f;
 
     public static void SwitchScenes(Func<Scene> scene)
     {

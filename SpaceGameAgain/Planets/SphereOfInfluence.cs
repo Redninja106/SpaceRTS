@@ -1,4 +1,5 @@
-﻿using SpaceGame.Ships;
+﻿using SpaceGame.Serialization;
+using SpaceGame.Ships;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Planets;
-internal class SphereOfInfluence
+internal class SphereOfInfluence : ISavable
 {
     public float Radius => 4 * planet.Radius;
 
@@ -50,5 +51,17 @@ internal class SphereOfInfluence
     internal bool ContainsPoint(Vector2 point)
     {
         return Vector2.Distance(planet.Transform.Position, point) <= Radius;
+    }
+
+    public void Save(Stream stream)
+    {
+        stream.WriteValue(World.NetworkMap.GetID(planet));
+        stream.WriteValue(lastPosition);
+    }
+
+    public void Load(Stream stream)
+    {
+        planet = (Planet)World.NetworkMap.GetActor(stream.ReadValue<int>());
+        lastPosition = stream.ReadValue<Vector2>();
     }
 }

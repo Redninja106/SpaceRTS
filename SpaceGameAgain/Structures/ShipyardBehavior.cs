@@ -5,6 +5,7 @@ using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 using SpaceGame.Ships.Orders;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -159,7 +160,7 @@ internal class ShipyardBehavior : StructureBehavior
         }
     }
 
-    public override void Update()
+    public override void Tick()
     {
         if (buildButton.clicked && Instance.Team.Materials >= 20)
         {

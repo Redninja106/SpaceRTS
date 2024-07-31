@@ -62,7 +62,12 @@ internal class SelectInteractionHandler : IInteractionContext
                     {
                         if (!Keyboard.IsKeyDown(Key.LeftShift))
                             ship.orders.Clear();
-                        ship.orders.Enqueue(new AttackOrder(target));
+                        World.CommandProcessor.QueueCommand(
+                            new UpdateOrdersCommand()
+                            {
+                                ship = ship,
+                                orders = [new AttackOrder(target)]
+                            });
                     }
                     else
                     {
@@ -124,8 +129,8 @@ internal class SelectInteractionHandler : IInteractionContext
         {
             var a = new Asteroid();
             a.Transform.Position = World.MousePosition;
-            var delta = a.Transform.Position - World.Planets[0].Transform.Position;
-            a.Orbit = new(World.Planets[0], delta.Length(), Angle.FromVector(delta), 0);
+            var delta = a.Transform.Position - World.Planets.First().Transform.Position;
+            a.Orbit = new(World.Planets.First(), delta.Length(), Angle.FromVector(delta), 0);
             a.size = 1;
             World.Asteroids.Add(a);
         }

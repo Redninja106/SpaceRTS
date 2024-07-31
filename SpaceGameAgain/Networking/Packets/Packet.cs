@@ -1,4 +1,5 @@
 ﻿using SpaceGame.Commands;
+using SpaceGame.Serialization;
 using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace SpaceGame.Networking.Packets;
 internal class Packet
 {
     private static Dictionary<string, Type> packetTypes = [];
-
+    
     static Packet()
     {
         foreach (var type in Assembly.GetExecutingAssembly().DefinedTypes)
@@ -62,6 +63,9 @@ internal class Packet
             case float f:
                 WriteValue(stream, ref f);
                 return;
+            case bool b:
+                WriteValue(stream, ref b);
+                return;
             case Vector2 v2:
                 WriteValue(stream, ref v2);
                 return;
@@ -74,11 +78,18 @@ internal class Packet
                 stream.Write(Encoding.UTF8.GetBytes(s));
                 return;
             case Actor actor:
-                int actorID = actor.ID;
+                int actorID = World.NetworkMap.GetID(actor);
                 WriteValue(stream, ref actorID);
                 return;
             default:
                 break;
+        }
+
+        if (type.GetCustomAttribute<RegistryItemAttribute>() is RegistryItemAttribute regItem)
+        {
+            int id = Registries.Structures.GetID((Structure)obj!);
+            stream.WriteValue(id);
+            return;
         }
 
         if (type.GetCustomAttribute<PacketBaseClassAttribute>() != null)
@@ -157,6 +168,10 @@ internal class Packet
         {
             return ReadValue<float>(stream);
         }
+        if (type == typeof(bool))
+        {
+            return ReadValue<bool>(stream);
+        }
         if (type == typeof(Vector2))
         {
             return ReadValue<Vector2>(stream);
@@ -172,11 +187,14 @@ internal class Packet
             stream.Read(buffer);
             return Encoding.UTF8.GetString(buffer);
         }
+        if (type.GetCustomAttribute<RegistryItemAttribute>() is RegistryItemAttribute regItem)
+        {
+            return Registries.Structures.Get(stream.ReadValue<int>());
+        }
         if (type.IsSubclassOf(typeof(Actor)))
         {
             int id = ReadValue<int>(stream);
             return World.NetworkMap.GetActor(id);
-            
         }
 
         if (type.GetCustomAttribute<PacketBaseClassAttribute>() != null)

@@ -12,7 +12,7 @@ internal abstract class StructureBehavior
 
     public abstract Element[] SelectGUI { get; }
 
-    public abstract void Update();
+    public abstract void Tick();
     
     public StructureBehavior(StructureInstance instance)
     {

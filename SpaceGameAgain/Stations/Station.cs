@@ -12,7 +12,7 @@ internal class Station : Actor
 
     public Station()
     {
-        orbit = new(World.Planets[0], 50, 0, 0);
+        orbit = new(World.Planets.First(), 50, 0, 0);
     }
 
     public override void Update(float tickProgress)

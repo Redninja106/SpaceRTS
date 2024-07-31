@@ -1,6 +1,7 @@
 ﻿using SimulationFramework.Drawing;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,14 +15,11 @@ internal class Actor
 
     private Transform lastTransform = Transform.Default;
     private Transform transform = Transform.Default;
-    private static int nextId = 1;
-
-    public int ID { get; init; } = nextId++;
 
     public Actor()
     {
-        World.NetworkMap.Register(ID, this);
     }
+    
 
     public virtual void Update(float tickProgress)
     {
@@ -35,5 +33,23 @@ internal class Actor
     public virtual void Tick()
     {
         lastTransform = transform;
+    }
+
+    public virtual void Save(Stream stream)
+    {
+        stream.WriteValue(World.NetworkMap.GetID(this));
+        stream.WriteValue(Transform);
+    }
+    public virtual void Load(Stream stream)
+    {
+        World.NetworkMap.Register(this, stream.ReadValue<int>());
+        lastTransform = Transform = stream.ReadValue<Transform>();
+    }
+
+    internal uint ComputeCRC(uint crc)
+    {
+        crc = Util.CRC(crc, World.NetworkMap.GetID(this));
+        crc = Util.CRC(crc, this.transform);
+        return crc;
     }
 }

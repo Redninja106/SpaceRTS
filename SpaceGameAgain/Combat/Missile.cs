@@ -34,8 +34,10 @@ internal class Missile : Actor, IDestructable
         Velocity = Angle.ToVector(transform.Rotation) * maxSpeed;
     }
 
-    public override void Update(float tickProgress)
+    public override void Tick()
     {
+        base.Tick();
+
         World.GetSphereOfInfluence(Transform.Position)?.ApplyTo(this);
 
         if (exploding)
@@ -55,7 +57,6 @@ internal class Missile : Actor, IDestructable
             return;
         }
 
-
         var positionDelta = (Target.Transform.Position + TargetOffset - Transform.Position).Normalized() * MaxSpeed;
 
         if (Vector2.Distance(Target.Transform.Position + TargetOffset, Transform.Position) < .05f)
@@ -64,11 +65,11 @@ internal class Missile : Actor, IDestructable
         }
 
         var lastVelocity = Velocity;
-        Velocity = Util.Step(Velocity, positionDelta, Thrust * Time.DeltaTime);
+        Velocity = Util.Step(Velocity, positionDelta, Thrust * Program.TickDelta);
         LastAcceleration = CurrentAcceleration;
-        CurrentAcceleration = (Velocity - lastVelocity) / Time.DeltaTime;
+        CurrentAcceleration = (Velocity - lastVelocity) / Program.TickDelta;
 
-        Transform.Position += Velocity * Time.DeltaTime;
+        Transform.Position += Velocity * Program.TickDelta;
 
         if (age > 1 && Target.TestPoint(Transform.Position, Transform.Default))
         {
@@ -76,7 +77,7 @@ internal class Missile : Actor, IDestructable
             Target.Damage();
         }
 
-        age += Time.DeltaTime;
+        age += Program.TickDelta;
     }
 
     public void Detonate()

@@ -1,4 +1,5 @@
-﻿using SpaceGame.Ships;
+﻿using SpaceGame.Commands;
+using SpaceGame.Ships;
 using SpaceGame.Ships.Orders;
 using SpaceGame.Structures;
 using System;
@@ -44,12 +45,16 @@ internal class ConstructionInteractionContext : IInteractionContext
 
                 if (ship is not null)
                 {
-                    ship.orders.Enqueue(new ConstructionOrder()
-                    {
-                        Grid = hoveredGrid,
-                        Location = hoveredLocation,
-                        Rotation = rotation,
-                        Structure = structure,
+                    World.CommandProcessor.QueueCommand(new UpdateOrdersCommand()
+                        {
+                            ship = ship,
+                            orders = [new ConstructionOrder()
+                            {
+                                Grid = hoveredGrid,
+                                Location = hoveredLocation,
+                                Rotation = rotation,
+                                Structure = structure,
+                            }]
                     });
                 }
 

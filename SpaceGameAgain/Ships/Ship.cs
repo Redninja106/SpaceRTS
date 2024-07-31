@@ -1,10 +1,10 @@
-﻿using Silk.NET.Core.Native;
-using SimulationFramework;
+﻿using SimulationFramework;
 using SimulationFramework.Drawing;
 using SimulationFramework.SkiaSharp;
 using SkiaSharp;
 using SpaceGame.Interaction;
 using SpaceGame.Planets;
+using SpaceGame.Serialization;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 using SpaceGame.Ships.Orders;
@@ -17,6 +17,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Ships;
+
+[SerializableType]
 internal class Ship : UnitBase
 {
     public static Vector2[] verts = [
@@ -35,6 +37,10 @@ internal class Ship : UnitBase
     public Ship(Team team)
     {
         this.Team = team;
+    }
+
+    public Ship()
+    {
     }
 
     public override void Render(ICanvas canvas)
@@ -125,5 +131,19 @@ internal class Ship : UnitBase
         canvas.Rotate(Transform.Rotation);
         canvas.Fill(Color.Black with { A = 100 });
         canvas.DrawPolygon(verts);
+    }
+
+    public override void Save(Stream stream)
+    {
+        base.Save(stream);
+
+        stream.WriteValue(World.NetworkMap.GetID(Team));
+    }
+
+    public override void Load(Stream stream)
+    {
+        base.Load(stream);
+
+        this.Team = (Team)World.NetworkMap.GetActor(stream.ReadValue<int>());
     }
 }

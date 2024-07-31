@@ -19,7 +19,7 @@ internal class MissileTurretBehavior : StructureBehavior
 
     public override Element[] SelectGUI { get; } = [];
 
-    public override void Update()
+    public override void Tick()
     {
         system.Update();
     }
@@ -37,7 +37,7 @@ internal class ChaingunTurretBehavior : StructureBehavior
 
     public override Element[] SelectGUI { get; }
 
-    public override void Update()
+    public override void Tick()
     {
         system.Update();
     }

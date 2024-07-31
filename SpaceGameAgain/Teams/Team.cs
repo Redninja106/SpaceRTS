@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Teams;
-internal class Team
+internal class Team : Actor
 {
     public static readonly Color PlayerColor = Color.SkyBlue;
     public static readonly Color AllyColor = Color.LawnGreen;

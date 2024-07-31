@@ -9,6 +9,7 @@ internal class AttackOrder : Order
 {
     public UnitBase target;
 
+    public AttackOrder() { }
     public AttackOrder(UnitBase target)
     {
         this.target = target;

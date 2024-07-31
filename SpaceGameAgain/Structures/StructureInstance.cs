@@ -72,8 +72,13 @@ internal class StructureInstance : UnitBase
             IsDestroyed = true;
     }
 
+    public override void Tick()
+    {
+        base.Tick();
+        Behavior?.Tick();
+    }
+
     public override void Update(float tickProgress)
     {
-        Behavior?.Update();
     }
 }

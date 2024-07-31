@@ -19,6 +19,8 @@ using Silk.NET.OpenGL;
 using SimulationFramework.Desktop;
 using SpaceGame.Networking;
 using SpaceGame.Commands;
+using SpaceGame.Serialization;
+using System.Collections;
 
 namespace SpaceGame;
 internal class GameWorld
@@ -27,13 +29,15 @@ internal class GameWorld
 
     public static int TickRate { get; set; }
 
-    public List<Ship> Ships { get; } = [];
-    public List<Planet> Planets { get; } = [];
-    public List<Station> Stations { get; } = [];
-    public List<Team> Teams { get; } = [];
-    public List<Missile> Missiles { get; } = [];
-    public List<ChaingunRound> ChaingunRounds { get; } = [];
-    public List<Asteroid> Asteroids { get; } = [];
+    public ActorList<Ship> Ships { get; } = [];
+    public ActorList<StructureInstance> StructureInstances { get; } = [];
+    public ActorList<Planet> Planets { get; } = [];
+    public ActorList<Station> Stations { get; } = [];
+    public ActorList<Grid> Grids { get; } = [];
+    public ActorList<Team> Teams { get; } = [];
+    public ActorList<Missile> Missiles { get; } = [];
+    public ActorList<ChaingunRound> ChaingunRounds { get; } = [];
+    public ActorList<Asteroid> Asteroids { get; } = [];
 
     // GLOBALS
     public Camera Camera { get; set; }
@@ -45,6 +49,8 @@ internal class GameWorld
 
     public Vector2 MousePosition;
     public bool HasFocus;
+
+    public int NextID { get; set; } = 1;
 
     // HANDLERS
 
@@ -65,13 +71,24 @@ internal class GameWorld
     public StructureList Structures { get; } = new();
     public NetworkMap NetworkMap { get; } = new();
 
-    public GameWorld()
+    public GameWorld(WorldProvider provider)
     {
-
     }
 
     public void Update(float tickProgress, Vector2 viewportMousePosition, bool hasFocus)
     {
+        if (Keyboard.IsKeyReleased(Key.F2))
+        {
+            using var fs = new FileStream("save.gxy", FileMode.Create);
+            Save(fs);
+        }
+        else if (Keyboard.IsKeyReleased(Key.F3))
+        {
+            NetworkMap.Clear();
+            using var fs = new FileStream("save.gxy", FileMode.Open);
+            Load(fs);
+        }
+
         this.HasFocus = hasFocus;
         
         MousePosition = Camera.ScreenToWorld(viewportMousePosition);
@@ -87,12 +104,12 @@ internal class GameWorld
         var soi = World.GetSphereOfInfluence(Camera.Transform.Position);
         soi?.ApplyTo(ref Camera.Transform);
 
-        UpdateActorList(Planets, tickProgress);
-        UpdateActorList(Stations, tickProgress);
-        UpdateActorList(Ships, tickProgress);
-        UpdateActorList(ChaingunRounds, tickProgress);
-        UpdateActorList(Missiles, tickProgress);
-        UpdateActorList(Asteroids, tickProgress);
+        Planets.Update(tickProgress);
+        Stations.Update(tickProgress);
+        Ships.Update(tickProgress);
+        ChaingunRounds.Update(tickProgress);
+        Missiles.Update(tickProgress);
+        Asteroids.Update(tickProgress);
 
         foreach (var planet in Planets)
         {
@@ -119,16 +136,18 @@ internal class GameWorld
             planet.TickOrbit();
         }
 
-        TickActorList(Planets);
-        TickActorList(Ships);
+        Planets.Tick();
+        Ships.Tick();
+        ChaingunRounds.Tick();
+        Missiles.Tick();
 
         ticksUntilNextTurn--;
     }
 
     public void Render(ICanvas canvas)
     {
-        RenderActorList(Planets, canvas);
-        RenderActorList(Stations, canvas);
+        Planets.Render(canvas);
+        Stations.Render(canvas);
 
         foreach (var planet in Planets)
         {
@@ -145,50 +164,16 @@ internal class GameWorld
             canvas.PopState();
         }
 
-        RenderActorList(Ships, canvas);
-        RenderActorList(ChaingunRounds, canvas);
-        RenderActorList(Missiles, canvas);
-        RenderActorList(Asteroids, canvas);
+        Ships.Render(canvas);
+        ChaingunRounds.Render(canvas);
+        Missiles.Render(canvas);
+        Asteroids.Render(canvas);
         
         CurrentInteractionContext ??= SelectInteractionContext;
         CurrentInteractionContext.Render(canvas, leftMouse, rightMouse);
     }
 
-    private void UpdateActorList<TActor>(List<TActor> actors, float tickProgress)
-        where TActor : Actor
-    {
-        for (int i = 0; i < actors.Count; i++)
-        {
-            actors[i].Update(tickProgress);
-        }
-    }
-
-    private void RenderActorList<TActor>(List<TActor> actors, ICanvas canvas)
-        where TActor : Actor
-    {
-        foreach (var actor in actors)
-        {
-            canvas.PushState();
-            actor.TweenedTransform.ApplyTo(canvas);
-            actor.Render(canvas);
-            canvas.PopState();
-        }
-    }
-    private void TickActorList<TActor>(List<TActor> actors)
-        where TActor : Actor
-    {
-        for (int i = 0; i < actors.Count; i++)
-        {
-            actors[i].Tick();
-
-            if (actors[i] is IDestructable destructable && destructable.IsDestroyed)
-            {
-                actors.RemoveAt(i);
-                i--;
-            }
-        }
-    }
-
+   
     public SphereOfInfluence? GetSphereOfInfluence(Vector2 point)
     {
         SphereOfInfluence? smallest = null;
@@ -208,4 +193,129 @@ internal class GameWorld
     int ticksUntilNextTurn;
     internal float TickDelta = 1f/50f;
 
+    public void Save(Stream stream)
+    {
+        // TODO: add versioning
+        // SaveActorList(stream, Teams);
+        // SaveActorList(stream, Planets);
+        // SaveActorList(stream, Ships);
+    }
+
+    public void Load(Stream stream)
+    {
+        // LoadActorList(stream, Teams);
+        // LoadActorList(stream, Planets);
+        // LoadActorList(stream, Ships);
+        // 
+        // PlayerTeam = Teams[0];
+    }
+
+    private void SaveActorList<TActor>(Stream stream, List<TActor> list)
+        where TActor : Actor
+    {
+        stream.WriteValue(list.Count);
+        foreach (var actor in list)
+        {
+            actor.Save(stream);
+        }
+    }
+
+    private void LoadActorList<TActor>(Stream stream, List<TActor> list)
+        where TActor : Actor, new()
+    {
+        list.Clear();
+        int count = stream.ReadValue<int>();
+        for (int i = 0; i < count; i++)
+        {
+            var actor = new TActor();
+            actor.Load(stream);
+            list.Add(actor);
+        }
+    }
+
+    public uint ComputeCRC()
+    {
+        uint crc = 0;
+
+        crc = Planets.ComputeCRC(crc);
+        crc = Ships.ComputeCRC(crc);
+        crc = ChaingunRounds.ComputeCRC(crc);
+        crc = Missiles.ComputeCRC(crc);
+
+        return crc;
+    }
+}
+
+class ActorList<TActor> : IEnumerable<TActor>
+    where TActor : Actor
+{
+    private List<TActor> actors = [];
+
+    public void Add(TActor actor)
+    {
+        Add(actor, World.NextID++);
+    }
+
+    public void Add(TActor actor, int id)
+    {
+        actors.Add(actor);
+        World.NetworkMap.Register(actor, id);
+    }
+
+    public void AddRange(ReadOnlySpan<TActor> actor)
+    {
+        actors.AddRange(actor);
+    }
+
+    public void Tick()
+    {
+        for (int i = 0; i < actors.Count; i++)
+        {
+            actors[i].Tick();
+
+            if (actors[i] is IDestructable destructable && destructable.IsDestroyed)
+            {
+                actors.RemoveAt(i);
+                i--;
+            }
+        }
+    }
+
+    public void Update(float tickProgress)
+    {
+        for (int i = 0; i < actors.Count; i++)
+        {
+            actors[i].Update(tickProgress);
+        }
+    }
+
+    public void Render(ICanvas canvas)
+    {
+        foreach (var actor in actors)
+        {
+            canvas.PushState();
+            actor.TweenedTransform.ApplyTo(canvas);
+            actor.Render(canvas);
+            canvas.PopState();
+        }
+    }
+
+    public uint ComputeCRC(uint crc)
+    {
+        foreach (var actor in actors)
+        {
+            crc = actor.ComputeCRC(crc);
+        }
+        return crc;
+    }
+
+    public IEnumerator<TActor> GetEnumerator()
+    {
+        return ((IEnumerable<TActor>)actors).GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return ((IEnumerable)actors).GetEnumerator();
+    }
 }

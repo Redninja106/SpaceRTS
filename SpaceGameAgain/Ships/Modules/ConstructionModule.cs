@@ -13,13 +13,13 @@ internal class ConstructionModule(Ship ship) : Module(ship)
     {
         return [
             new Label("buildings", 16, Alignment.Center),
-            BuildButton(World.Structures.ChaingunTurret),
-            BuildButton(World.Structures.MissileTurret),
-            BuildButton(World.Structures.Generator),
-            BuildButton(World.Structures.Manufactory),
-            BuildButton(World.Structures.Headquarters),
-            BuildButton(World.Structures.Shipyard),
-            BuildButton(World.Structures.ParticleAccelerator),
+            BuildButton(StructureList.ChaingunTurret),
+            BuildButton(StructureList.MissileTurret),
+            BuildButton(StructureList.Generator),
+            BuildButton(StructureList.Manufactory),
+            BuildButton(StructureList.Headquarters),
+            BuildButton(StructureList.Shipyard),
+            BuildButton(StructureList.ParticleAccelerator),
         ];
 
         TextButton BuildButton(Structure structure)

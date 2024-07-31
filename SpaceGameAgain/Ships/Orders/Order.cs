@@ -24,18 +24,18 @@ internal abstract class Order
         {
             if (Angle.Distance(ship.Transform.Rotation, Angle.FromVector(delta)) > 0f)
             {
-                ship.Transform.Rotation = Angle.Step(ship.Transform.Rotation, Angle.FromVector(delta), MathF.Tau * Time.DeltaTime);
+                ship.Transform.Rotation = Angle.Step(ship.Transform.Rotation, Angle.FromVector(delta), MathF.Tau * Program.TickDelta);
                 if (Angle.Distance(ship.Transform.Rotation, Angle.FromVector(delta)) > .01f)
                     return false;
             }
 
-            ship.Transform.Position = Util.Step(ship.Transform.Position, targetPosition, ship.speed * Time.DeltaTime);
+            ship.Transform.Position = Util.Step(ship.Transform.Position, targetPosition, ship.speed * Program.TickDelta);
             return false;
         }
 
         if (targetRotation != null && Angle.Distance(ship.Transform.Rotation, targetRotation.Value) > 0f)
         {
-            ship.Transform.Rotation = Angle.Step(ship.Transform.Rotation, targetRotation.Value, MathF.Tau * Time.DeltaTime);
+            ship.Transform.Rotation = Angle.Step(ship.Transform.Rotation, targetRotation.Value, MathF.Tau * Program.TickDelta);
             return false;
         }
 

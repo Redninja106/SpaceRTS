@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 namespace SpaceGame.Planets;
 internal class Planet : Actor
 {
-    public float Radius { get; init; } = 26;
-    public Color Color { get; init; }
+    public float Radius { get; set; } = 26;
+    public Color Color { get; set; }
 
     public Orbit? Orbit 
     { 
@@ -20,13 +20,16 @@ internal class Planet : Actor
         }
         set
         {
-            value?.Tick(this, 0);
-            SphereOfInfluence.lastPosition = this.Transform.Position;
+            if (value != null)
+            {
+                value?.Tick(this, 0);
+                SphereOfInfluence.lastPosition = this.Transform.Position;
+            }
             this.orbit = value;
         }
     }
 
-    public Grid Grid { get; }
+    public Grid Grid { get; private set; }
 
     public SphereOfInfluence SphereOfInfluence { get; }
 
@@ -34,8 +37,9 @@ internal class Planet : Actor
 
     public Planet()
     {
-        Grid = new(this);
         SphereOfInfluence = new(this);
+        Grid = new(this);
+        World.Grids.Add(Grid);
     }
 
     public override void Update(float tickProgress)
@@ -61,6 +65,37 @@ internal class Planet : Actor
 
     public void TickOrbit()
     {
-        Orbit?.Tick(this, Time.DeltaTime);
+        Orbit?.Tick(this, Program.TickDelta);
+    }
+
+    public override void Load(Stream stream)
+    {
+        base.Load(stream);
+        Radius = stream.ReadValue<float>();
+        Color = stream.ReadValue<Color>();
+        SphereOfInfluence.Load(stream);
+        bool hasOrbit = stream.ReadValue<bool>();
+        if (hasOrbit)
+        {
+            orbit = new();
+            orbit.Load(stream);
+        }
+
+        Grid.Load(stream);
+    }
+
+    public override void Save(Stream stream)
+    {
+        base.Save(stream);
+        stream.WriteValue(Radius);
+        stream.WriteValue(Color);
+        
+        SphereOfInfluence.Save(stream);
+
+        bool hasOrbit = orbit != null;
+        stream.WriteValue(hasOrbit);
+        Orbit?.Save(stream);
+        
+        Grid.Save(stream);
     }
 }

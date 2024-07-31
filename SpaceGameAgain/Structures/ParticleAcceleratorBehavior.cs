@@ -16,7 +16,7 @@ internal class ParticleAcceleratorBehavior : StructureBehavior
     {
     }
 
-    public override void Update()
+    public override void Tick()
     {
     }
 }

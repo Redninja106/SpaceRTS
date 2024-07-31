@@ -25,10 +25,12 @@ internal class ChaingunRound : Actor, IDestructable
         this.sphereOfInfluence = sphereOfInfluence;
     }
 
-    public override void Update(float tickProgress)
+    public override void Tick()
     {
+        base.Tick();
+
         sphereOfInfluence?.ApplyTo(ref this.Transform);
-        Transform.Position += Transform.Forward * speed * Time.DeltaTime;
+        Transform.Position += Transform.Forward * speed * Program.TickDelta;
 
         Rectangle bounds = new(0, 0, .1f, .015f, Alignment.Center);
         if (bounds.ContainsPoint(Transform.WorldToLocal(target.Transform.Position)))
@@ -36,12 +38,7 @@ internal class ChaingunRound : Actor, IDestructable
             target.Detonate();
         }
 
-        // if (Vector2.Distance(Transform.Position, target.Transform.Position) < 0.015f)
-        // {
-        //     target.Detonate();
-        // }
-
-        age += Time.DeltaTime;
+        age += Program.TickDelta;
     }
 
     public override void Render(ICanvas canvas)

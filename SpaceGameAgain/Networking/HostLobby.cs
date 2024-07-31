@@ -10,6 +10,7 @@ internal class HostLobby
 {
     public readonly NetworkHost network;
     private Dictionary<int, string> players = [];
+    private int masterPlayer;
 
     public HostLobby(NetworkHost network)
     {
@@ -31,17 +32,23 @@ internal class HostLobby
         network.Update();
         if (network.ReceivePacket(out HelloPacket? packet, out int playerId))
         {
+            if (players.Count == 0)
+            {
+                masterPlayer = playerId;
+            }
+
             network.SendPacket(playerId, new WelcomePacket()
             {
                 ClientID = playerId,
                 OtherPlayers = players.Select(kv => new WelcomePacket.PlayerInfo(kv.Key, kv.Value)).ToArray()
             });
 
-            NewPlayerPacket newPlayerPacket = new NewPlayerPacket()
+            NewPlayerPacket newPlayerPacket = new()
             {
                 ID = playerId,
                 Name = packet.PlayerName,
             };
+
             foreach (var (id, name) in players)
             {
                 network.SendPacket(id, newPlayerPacket);
@@ -49,7 +56,6 @@ internal class HostLobby
 
             players.Add(playerId, packet.PlayerName);
         }
-
 
         if (network.ReceivePacket(out CommandListPacket? cmdPacket, out int cmdId))
         {

@@ -65,15 +65,15 @@ internal class MissileSystem(UnitBase unit)
             MissilesRemaining = SalvoSize;
         }
 
-        timeSinceMissile += Time.DeltaTime;
+        timeSinceMissile += Program.TickDelta;
     }
 
     private void Fire(UnitBase target)
     {
         World.Missiles.Add(new Missile(
-            unit.Transform.Rotated((Random.Shared.NextSingle() - .5f) * MathF.PI / 10f),
+            unit.Transform.Rotated(0 * (Random.Shared.NextSingle() - .5f) * MathF.PI / 10f),
             target,
-            Random.Shared.NextUnitVector2() * Random.Shared.NextSingle() * 1.5f,
+            0 * Random.Shared.NextUnitVector2() * Random.Shared.NextSingle() * 1.5f,
             4,
             4
             ));

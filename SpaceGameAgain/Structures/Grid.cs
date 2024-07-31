@@ -1,4 +1,5 @@
-﻿using SpaceGame.Teams;
+﻿using SpaceGame.Serialization;
+using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
-internal class Grid : Actor
+internal class Grid : Actor, ISavable
 {
     public static Vector2[] hexagon = [
         Angle.ToVector(0 * MathF.Tau / 6),
@@ -144,6 +145,8 @@ internal class Grid : Actor
             var cellLocation = location + footprintPart.Rotated(rotation);
             GetCell(cellLocation)!.Structure = instance;
         }
+
+        World.StructureInstances.Add(instance);
     }
 
     public GridCell? GetCellFromPoint(Vector2 point, Transform transform)
@@ -179,6 +182,51 @@ internal class Grid : Actor
             {
                 cell.Structure = null;
             }
+        }
+    }
+
+    public override void Tick()
+    {
+    }
+
+    public void Save(Stream stream)
+    {
+        stream.WriteValue(cells.Count);
+        foreach (var cell in this.cells)
+        {
+            stream.WriteValue(cell.Key);
+        }
+
+        stream.WriteValue(structures.Count);
+        foreach (var structure in structures)
+        {
+            stream.WriteValue(structure.Location);
+            stream.WriteValue(structure.Rotation);
+            stream.WriteValue(World.NetworkMap.GetID(structure.Team));
+            stream.WriteValue(Registries.Structures.GetID(structure.Structure));
+        }
+    }
+
+    public void Load(Stream stream)
+    {
+        cells.Clear();
+        int cellCount = stream.ReadValue<int>();
+        for (int i = 0; i < cellCount; i++)
+        {
+            var loc = stream.ReadValue<HexCoordinate>();
+            AddCell(loc);
+        }
+
+        structures.Clear();
+        var structureCount = stream.ReadValue<int>();
+        for (int i = 0; i < structureCount; i++)
+        {
+            HexCoordinate loc = stream.ReadValue<HexCoordinate>();
+            int rotation = stream.ReadValue<int>();
+            Team team = (Team)World.NetworkMap.GetActor(stream.ReadValue<int>());
+            Structure structure = Registries.Structures.Get(stream.ReadValue<int>());
+
+            this.PlaceStructure(structure, loc, rotation, team);
         }
     }
 }

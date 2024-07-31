@@ -51,7 +51,7 @@ internal class ChaingunSystem(UnitBase unit)
                 Vector2 position = target.Transform.Position;
                 Vector2 velocity = target.Velocity;
                 Vector2 acceleration = target.CurrentAcceleration;
-                Vector2 jerk = (target.CurrentAcceleration - target.LastAcceleration) / Time.DeltaTime;
+                Vector2 jerk = (target.CurrentAcceleration - target.LastAcceleration) / Program.TickDelta;
 
                 for (int i = 0; i < 8; i++)
                 {
@@ -59,11 +59,11 @@ internal class ChaingunSystem(UnitBase unit)
                 }
 
                 float targetAngle = Angle.FromVector(targetPos - unit.Transform.Position);
-                angle = Angle.Step(angle, targetAngle, turnSpeed * Time.DeltaTime);
+                angle = Angle.Step(angle, targetAngle, turnSpeed * Program.TickDelta);
                 if (Angle.Distance(angle, targetAngle) < 0.05f)
                 {
                     var soi = World.GetSphereOfInfluence(unit.Transform.Position);
-                    var transform = unit.Transform with { Rotation = Angle.FromVector(targetPos - unit.Transform.Position) + .01f * MathF.Sin(Time.TotalTime * 50) };
+                    var transform = unit.Transform with { Rotation = Angle.FromVector(targetPos - unit.Transform.Position) + .01f * MathF.Sin(Program.TickDelta * 50) };
                     World.ChaingunRounds.Add(new ChaingunRound(transform, target, soi, speed, range / speed));
 
                     timeSinceShot = 0;
@@ -77,7 +77,7 @@ internal class ChaingunSystem(UnitBase unit)
             ammo = ammoCapacity;
         }
 
-        timeSinceShot += Time.DeltaTime;
+        timeSinceShot += Program.TickDelta;
     }
 
     public void RenderSelected(ICanvas canvas)

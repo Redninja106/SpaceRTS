@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 namespace SpaceGame.Networking;
 internal class NetworkMap
 {
-    private Dictionary<int, Actor> map = [];
+    private Dictionary<int, Actor> actorMap = [];
+    private Dictionary<Actor, int> idMap = [];
 
     public NetworkMap()
     {
@@ -16,11 +17,31 @@ internal class NetworkMap
 
     public Actor GetActor(int id)
     {
-        return map[id];
+        return actorMap[id];
+    }
+    public int GetID(Actor actor)
+    {
+        return idMap[actor];
     }
 
-    public void Register(int id, Actor actor)
+    public void Register(Actor actor, int id)
     {
-        map.Add(id, actor);
+        actorMap.Add(id, actor);
+        idMap.Add(actor, id);
     }
+
+    public void Remove(Actor actor)
+    {
+        if (idMap.Remove(actor, out int index))
+        {
+            actorMap.Remove(index);
+        }
+    }
+
+    public void Clear()
+    {
+        actorMap.Clear();
+        idMap.Clear();
+    }
+
 }

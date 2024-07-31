@@ -11,7 +11,8 @@ internal class ClientLobby
     public readonly NetworkClient network;
     public Dictionary<int, string> players = [];
     public int ClientID;
-
+    public bool IsMaster;
+    
     public ClientLobby(NetworkClient network)
     {
         this.network = network;
@@ -25,6 +26,7 @@ internal class ClientLobby
         if (network.ReceivePacket(out WelcomePacket? welcomePacket))
         {
             ClientID = welcomePacket.ClientID;
+            IsMaster = welcomePacket.IsMaster;
             players.Add(welcomePacket.ClientID, "jerry");
 
             foreach (var otherPlayer in welcomePacket.OtherPlayers)

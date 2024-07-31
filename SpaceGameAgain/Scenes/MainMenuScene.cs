@@ -83,6 +83,7 @@ class StartMenu : Menu
     {
         Program.SwitchScenes(() => new GameScene());
     }
+
     private void OnHostGame()
     {
         scene.SwitchMenus(() => 

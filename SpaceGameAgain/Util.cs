@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -301,6 +302,34 @@ internal static class Util
         }
     }
 
+    public static unsafe void WriteValue<T>(this Stream stream, T value) where T : unmanaged
+    {
+        stream.Write(new Span<byte>(Unsafe.AsPointer(ref value), Unsafe.SizeOf<T>()));
+    }
+
+    public static unsafe T ReadValue<T>(this Stream stream) where T : unmanaged
+    {
+        T result = default;
+        var span = new Span<byte>(Unsafe.AsPointer(ref result), Unsafe.SizeOf<T>());
+        stream.Read(span);
+        return result;
+    }
+
+    public static unsafe void WriteString(this Stream stream, string str)
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes(str);
+        stream.WriteValue(bytes.Length);
+        stream.Write(bytes);
+    }
+
+    public static unsafe string ReadString(this Stream stream)
+    {
+        var length = stream.ReadValue<int>();
+        byte[] bytes = new byte[length];
+        stream.Read(bytes);
+        return Encoding.UTF8.GetString(bytes);
+    }
+
     public static unsafe void DrawTriangles(this ICanvas canvas, ReadOnlySpan<Vector2> triangles)
     {
         var skcanvas = SkiaInterop.GetCanvas(canvas);
@@ -321,4 +350,24 @@ internal static class Util
     private static unsafe extern void sk_canvas_draw_vertices(nint canvas, nint vertices, SKBlendMode mode, nint paint);
     [DllImport("libSkiaSharp")]
     private static unsafe extern void sk_vertices_unref(nint cvertices);
+
+    // https://stackoverflow.com/questions/27939882/fast-crc-algorithm
+    public static uint CRC(uint crc, ReadOnlySpan<byte> data)
+    {
+        const uint poly = 0x82f63b78;
+        for (int i = 0; i < data.Length; i++)
+        {
+            crc ^= data[i];
+            for (int k = 0; k < 8; k++)
+                crc = (crc & 1u) == 0 ? (crc >> 1) ^ poly : crc >> 1;
+        }
+        return crc;
+    }
+
+    public static uint CRC<T>(uint crc, T value)
+        where T : unmanaged
+    {
+        return CRC(crc, MemoryMarshal.AsBytes(new ReadOnlySpan<T>(ref value)));
+    }
+
 }

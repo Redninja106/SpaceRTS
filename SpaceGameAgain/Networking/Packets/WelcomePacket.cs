@@ -10,6 +10,7 @@ namespace SpaceGame.Networking.Packets;
 internal class WelcomePacket : Packet
 {
     public int ClientID;
+    public bool IsMaster;
     public PlayerInfo[] OtherPlayers;
 
     public class PlayerInfo
