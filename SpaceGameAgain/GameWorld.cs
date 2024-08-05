@@ -138,7 +138,6 @@ internal class GameWorld
         RenderActorList(ChaingunRounds, canvas);
         RenderActorList(Missiles, canvas);
         RenderActorList(Asteroids, canvas);
-        canvas.Flush();
         CurrentInteractionContext ??= SelectInteractionContext;
         CurrentInteractionContext.Render(canvas, leftMouse, rightMouse);
     }

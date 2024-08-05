@@ -8,6 +8,11 @@
     <RootNamespace>SpaceGame</RootNamespace>
 	  <PublishNativeAOT>true</PublishNativeAOT>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Redninja106\simulationframework\src\SimulationFramework.Desktop\SimulationFramework.Desktop.csproj" />
+    <ProjectReference Include="..\..\Redninja106\simulationframework\src\SimulationFramework\SimulationFramework.csproj" />
+  </ItemGroup>
 	
 	<ItemGroup>
 		<TrimmerRootAssembly Include="SpaceGameAgain" />

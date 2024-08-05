@@ -5,6 +5,12 @@ VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpaceGameAgain", "SpaceGameAgain\SpaceGameAgain.csproj", "{A704279C-1A80-47A1-AA43-FE908A63F0AD}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulationFramework", "..\Redninja106\simulationframework\src\SimulationFramework\SimulationFramework.csproj", "{698A77DD-843C-4525-A803-5914FC18CB90}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulationFramework.OpenGL", "..\Redninja106\simulationframework\src\SimulationFramework.OpenGL\SimulationFramework.OpenGL.csproj", "{06F024DC-15B8-45E5-99A0-55E88EC11842}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulationFramework.Desktop", "..\Redninja106\simulationframework\src\SimulationFramework.Desktop\SimulationFramework.Desktop.csproj", "{B99E467B-D573-46E0-9460-571B9812CF91}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +21,18 @@ Global
 		{A704279C-1A80-47A1-AA43-FE908A63F0AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A704279C-1A80-47A1-AA43-FE908A63F0AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A704279C-1A80-47A1-AA43-FE908A63F0AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{698A77DD-843C-4525-A803-5914FC18CB90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{698A77DD-843C-4525-A803-5914FC18CB90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{698A77DD-843C-4525-A803-5914FC18CB90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{698A77DD-843C-4525-A803-5914FC18CB90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06F024DC-15B8-45E5-99A0-55E88EC11842}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06F024DC-15B8-45E5-99A0-55E88EC11842}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06F024DC-15B8-45E5-99A0-55E88EC11842}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06F024DC-15B8-45E5-99A0-55E88EC11842}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B99E467B-D573-46E0-9460-571B9812CF91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B99E467B-D573-46E0-9460-571B9812CF91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B99E467B-D573-46E0-9460-571B9812CF91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B99E467B-D573-46E0-9460-571B9812CF91}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

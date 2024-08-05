@@ -117,6 +117,8 @@ partial class Program : Simulation
 
     public override void OnRender(ICanvas canvas)
     {
+        Window.Title = "SpaceGame - " + Performance.Framerate;
+
         float vpScaleY = canvas.Height / (float)view.Height;
         float vpScaleX = (canvas.Width - (World.LeftSidebar.MinWidth + World.RightSidebar.MinWidth)) / (float)view.Width;
 
