@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Redninja106\simulationframework\src\SimulationFramework.Desktop\SimulationFramework.Desktop.csproj" />
-    <ProjectReference Include="..\..\Redninja106\simulationframework\src\SimulationFramework\SimulationFramework.csproj" />
+    <PackageReference Include="SimulationFramework" Version="0.3.0-alpha.3" />
+    <PackageReference Include="SimulationFramework.Desktop" Version="0.3.0-alpha.3" />
   </ItemGroup>
 	
 	<ItemGroup>
