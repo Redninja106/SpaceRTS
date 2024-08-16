@@ -1,4 +1,5 @@
 ﻿using SpaceGame.Ships;
+using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,6 +44,7 @@ internal class SphereOfInfluence
 
     public void Render(ICanvas canvas)
     {
+        canvas.Fill(Color.White);
         canvas.Stroke(Color.White with { A = 100 });
         canvas.DrawCircle(0, 0, Radius);
     }

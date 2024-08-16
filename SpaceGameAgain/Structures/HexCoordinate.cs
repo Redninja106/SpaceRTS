@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimulationFramework.Drawing.Shaders;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -48,14 +49,14 @@ struct HexCoordinate : IEquatable<HexCoordinate>
         float r = -(1f / 3f) * cartesian.X + MathF.Sqrt(3f) / 3f * cartesian.Y;
         float s = -q - r;
 
-        int qi = (int)Math.Round(q);
-        int ri = (int)Math.Round(r);
-        int si = (int)Math.Round(s);
+        int qi = (int)MathF.Round(q);
+        int ri = (int)MathF.Round(r);
+        int si = (int)MathF.Round(s);
         float q_diff = MathF.Abs(qi - q);
         float r_diff = MathF.Abs(ri - r);
         float s_diff = MathF.Abs(si - s);
 
-        if (q_diff > r_diff && q_diff > s_diff)
+        if (And(q_diff > r_diff, q_diff > s_diff))
         {
             qi = -ri - si;
         }
@@ -65,6 +66,11 @@ struct HexCoordinate : IEquatable<HexCoordinate>
         }
 
         return new(qi, ri);
+    }
+
+    private static bool And(bool a, bool b)
+    {
+        return a && b;
     }
 
     public readonly bool Equals(HexCoordinate other)
