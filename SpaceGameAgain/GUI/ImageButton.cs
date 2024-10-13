@@ -5,20 +5,23 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.GUI;
-internal class TextButton : Element
+internal class ImageButton : Element
 {
-    public string Text;
     public Action? click;
     public bool hovered;
     public bool pressed;
     public bool clicked;
+    public ITexture texture;
+    public float width, height;
 
     public bool FitContainer { get; set; } = false;
 
-    public TextButton(string text, Action? click = null)
+    public ImageButton(ITexture texture, float width, float height, Action? click = null)
     {
-        this.Text = text;
+        this.texture = texture;
         this.click = click;
+        this.width = width;
+        this.height = height;
     }
 
     public override void Render(ICanvas canvas)
@@ -32,8 +35,7 @@ internal class TextButton : Element
             canvas.PushState();
         }
         canvas.DrawRect(0, 0, Width, Height);
-        canvas.Fill(ForegroundColor);
-        DrawShadowedText(canvas, Text, TextSize, new(Margin));
+        canvas.DrawTexture(texture, 0, 0, Width, Height);
         if (pressed)
         {
             canvas.PopState();
@@ -42,12 +44,7 @@ internal class TextButton : Element
 
     public override void UpdateSize(float containerWidth, float containerHeight)
     {
-        (Width, Height) = Program.font.MeasureText(Text, TextSize).Size + new Vector2(2 * Margin);
-
-        if (FitContainer)
-        {
-            Width = containerWidth;
-        }
+        (Width, Height) = new Vector2(width + 2 * Margin, height + 2 * Margin);
     }
 
     public override void Update(float locationX, float locationY)

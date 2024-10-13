@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 namespace SpaceGame.GUI;
 internal abstract class Element
 {
-    public const float DefaultMargin = 6;
+    public const float DefaultMargin = 3;
     public const float Border = 6;
-    public const float TextSize = 16;
+    public const float TextSize = 12;
+    public const int ShadowOffset = 1;
     public static readonly Color ForegroundColor = Color.FromHSV(0, 0, .85f);
     public static readonly Color ShadowColor = Color.FromHSV(0, 0, .05f);
     public static readonly Color BackgroundColor = Color.FromHSV(0, 0, .15f);
@@ -25,15 +26,16 @@ internal abstract class Element
     }
     public abstract void Render(ICanvas canvas);
 
-    public static void DrawShadowedText(ICanvas canvas, string text, float size, Vector2 position, Alignment alignment = Alignment.TopLeft)
+    public static Vector2 DrawShadowedText(ICanvas canvas, string text, float size, Vector2 position, TextStyle style = TextStyle.Regular)
     {
-        const float offset = 1f/16f;
+        const float offset = ShadowOffset / 16f;
 
+        canvas.Translate(0, size - Element.DefaultMargin);
         canvas.Translate(new(size * offset));
         canvas.Fill(ShadowColor);
-        canvas.DrawAlignedText(text, size, position, alignment);
+        canvas.DrawText(text, size, position, style);
         canvas.Translate(new(-size * offset));
         canvas.Fill(ForegroundColor);
-        canvas.DrawAlignedText(text, size, position, alignment);
+        return canvas.DrawText(text, size, position, style);
     }
 }

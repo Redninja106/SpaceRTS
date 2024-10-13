@@ -15,6 +15,7 @@ internal class Team
     private Dictionary<Team, TeamRelation> relationships = [];
 
     public int Materials = 10000;
+    public int ZoneSizeLimit = 3;
 
     public Team()
     {

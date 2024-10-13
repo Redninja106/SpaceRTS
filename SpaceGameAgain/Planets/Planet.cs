@@ -5,6 +5,7 @@ using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -59,7 +60,6 @@ internal class Planet : Actor
 
     public override void Render(ICanvas canvas)
     {
-        ShaderCompiler.DumpShaders = true;
         canvas.Fill(shader);
         canvas.DrawCircle(0, 0, Radius);
         
@@ -81,12 +81,18 @@ class PlanetShader : CanvasShader
     {
         HexCoordinate hexCoord = HexCoordinate.FromCartesian(position);
 
-        float jitter = MathF.Sin(1235.2634f * (hexCoord.Q * (hexCoord.R << 4) * hexCoord.S));
-        
+        float jitter = noise(new(hexCoord.Q, hexCoord.R));
+
         ColorF color = this.color;
         color.R += jitter * 0.02f;
         color.G += jitter * 0.02f;
         color.B += jitter * 0.02f;
         return color;
+    }
+
+    float noise(Vector2 uv)
+    {
+        Vector2 noise = new(ShaderIntrinsics.Fract(ShaderIntrinsics.Sin(Vector2.Dot(uv, new Vector2(12.9898f, 78.233f) * 2.0f)) * 43758.5453f));
+        return MathF.Abs(noise.X + noise.Y) * 0.5f;
     }
 }

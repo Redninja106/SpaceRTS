@@ -36,6 +36,7 @@ internal class GameWorld
     public Camera Camera { get; set; }
     
     public Team PlayerTeam { get; set; }
+    public Team NeutralTeam { get; set; }
 
     public Sidebar LeftSidebar;
     public Sidebar RightSidebar;
@@ -57,6 +58,20 @@ internal class GameWorld
     public MouseState rightMouse = new(MouseButton.Right);
 
     public StructureList Structures { get; } = new();
+
+    public IMask WorldShadowMask { get; private set; }
+    public ElementWindow InfoWindow { get; set; } = new()
+    {
+        Anchor = Alignment.BottomRight,
+        Width = 240,
+        Height = 120,
+    }; 
+    public ElementWindow MapWindow { get; set; } = new()
+    {
+        Anchor = Alignment.BottomLeft,
+        Width = 240,
+        Height = 120,
+    };
 
     public GameWorld()
     {
@@ -98,6 +113,14 @@ internal class GameWorld
 
     public void Render(ICanvas canvas)
     {
+        if (WorldShadowMask is null || WorldShadowMask.Width != canvas.Width)
+        {
+            WorldShadowMask?.Dispose();
+            WorldShadowMask = Graphics.CreateMask(canvas.Width, canvas.Height);
+        }
+
+        WorldShadowMask.Clear(true);
+
         RenderActorList(Planets, canvas);
         RenderActorList(Stations, canvas);
 
@@ -112,27 +135,11 @@ internal class GameWorld
         foreach (var ship in Ships)
         {
             canvas.PushState();
+            canvas.Mask(WorldShadowMask);
+            canvas.WriteMask(WorldShadowMask, false);
             ship.RenderShadow(canvas, 0);
             canvas.PopState();
         }
-
-        // foreach (var ship in Ships)
-        // {
-        //     canvas.PushState();
-        //     ship.RenderShadow(canvas, .2f);
-
-        //     // ideas for shadow rendering using stencil buffer?
-        // var gl = GL.GetApi(Application.GetComponent<DesktopPlatform>().Window);
-        //     // rendering shadows
-        // gl.StencilFunc(StencilFunction.Notequal, /*layer*/2, 0xFF);
-        // gl.StencilOp(StencilOp.Keep, StencilOp.Replace, StencilOp.Replace);
-        //     // rendering buildings
-        //     gl.StencilFunc(StencilFunction.Less, /*layer*/2, 0x7F);
-        //     gl.StencilOp(StencilOp.Keep, StencilOp.Replace, StencilOp.Replace);
-
-
-        //     canvas.PopState();
-        // }
 
         RenderActorList(Ships, canvas);
         RenderActorList(ChaingunRounds, canvas);

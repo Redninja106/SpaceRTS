@@ -9,22 +9,33 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships.Modules;
 internal class ConstructionModule(Ship ship) : Module(ship)
 {
+    static ITexture defensive = Graphics.LoadTexture("./Assets/Icons/defensive.png");
+    static ITexture industrial = Graphics.LoadTexture("./Assets/Icons/industrial.png");
+    static ITexture economic = Graphics.LoadTexture("./Assets/Icons/economic.png");
+    static ITexture research = Graphics.LoadTexture("./Assets/Icons/research.png");
+
+    static ConstructionModule()
+    {
+        defensive.Filter = TextureFilter.Point;
+        industrial.Filter = TextureFilter.Point;
+        economic.Filter = TextureFilter.Point;
+        research.Filter = TextureFilter.Point;
+    }
+
     public override Element[] BuildGUI()
     {
         return [
-            new Label("buildings", 16, Alignment.Center),
-            BuildButton(World.Structures.ChaingunTurret),
-            BuildButton(World.Structures.MissileTurret),
-            BuildButton(World.Structures.Generator),
-            BuildButton(World.Structures.Manufactory),
-            BuildButton(World.Structures.Headquarters),
-            BuildButton(World.Structures.Shipyard),
-            BuildButton(World.Structures.ParticleAccelerator),
+            new ElementRow([
+                BuildButton(defensive, World.Structures.DefensiveZone),
+                BuildButton(industrial, World.Structures.IndustrialZone),
+                BuildButton(economic, World.Structures.EconomicZone),
+                BuildButton(research, World.Structures.ResearchZone),
+            ]),
         ];
 
-        TextButton BuildButton(Structure structure)
+        ImageButton BuildButton(ITexture texture, Structure structure)
         {
-            return new TextButton($"{structure.Name} | {structure.Price}m", () => 
+            return new ImageButton(texture, 16, 16, () => 
             {
                 if (Ship.Team.Materials >= structure.Price)
                 {

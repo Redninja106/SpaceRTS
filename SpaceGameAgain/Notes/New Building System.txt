@@ -1,0 +1,15 @@
+NEW BUILDING SYSTEM
+
+- buildings become more abstract (sort of zoning)
+
+- zones:
+  - zones are 1x1 an can be placed in chunks
+  - chunks with certain shapes can be ungraded into buildings
+  - chunks have a size limit for progression (lock powerful buildings behind large platforms)
+  - synergies to encourage thought about planet layout (ie economic/idustrial adjacency bonuses)
+
+- types of zones:
+  - industrial (upgrades to shipyards + more)
+  - scientific (expands zone size limit, superweapon access, buildings that grant bonuses, etc)
+  - economic (produces money & power, can specialize with buildings)
+  - defensive (turrets etc)

@@ -33,14 +33,15 @@ internal class SelectionHandler
     {
         return selected.Contains(selectable);
     }
-    
+
     private void UpdateGUI()
     {
+        var stack = World.InfoWindow.Stack;
         if (selected.Count is 0)
         {
-            World.RightSidebar.Stack.Clear();
-            World.RightSidebar.Stack.AddRange([
-                new Label("--- nothing selected ---", 16, Alignment.Center),
+            stack.Clear();
+            stack.AddRange([
+                new Label("--- nothing selected ---", 12, Alignment.Center),
             ]);
         }
         else if (selected.Count is 1)
@@ -48,36 +49,27 @@ internal class SelectionHandler
             var singleSelected = selected.Single();
             if (singleSelected is Ship ship)
             {
-                World.RightSidebar.Stack.Clear();
-                World.RightSidebar.Stack.AddRange([
-                    new Label("SHIP", 32, Alignment.Center),
+                stack.Clear();
+                stack.AddRange([
+                    new Label("SHIP", 16, Alignment.CenterLeft),
+                    new Label("status: operational", 12, Alignment.CenterLeft),
                     new Separator(),
-
-                    new Label("status: operational", 16, Alignment.Center),
-                    new Gap(48),
-
-                    new Label("MODULES", 24, Alignment.Center),
-                    new Separator(),
-                ]);
+                ]); 
+                
                 foreach (var module in ship.modules)
                 {
-                    World.RightSidebar.Stack.AddRange(module.BuildGUI());
-                }
-                if (ship.modules.Count is 0)
-                {
-                    World.RightSidebar.Stack.Add(new Label("--- none ---", 16, Alignment.Center));
+                    stack.AddRange(module.BuildGUI());
                 }
             }
             else if (singleSelected is StructureInstance structureInstance)
             {
-                World.RightSidebar.Stack.Clear();
-                World.RightSidebar.Stack.AddRange([
-                    new Label(structureInstance.Structure.Title, 32, Alignment.Center),
+                stack.Clear();
+                stack.AddRange([
+                    new Label(structureInstance.Structure.Title, 16, Alignment.CenterLeft),
+                    new Label("status: operational", 12, Alignment.CenterLeft),
                     new Separator(),
-
-                    new Label("status: operational", 16, Alignment.Center),
-
-                    ..(structureInstance.Behavior?.SelectGUI ?? [])
+                     
+                    .. (structureInstance.Behavior?.SelectGUI ?? [])
                 ]);
             }
             else
@@ -87,8 +79,8 @@ internal class SelectionHandler
         }
         else
         {
-            World.RightSidebar.Stack.Clear();
-            World.RightSidebar.Stack.AddRange([
+            stack.Clear();
+            stack.AddRange([
                 new Label("Selected Units", 32),
                 new Separator(),
                 new ElementStack(

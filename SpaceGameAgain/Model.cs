@@ -26,7 +26,9 @@ internal class Model
     {
         foreach (var shape in Shapes)
         {
+            canvas.PushState();
             shape.Render(canvas, parameters);
+            canvas.PopState();
         }
     }
 
@@ -34,7 +36,9 @@ internal class Model
     {
         foreach (var shape in Shapes)
         {
+            canvas.PushState();
             shape.RenderShadow(canvas, offset, Color.Black with { A = 100 });
+            canvas.PopState();
         }
     }
 
@@ -72,15 +76,20 @@ internal class PolygonShape : Shape
 {
     public Vector2[] Vertices;
     public Color Color;
+    public float height;
 
-    public PolygonShape(Vector2[] vertices, Color color)
+    public PolygonShape(Vector2[] vertices, Color color, float height = 0)
     {
         Vertices = vertices;
         Color = color;
+        this.height = height;
     }
 
     public override void Render(ICanvas canvas, RenderParameters parameters)
     {
+        canvas.Fill(parameters.GetOverriddenColor(Color.Gray));
+        canvas.DrawPolygon(Vertices);
+        canvas.Translate(0, -height);
         canvas.Fill(parameters.GetOverriddenColor(Color));
         canvas.DrawPolygon(Vertices);
     }
@@ -96,11 +105,18 @@ internal class PolygonShape : Shape
         base.RenderShadow(canvas, offset, shadowColor);
     }
 
-    private static void ProjectVerts(Vector2[] verts, Vector2 offset, ref ShadowVertexWriter writer)
+    public static void RenderShadowPolygon(ICanvas canvas, Vector2[] polygon, Vector2 offset)
+    {
+        ShadowVertexWriter writer = new(stackalloc Vector2[polygon.Length * 2]);
+        ProjectVerts(polygon, offset, ref writer);
+        canvas.DrawPolygon(writer.GetBuffer());
+    }
+
+    public static void ProjectVerts(Vector2[] verts, Vector2 offset, ref ShadowVertexWriter writer)
     {
         var offsetAngle = Angle.FromVector(offset);
         int startVertex = 0;
-        while (InShadow(verts, startVertex, offsetAngle))
+        while (startVertex < verts.Length * 2 && InShadow(verts, startVertex, offsetAngle))
         {
             startVertex++;
         }
@@ -146,7 +162,7 @@ internal class PolygonShape : Shape
         return Angle.FromVector(b) - Angle.FromVector(a);
     }
 
-    ref struct ShadowVertexWriter(Span<Vector2> buffer)
+    public ref struct ShadowVertexWriter(Span<Vector2> buffer)
     {
         private int outerPosition = buffer.Length / 2;
         private int innerPosition = buffer.Length / 2 - 1;

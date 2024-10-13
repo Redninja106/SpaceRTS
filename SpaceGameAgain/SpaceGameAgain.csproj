@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SimulationFramework" Version="0.3.0-alpha.3" />
-    <PackageReference Include="SimulationFramework.Desktop" Version="0.3.0-alpha.3" />
+    <PackageReference Include="SimulationFramework" Version="0.3.0-alpha.7" />
+    <PackageReference Include="SimulationFramework.Desktop" Version="0.3.0-alpha.7" />
   </ItemGroup>
 	
 	<ItemGroup>
@@ -23,5 +23,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Assets\Icons\" />
+	</ItemGroup>
 
 </Project>

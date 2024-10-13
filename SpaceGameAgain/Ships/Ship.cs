@@ -18,9 +18,9 @@ namespace SpaceGame.Ships;
 internal class Ship : UnitBase
 {
     public static Vector2[] verts = [
-        new(.5f, 0),
-        new(-.5f, .2f),
-        new(-.5f, -.2f),
+        new(.5f / 2f, 0),
+        new(-.5f / 2f, .2f / 2f),
+        new(-.5f / 2f, -.2f / 2f),
     ];
 
     public Queue<Order> orders = [];
@@ -41,11 +41,20 @@ internal class Ship : UnitBase
         {
             canvas.Stroke(World.PlayerTeam.GetRelationColor(Team));
             canvas.StrokeWidth(0);
-            canvas.DrawCircle(0, 0, MathF.Max(.65f, World.Camera.ScreenDistanceToWorldDistance(2.5f)));
+            canvas.DrawCircle(0, 0, MathF.Max(.65f/2f, World.Camera.ScreenDistanceToWorldDistance(2.5f/2f)));
         }
 
         canvas.Fill(Color.White);
-        canvas.DrawPolygon(verts);
+
+        for (int i = 0; i < 8; i++)
+        {
+            canvas.Rotate(-this.Transform.Rotation);
+            canvas.Translate(0, -.005f);
+            canvas.Rotate(this.Transform.Rotation);
+            canvas.DrawPolygon(verts);
+        }
+
+        canvas.ResetState();
 
         canvas.PopState();
 
@@ -112,8 +121,14 @@ internal class Ship : UnitBase
     {
         canvas.Translate(Transform.Position);
         canvas.Translate(Transform.Position.Normalized() * (height - floorHeight));
-        canvas.Rotate(Transform.Rotation);
         canvas.Fill(Color.Black with { A = 100 });
-        canvas.DrawPolygon(verts);
+
+        for (int i = 0; i < 8; i++)
+        {
+            canvas.Translate(Transform.Position.Normalized() * .005f);
+            canvas.Rotate(Transform.Rotation);
+            canvas.DrawPolygon(verts);
+            canvas.Rotate(-Transform.Rotation);
+        }
     }
 }

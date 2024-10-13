@@ -1,4 +1,5 @@
-﻿ - formations
+﻿ - high precision!
+ - formations
  - combat
    - missiles/chainguns should share targets
  - better camera
@@ -23,7 +24,7 @@
  - manufactories / part requirements
  - enemy AI !!!!!!!
  - win conditions
- - 
+
 
  later on for gameplay:
  - different ship sizes

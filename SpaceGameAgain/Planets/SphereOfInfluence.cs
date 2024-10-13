@@ -45,7 +45,7 @@ internal class SphereOfInfluence
     public void Render(ICanvas canvas)
     {
         canvas.Fill(Color.White);
-        canvas.Stroke(Color.White with { A = 100 });
+        canvas.Stroke(Color.White with { A = 10 });
         canvas.DrawCircle(0, 0, Radius);
     }
 

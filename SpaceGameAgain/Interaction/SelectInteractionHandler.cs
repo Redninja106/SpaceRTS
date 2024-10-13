@@ -114,6 +114,27 @@ internal class SelectInteractionHandler : IInteractionContext
             a.size = 1;
             World.Asteroids.Add(a);
         }
+
+        if (Keyboard.IsKeyDown(Key.Z))
+        {
+            World.ConstructionInteractionContext.BeginPlacing(World.Structures.DefensiveZone);
+            World.CurrentInteractionContext = World.ConstructionInteractionContext;
+        }
+        if (Keyboard.IsKeyDown(Key.X))
+        {
+            World.ConstructionInteractionContext.BeginPlacing(World.Structures.IndustrialZone);
+            World.CurrentInteractionContext = World.ConstructionInteractionContext;
+        }
+        if (Keyboard.IsKeyDown(Key.C))
+        {
+            World.ConstructionInteractionContext.BeginPlacing(World.Structures.ResearchZone);
+            World.CurrentInteractionContext = World.ConstructionInteractionContext;
+        }
+        if (Keyboard.IsKeyDown(Key.V))
+        {
+            World.ConstructionInteractionContext.BeginPlacing(World.Structures.EconomicZone);
+            World.CurrentInteractionContext = World.ConstructionInteractionContext;
+        }
     }
 
     public void Render(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)

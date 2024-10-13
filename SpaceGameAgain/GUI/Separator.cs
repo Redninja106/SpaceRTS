@@ -9,10 +9,10 @@ internal class Separator : Element
 {
     public override void Render(ICanvas canvas)
     {
-        canvas.Fill(ShadowColor);
-        canvas.DrawLine(2, 2, 2+this.Width, 2);
-        canvas.Fill(ForegroundColor);
-        canvas.DrawLine(0, 0, this.Width, 0);
+        canvas.Stroke(ShadowColor);
+        canvas.DrawRect(2, 2, 2 + this.Width, .1f);
+        canvas.Stroke(ForegroundColor);
+        canvas.DrawRect(0, 0, this.Width, .1f);
     }
 
     public override void UpdateSize(float containerWidth, float containerHeight)

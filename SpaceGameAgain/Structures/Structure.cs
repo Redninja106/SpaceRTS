@@ -28,7 +28,7 @@ internal class Structure
         this.Outline = CreateOutline(footprint);
     }
 
-    private Vector2[] CreateOutline(List<HexCoordinate> footprint)
+    public static Vector2[] CreateOutline(List<HexCoordinate> footprint)
     {
         List<Vector2> segments = [];
 
@@ -47,8 +47,8 @@ internal class Structure
         return segments.ToArray();
     }
 
-    public StructureInstance CreateInstance(Grid grid, HexCoordinate location, int rotation, Team team)
+    public StructureInstance CreateInstance(Grid grid, HexCoordinate location, int rotation, Team team, List<HexCoordinate>? footprint)
     {
-        return new StructureInstance(location, rotation, grid, this, team, BehaviorType);
+        return new StructureInstance(location, rotation, grid, this, team, BehaviorType, footprint);
     }
 }

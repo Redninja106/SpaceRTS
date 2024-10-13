@@ -11,11 +11,13 @@ internal class Label : Element
 {
     public string text;
     public float size;
+    private readonly TextStyle textStyle;
 
-    public Label(string text, float size = Element.TextSize, Alignment alignment = Alignment.CenterLeft)
+    public Label(string text, float size = Element.TextSize, Alignment alignment = Alignment.CenterLeft, TextStyle textStyle = TextStyle.Regular)
     {
         this.text = text;
         this.size = size;
+        this.textStyle = textStyle;
         this.Alignment = alignment;
     }
 
@@ -26,6 +28,6 @@ internal class Label : Element
 
     public override void Render(ICanvas canvas)
     {
-        DrawShadowedText(canvas, text, size, Vector2.Zero);
+        DrawShadowedText(canvas, text, size, Vector2.Zero, textStyle);
     }
 }

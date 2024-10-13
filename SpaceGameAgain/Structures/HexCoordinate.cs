@@ -108,6 +108,11 @@ struct HexCoordinate : IEquatable<HexCoordinate>
         return new(a.Q + b.Q, a.R + b.R);
     }
 
+    public static HexCoordinate operator -(HexCoordinate a, HexCoordinate b)
+    {
+        return new(a.Q - b.Q, a.R - b.R);
+    }
+
     public readonly HexCoordinate RotatedLeft()
     {
         return new(-this.S, -this.Q, -this.R);

@@ -1,4 +1,5 @@
-﻿using SpaceGame.Teams;
+﻿using SpaceGame.Stations;
+using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -99,6 +100,8 @@ internal class Grid
             canvas.PushState();
             canvas.Translate(structure.Location.ToCartesian());
             canvas.Rotate(structure.Rotation * (MathF.Tau / 6f));
+            canvas.Mask(World.WorldShadowMask);
+            canvas.WriteMask(World.WorldShadowMask, false);
             structure.RenderShadow(canvas, Vector2.TransformNormal(structure.Transform.Position.Normalized() * .4f, Matrix3x2.CreateRotation(-structure.Rotation * (MathF.Tau / 6f))));
             canvas.PopState();
         }
@@ -134,12 +137,12 @@ internal class Grid
         }
     }
 
-    public void PlaceStructure(Structure structure, HexCoordinate location, int rotation, Team team)
+    public void PlaceStructure(Structure structure, HexCoordinate location, int rotation, Team team, List<HexCoordinate>? footprint = null)
     {
-        var instance = structure.CreateInstance(this, location, rotation, team);
+        var instance = structure.CreateInstance(this, location, rotation, team, footprint);
         structures.Add(instance);
 
-        foreach (var footprintPart in structure.Footprint)
+        foreach (var footprintPart in footprint ?? structure.Footprint)
         {
             var cellLocation = location + footprintPart.Rotated(rotation);
             GetCell(cellLocation)!.Structure = instance;
@@ -180,5 +183,15 @@ internal class Grid
                 cell.Structure = null;
             }
         }
+    }
+
+    internal void RemoveStructure(StructureInstance instance)
+    {
+        RemoveStructureAt(structures.IndexOf(instance));
+    }
+
+    internal void PlaceStructure(Structure resourceNode, HexCoordinate hexCoordinate, int v, object neutralTeam)
+    {
+        throw new NotImplementedException();
     }
 }
