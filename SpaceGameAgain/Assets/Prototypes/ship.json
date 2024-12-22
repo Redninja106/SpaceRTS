@@ -1,0 +1,5 @@
+{
+  "prototype": "ShipPrototype",
+  "name": "ship",
+  "max_health": 3
+}

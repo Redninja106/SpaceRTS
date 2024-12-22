@@ -4,7 +4,7 @@ using SimulationFramework.Drawing;
 using SpaceGame;
 using SpaceGame.Ships;
 using SpaceGame.Planets;
-using SpaceGame.Stations;
+//using SpaceGame.Stations;
 using System.Numerics;
 using SpaceGame.Structures;
 using SpaceGame.GUI;
@@ -23,7 +23,7 @@ partial class Program : Simulation
     ITexture uiView;
     public static IFont font;
     public static Vector2 ViewportMousePosition;
-    const float UIResolutionScale = 1.5f;
+    const float UIResolutionScale = 2f;
 
     public override void OnInitialize()
     {
@@ -31,87 +31,94 @@ partial class Program : Simulation
         // view = Graphics.CreateTexture(640, 480);
         font ??= Graphics.LoadFont("Assets/Fonts/VictorMono-Regular.ttf");
 
+        Prototypes.Load();
+
         World = new();
 
-        var playerTeam = new Team();
-        var enemies = new Team();
-        var neutral = new Team();
+        var playerTeam = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
+        var enemies = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
+        var neutral = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
 
         playerTeam.MakeEnemies(enemies);
 
-        World.Teams.AddRange([playerTeam, enemies, neutral]);
-        World.PlayerTeam = playerTeam;
+        World.Add(playerTeam);
+        World.Add(enemies);
+        World.Add(neutral);
+
+        World.PlayerTeam = playerTeam.AsReference();
         World.NeutralTeam = neutral;
 
-        World.Camera = new FreeCamera();
-
-        World.Ships.Add(new Ship(playerTeam));
+        World.Add(new Ship((ShipPrototype)Prototypes.Get("ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(playerTeam)));
 
         World.Ships[0].modules.Add(new ConstructionModule(World.Ships[0]));
 
-        var sun = new Planet()
+        PlanetPrototype planetProto = Prototypes.Get<PlanetPrototype>("generic_planet");
+
+        var sun = new Planet(planetProto, World.NewID(), Transform.Default)
         {
             Color = Color.Yellow,
             Radius = 50,
         };
 
-        World.Planets.Add(sun);
+        World.Add(sun);
         
-        var planet1 = new Planet()
+        var planet1 = new Planet(planetProto, World.NewID(), Transform.Default)
         {
-            Orbit = new(sun, 500, 0, 0),
+            Orbit = new(((Actor)sun).AsReference(), 500, 0),
             Color = Color.DarkGreen,
             Radius = 26,
         }; 
         Grid.FillRadius(planet1.Grid, planet1.Radius);
-        World.Planets.Add(planet1);
+        World.Add(planet1);
 
-        var moon = new Planet()
+        var moon = new Planet(planetProto, World.NewID(), Transform.Default)
         {
-            Orbit = new(planet1, 100, MathF.PI * 1.25f, 0),
+            Orbit = new(((Actor)planet1).AsReference(), 100, MathF.PI * 1.25f),
             Color = Color.DarkGray,
             Radius = 9,
         };
         Grid.FillRadius(moon.Grid, moon.Radius);
-        World.Planets.Add(moon);
+        World.Add(moon);
 
-        var planet2 = new Planet()
+        var planet2 = new Planet(planetProto, World.NewID(), Transform.Default)
         {
-            Orbit = new(sun, 400, MathF.PI * .75f, 0),
+            Orbit = new(((Actor)sun).AsReference(), 400, MathF.PI * .75f),
             Color = Color.DarkOliveGreen,
             Radius = 17,
         };
         Grid.FillRadius(planet2.Grid, planet2.Radius);
-        World.Planets.Add(planet2);
+        World.Add(planet2);
 
-        var planet3 = new Planet()
+        var planet3 = new Planet(planetProto, World.NewID(), Transform.Default)
         {
-            Orbit = new(sun, 800, MathF.PI * 1.75f, 0),
+            Orbit = new(((Actor)sun).AsReference(), 800, MathF.PI * 1.75f),
             Color = Color.Lerp(Color.OrangeRed, Color.Black, 0.25f),
             Radius = 13,
         };
         Grid.FillRadius(planet3.Grid, planet3.Radius);
-        World.Planets.Add(planet3);
+        World.Add(planet3);
 
         World.Camera.Transform.Position = planet1.Transform.Position;
         World.Camera.SmoothTransform.Position = planet1.Transform.Position;
 
-        planet1.Grid.PlaceStructure(World.Structures.ResourceNode, new(0, 0), 0, World.NeutralTeam);
+        planet1.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("particle_accelerator"), new(0, 0), 0, playerTeam);
 
-        // planet1.Grid.PlaceStructure(World.Structures.Shipyard, new(5, -5), 0, enemies);
-        // planet1.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(3, -3), 0, enemies);
-        // 
-        // planet3.Grid.PlaceStructure(World.Structures.Headquarters, new(0, 0), 1, enemies);
-        // planet3.Grid.PlaceStructure(World.Structures.Shipyard, new(1, 3), 0, enemies);
-        // 
-        // planet3.Grid.PlaceStructure(World.Structures.MissileTurret, new(2, 0), 0, enemies);
-        // planet3.Grid.PlaceStructure(World.Structures.MissileTurret, new(2, 4), 0, enemies);
-        // planet3.Grid.PlaceStructure(World.Structures.MissileTurret, new(-1, 4), 0, enemies);
-        // 
-        // planet3.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(3, 1), 0, enemies);
-        // planet3.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(0, 5), 0, enemies);
-        // planet3.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(-1, 2), 0, enemies);
-        
+        //planet1.Grid.PlaceStructure(World.Structures.ResourceNode, new(0, 0), 0, World.NeutralTeam);
+
+        //planet1.Grid.PlaceStructure(World.Structures.SmallShipyard, new(5, -5), 0, enemies);
+        //planet1.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(3, -3), 0, enemies);
+
+        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("headquarters"), new(0, 0), 1, enemies);
+        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("shipyard"), new(1, 3), 0, enemies);
+
+        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(2, 0), 0, enemies);
+        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(2, 4), 0, enemies);
+        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(-2, 4), 0, enemies);
+
+        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(3, 1), 0, enemies);
+        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(0, 5), 0, enemies);
+        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(-1, 2), 0, enemies);
+
         World.Ships.First().Transform.Position = planet1.Transform.Position;
 
 
@@ -142,7 +149,6 @@ partial class Program : Simulation
             }
 
             shouldBeFullscreen = !shouldBeFullscreen;
-
         }
 
         float aspectRatio = canvas.Width / (float)canvas.Height;
@@ -177,6 +183,8 @@ partial class Program : Simulation
         //     World.LeftSidebar.Width = World.LeftSidebar.MinWidth;
         //     World.RightSidebar.Width = World.RightSidebar.MinWidth;
         // }
+
+        DebugMenu.Layout();
 
         World.Camera.Update(view.Width, view.Height);
         Rectangle vp = new(0, 0, view.Width, view.Height);
@@ -260,5 +268,7 @@ partial class Program : Simulation
         canvas.PushState();
         World.MapWindow.Render(canvas, (int)(canvas.Width / UIResolutionScale), (int)(canvas.Height / UIResolutionScale));
         canvas.PopState();
+
+
     }
 }

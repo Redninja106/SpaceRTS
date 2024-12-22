@@ -4,10 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpaceGame.Interaction;
-internal class GameOverviewHandler
+namespace SpaceGame.Ships.Orders;
+internal abstract class OrderPrototype : Prototype
 {
-    public void Update()
-    {
-    }
 }

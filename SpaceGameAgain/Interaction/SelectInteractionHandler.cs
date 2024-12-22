@@ -1,5 +1,4 @@
-﻿using SpaceGame.Asteroids;
-using SpaceGame.Interaction;
+﻿using SpaceGame.Interaction;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Formations;
 using SpaceGame.Ships.Orders;
@@ -53,7 +52,7 @@ internal class SelectInteractionHandler : IInteractionContext
         if (rightMouse.Released && !rightMouse.Dragged)
         {
             var target = PickUnit();
-            if (target is not null && target.Team.GetRelation(World.PlayerTeam) is TeamRelation.Enemies)
+            if (target is not null && target.Team.Actor!.GetRelation(World.PlayerTeam!.Actor) is TeamRelation.Enemies)
             {
                 foreach (var selectedObject in World.SelectionHandler.GetSelectedObjects())
                 {
@@ -61,7 +60,7 @@ internal class SelectInteractionHandler : IInteractionContext
                     {
                         if (!Keyboard.IsKeyDown(Key.LeftShift))
                             ship.orders.Clear();
-                        ship.orders.Enqueue(new AttackOrder(target));
+                        ship.orders.Enqueue(new AttackOrder(new(), World.NewID(), Transform.Default, ActorReference<Unit>.Create(target)));
                     }
                     else
                     {
@@ -99,42 +98,42 @@ internal class SelectInteractionHandler : IInteractionContext
                     }
                     else
                     {
-                        ships[i].orders.Enqueue(new MoveOrder(World.MousePosition + positions[i]));
+                        ships[i].orders.Enqueue(new MoveOrder(null, World.NewID(), Transform.Default, World.MousePosition + positions[i]));
                     }
                 }
             }
         }
 
-        if (Keyboard.IsKeyPressed(Key.E))
-        {
-            var a = new Asteroid();
-            a.Transform.Position = World.MousePosition;
-            var delta = a.Transform.Position - World.Planets[0].Transform.Position;
-            a.Orbit = new(World.Planets[0], delta.Length(), Angle.FromVector(delta), 0);
-            a.size = 1;
-            World.Asteroids.Add(a);
-        }
+        //if (Keyboard.IsKeyPressed(Key.E))
+        //{
+        //    var a = new Asteroid();
+        //    a.Transform.Position = World.MousePosition;
+        //    var delta = a.Transform.Position - World.Planets[0].Transform.Position;
+        //    a.Orbit = new(World.Planets[0], delta.Length(), Angle.FromVector(delta), 0);
+        //    a.size = 1;
+        //    World.Asteroids.Add(a);
+        //}
 
-        if (Keyboard.IsKeyDown(Key.Z))
-        {
-            World.ConstructionInteractionContext.BeginPlacing(World.Structures.DefensiveZone);
-            World.CurrentInteractionContext = World.ConstructionInteractionContext;
-        }
-        if (Keyboard.IsKeyDown(Key.X))
-        {
-            World.ConstructionInteractionContext.BeginPlacing(World.Structures.IndustrialZone);
-            World.CurrentInteractionContext = World.ConstructionInteractionContext;
-        }
-        if (Keyboard.IsKeyDown(Key.C))
-        {
-            World.ConstructionInteractionContext.BeginPlacing(World.Structures.ResearchZone);
-            World.CurrentInteractionContext = World.ConstructionInteractionContext;
-        }
-        if (Keyboard.IsKeyDown(Key.V))
-        {
-            World.ConstructionInteractionContext.BeginPlacing(World.Structures.EconomicZone);
-            World.CurrentInteractionContext = World.ConstructionInteractionContext;
-        }
+        //if (Keyboard.IsKeyDown(Key.Z))
+        //{
+        //    World.ConstructionInteractionContext.BeginPlacing(World.Structures.DefensiveZone);
+        //    World.CurrentInteractionContext = World.ConstructionInteractionContext;
+        //}
+        //if (Keyboard.IsKeyDown(Key.X))
+        //{
+        //    World.ConstructionInteractionContext.BeginPlacing(World.Structures.IndustrialZone);
+        //    World.CurrentInteractionContext = World.ConstructionInteractionContext;
+        //}
+        //if (Keyboard.IsKeyDown(Key.C))
+        //{
+        //    World.ConstructionInteractionContext.BeginPlacing(World.Structures.ResearchZone);
+        //    World.CurrentInteractionContext = World.ConstructionInteractionContext;
+        //}
+        //if (Keyboard.IsKeyDown(Key.V))
+        //{
+        //    World.ConstructionInteractionContext.BeginPlacing(World.Structures.EconomicZone);
+        //    World.CurrentInteractionContext = World.ConstructionInteractionContext;
+        //}
     }
 
     public void Render(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)
@@ -147,7 +146,7 @@ internal class SelectInteractionHandler : IInteractionContext
         }
     }
 
-    private UnitBase? PickUnit()
+    private Unit? PickUnit()
     {
         foreach (var ship in World.Ships)
         {
@@ -159,15 +158,15 @@ internal class SelectInteractionHandler : IInteractionContext
         return PickStructure();
     }
 
-    private StructureInstance? PickStructure()
+    private Structure? PickStructure()
     {
         foreach (var planet in World.Planets)
         {
             var mp = planet.Grid.Transform.WorldToLocal(World.MousePosition);
             var cell = planet.Grid.GetCell(HexCoordinate.FromCartesian(mp));
-            if (cell is not null && cell.Structure is not null)
+            if (cell is not null && !cell.Structure.IsNull)
             {
-                return cell.Structure;
+                return cell.Structure.Actor!;
             }
         }
         return null;

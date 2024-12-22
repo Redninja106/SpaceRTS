@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpaceGame.Ships;
-internal class LargeShip
+namespace SpaceGame.Combat;
+internal abstract class WeaponSystemPrototype : Prototype
 {
 }

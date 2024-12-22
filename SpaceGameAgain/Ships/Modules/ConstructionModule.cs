@@ -26,18 +26,23 @@ internal class ConstructionModule(Ship ship) : Module(ship)
     {
         return [
             new ElementRow([
-                BuildButton(defensive, World.Structures.DefensiveZone),
-                BuildButton(industrial, World.Structures.IndustrialZone),
-                BuildButton(economic, World.Structures.EconomicZone),
-                BuildButton(research, World.Structures.ResearchZone),
+                BuildButton(research, Prototypes.Get<StructurePrototype>("particle_accelerator")),
+                BuildButton(industrial, Prototypes.Get<StructurePrototype>("shipyard")),
+                //BuildButton(economic, Prototypes.Get<StructurePrototype>("generator")),
+                //BuildButton(defensive, Prototypes.Get<StructurePrototype>("turret")),
+
+                //BuildButton(defensive, World.Structures.DefensiveZone),
+                //BuildButton(industrial, World.Structures.IndustrialZone),
+                //BuildButton(economic, World.Structures.EconomicZone),
+                //BuildButton(research, World.Structures.ResearchZone),
             ]),
         ];
 
-        ImageButton BuildButton(ITexture texture, Structure structure)
+        ImageButton BuildButton(ITexture texture, StructurePrototype structure)
         {
-            return new ImageButton(texture, 16, 16, () => 
+            return new ImageButton(texture, 16, 16, () =>
             {
-                if (Ship.Team.Materials >= structure.Price)
+                if (Ship.Team.Actor!.Credits >= structure.Price)
                 {
                     World.ConstructionInteractionContext.BeginPlacing(structure);
                 }

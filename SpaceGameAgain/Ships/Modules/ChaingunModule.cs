@@ -11,9 +11,9 @@ internal class ChaingunModule : Module
 {
     ChaingunSystem system;
 
-    public ChaingunModule(Ship ship) : base(ship)
+    public ChaingunModule(Ship ship, ulong id) : base(ship)
     {
-        system = new(ship);
+        system = new(null, id, Transform.Default, ship);
     }
 
     public override Element[] BuildGUI()

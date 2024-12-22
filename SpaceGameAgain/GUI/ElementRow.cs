@@ -9,8 +9,18 @@ internal class ElementRow(Element[] elements) : Element
 {
     private readonly Vector2[] localPositions = elements.Select(e => Vector2.Zero).ToArray();
 
+    public bool DrawBorder { get; set; } = false;
+
     public override void Render(ICanvas canvas)
     {
+        if (DrawBorder)
+        {
+            canvas.Stroke(ShadowColor);
+            canvas.DrawRect(2, 2, Width, Height);
+            canvas.Stroke(ForegroundColor);
+            canvas.DrawRect(0, 0, Width, Height);
+        }
+
         for (int i = 0; i < elements.Length; i++)
         {
             canvas.PushState();

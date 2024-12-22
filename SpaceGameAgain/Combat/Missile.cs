@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 namespace SpaceGame.Combat;
 internal class Missile : Actor, IDestructable
 {
-    public UnitBase Target { get; }
+    public override MissilePrototype Prototype => (MissilePrototype)base.Prototype;
+
+    public ActorReference<Unit> Target { get; }
     public Vector2 TargetOffset { get; set; }
 
     public Vector2 Velocity { get; set; }
-    public float Thrust { get; set; }
-    public float MaxSpeed { get; set; }
     public bool IsDestroyed { get; set; }
 
     public Vector2 LastAcceleration { get; set; }
@@ -23,15 +23,13 @@ internal class Missile : Actor, IDestructable
     private float explosionProgress;
     private float age;
 
-    public Missile(Transform transform, UnitBase target, Vector2 targetOffset, float thrust, float maxSpeed)
+    public Missile(MissilePrototype prototype, ulong id, Transform transform, ActorReference<Unit> target, Vector2 targetOffset) : base(prototype, id, transform)
     {
         Target = target;
         TargetOffset = targetOffset;
         Transform = transform;
-        Thrust = thrust;
-        MaxSpeed = maxSpeed;
 
-        Velocity = Angle.ToVector(transform.Rotation) * maxSpeed;
+        Velocity = Angle.ToVector(transform.Rotation) * prototype.MaxSpeed;
     }
 
     public override void Update()
@@ -51,29 +49,28 @@ internal class Missile : Actor, IDestructable
 
         if (age > 5)
         {
-            IsDestroyed = true;
+            exploding = true;
             return;
         }
 
+        var positionDelta = (Target.Actor!.Transform.Position + TargetOffset - Transform.Position).Normalized() * Prototype.MaxSpeed;
 
-        var positionDelta = (Target.Transform.Position + TargetOffset - Transform.Position).Normalized() * MaxSpeed;
-
-        if (Vector2.Distance(Target.Transform.Position + TargetOffset, Transform.Position) < .05f)
+        if (Vector2.Distance(Target.Actor!.Transform.Position + TargetOffset, Transform.Position) < .05f)
         {
             TargetOffset = Vector2.Zero;
         }
 
         var lastVelocity = Velocity;
-        Velocity = Util.Step(Velocity, positionDelta, Thrust * Time.DeltaTime);
+        Velocity = Util.Step(Velocity, positionDelta, Prototype.Acceleration * Time.DeltaTime);
         LastAcceleration = CurrentAcceleration;
         CurrentAcceleration = (Velocity - lastVelocity) / Time.DeltaTime;
 
         Transform.Position += Velocity * Time.DeltaTime;
 
-        if (age > 1 && Target.TestPoint(Transform.Position, Transform.Default))
+        if (age > 1 && Target.Actor!.TestPoint(Transform.Position, Transform.Default))
         {
             Detonate();
-            Target.Damage();
+            Target.Actor!.Health--;
         }
 
         age += Time.DeltaTime;
@@ -106,5 +103,13 @@ internal class Missile : Actor, IDestructable
 
         canvas.Fill(Color.Lerp(Color.Yellow, Color.LightYellow, 5 * Time.TotalTime % 1f));
         canvas.DrawCircle(0, 0, .01f);
+    }
+
+    public void OnDestroyed()
+    {
+    }
+
+    public override void Serialize(BinaryWriter writer)
+    {
     }
 }

@@ -1,0 +1,17 @@
+{
+  "prototype": "StructurePrototype",
+  "name": "headquarters",
+  "price": 100,
+  "max_health": 10,
+  "title": "headquarters",
+  "preset_model": "headquarters",
+  "footprint": [
+    [ 0, 0 ],
+    [ 0, 1 ],
+    [ 1, 0 ],
+    [ -1, 1 ],
+    [ 0, -1 ],
+    [ -1, 0 ],
+    [ 1, -1 ]
+  ]
+}

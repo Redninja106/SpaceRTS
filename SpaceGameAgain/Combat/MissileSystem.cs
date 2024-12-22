@@ -2,6 +2,7 @@
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 using SpaceGame.Ships.Orders;
+using SpaceGame.Structures;
 using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
@@ -10,53 +11,52 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal class MissileSystem(UnitBase unit)
+internal class MissileSystem(MissileSystemPrototype prototype, ulong id, Transform transform, Unit unit) : WeaponSystem(prototype, id, transform)
 {
     public int SalvoSize { get; } = 5;
     public int MissilesRemaining { get; set; } = 5;
     public float FireRate { get; } = 2f;
 
     private float timeSinceMissile;
-    private UnitBase? target;
+    private ActorReference<Unit> target;
 
-    public void Update()
+    public override void Update()
     {
         if (unit is Ship ship && ship.orders.Count > 0 && ship.orders.Peek() is AttackOrder attackOrder)
         {
             target = attackOrder.target;
         }
-        else if (target is null)
+        else if (target == null)
         {
+            // TODO: replace this awful, no good, terrible way of doing this with some kind of bin system
             foreach (var s in World.Ships)
             {
-                if (unit.Team.GetRelation(s.Team) is TeamRelation.Enemies && unit.Transform.Distance(s.Transform) < 12)
+                if (unit.Team.Actor!.GetRelation(s.Team.Actor!) is TeamRelation.Enemies && unit.Transform.Distance(s.Transform) < 12)
                 {
-                    target = s;
+                    target = ActorReference<Unit>.Create(s);
                     break;
                 }
             }
-            foreach (var p in World.Planets)
+            foreach (var s in World.Structures)
             {
-                foreach (var structure in p.Grid.Structures)
+                if (unit.Team.Actor!.GetRelation(s.Team.Actor!) is TeamRelation.Enemies && unit.Transform.Distance(s.Transform) < 12)
                 {
-                    if (unit.Team.GetRelation(structure.Team) is TeamRelation.Enemies && unit.Transform.Distance(structure.Transform) < 12)
-                    {
-                        target = structure;
-                        break;
-                    }
+                    target = ActorReference<Unit>.Create(s);
+                    break;
                 }
             }
+
         }
 
-        if (target != null)
+        if (!target.IsNull)
         {
             if (MissilesRemaining > 0 && timeSinceMissile > 1f / FireRate)
             {
-                Fire(target);
+                Fire(target.Actor);
             }
-            if (target.IsDestroyed)
+            if (target.Actor.Health <= 0)
             {
-                target = null;
+                target = ActorReference<Unit>.Null;
             }
         }
 
@@ -68,14 +68,14 @@ internal class MissileSystem(UnitBase unit)
         timeSinceMissile += Time.DeltaTime;
     }
 
-    private void Fire(UnitBase target)
+    private void Fire(Unit target)
     {
-        World.Missiles.Add(new Missile(
+        World.Add(new Missile(
+            Prototypes.Get<MissilePrototype>("missile"),
+            World.NewID(),
             unit.Transform.Rotated((Random.Shared.NextSingle() - .5f) * MathF.PI / 10f),
-            target,
-            Random.Shared.NextUnitVector2() * Random.Shared.NextSingle() * 1.5f,
-            4,
-            4
+            ActorReference<Unit>.Create(target),
+            Random.Shared.NextUnitVector2() * Random.Shared.NextSingle() * 1.5f
             ));
 
         MissilesRemaining--;
@@ -87,5 +87,9 @@ internal class MissileSystem(UnitBase unit)
     {
         canvas.Stroke(Color.Red);
         canvas.DrawCircle(0, 0, 12);
+    }
+
+    public override void Serialize(BinaryWriter writer)
+    {
     }
 }

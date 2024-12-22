@@ -15,7 +15,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Ships;
-internal class Ship : UnitBase
+
+internal class Ship(ShipPrototype prototype, ulong id, Transform transform, ActorReference<Team> team, float height = 0) : Unit(prototype, id, transform, team)
 {
     public static Vector2[] verts = [
         new(.5f / 2f, 0),
@@ -26,20 +27,15 @@ internal class Ship : UnitBase
     public Queue<Order> orders = [];
     public List<Module> modules = [];
 
-    public float health = 5;
-    public float height;
-
-    public Ship(Team team)
-    {
-        this.Team = team;
-    }
-
+    public float height = height;
+    
     public override void Render(ICanvas canvas)
     {
         bool selected = World.SelectionHandler.IsSelected(this);
         if (selected)
         {
-            canvas.Stroke(World.PlayerTeam.GetRelationColor(Team));
+            Team playerTeam = World.PlayerTeam.Actor!;
+            canvas.Stroke(playerTeam.GetRelationColor(Team.Actor!));
             canvas.StrokeWidth(0);
             canvas.DrawCircle(0, 0, MathF.Max(.65f/2f, World.Camera.ScreenDistanceToWorldDistance(2.5f/2f)));
         }
@@ -73,11 +69,6 @@ internal class Ship : UnitBase
 
     }
 
-    public override void Damage()
-    {
-        health--;
-    }
-
     public override void Update()
     {
         if (height < .4f)
@@ -97,12 +88,12 @@ internal class Ship : UnitBase
             }
         }
 
-        if (health <= 0)
-        {
-            IsDestroyed = true;
-            if (World.SelectionHandler.IsSelected(this))
-                World.SelectionHandler.Deselect(this);
-        }
+        //if (health <= 0)
+        //{
+        //    IsDestroyed = true;
+        //    if (World.SelectionHandler.IsSelected(this))
+        //        World.SelectionHandler.Deselect(this);
+        //}
 
         SphereOfInfluence? soi = World.GetSphereOfInfluence(this.Transform.Position);
         soi?.ApplyTo(this);
@@ -112,6 +103,7 @@ internal class Ship : UnitBase
     {
         return TestPoint(point, transform, 1f);
     }
+
     public bool TestPoint(Vector2 point, Transform transform, float scale)
     {
         return Util.TestPoint(verts, this.Transform, point, transform);
@@ -130,5 +122,13 @@ internal class Ship : UnitBase
             canvas.DrawPolygon(verts);
             canvas.Rotate(-Transform.Rotation);
         }
+    }
+
+    public override void Serialize(BinaryWriter writer)
+    {
+        writer.Write(ID);
+        writer.Write(Transform);
+        writer.Write(Team);
+        writer.Write(height);
     }
 }

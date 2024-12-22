@@ -11,11 +11,11 @@ using SpaceGame.Structures;
 namespace SpaceGame.Interaction;
 internal class SelectionHandler
 {
-    private HashSet<UnitBase> selected = [];
+    private HashSet<Unit> selected = [];
 
     public int SelectedCount => selected.Count;
 
-    public void ClearSelection(UnitBase? except = null)
+    public void ClearSelection(Unit? except = null)
     {
         selected.Clear();
         if (except != null)
@@ -23,13 +23,13 @@ internal class SelectionHandler
         UpdateGUI();
     }
 
-    public void Add(UnitBase selectable)
+    public void Add(Unit selectable)
     {
         selected.Add(selectable);
         UpdateGUI();
     }
 
-    public bool IsSelected(UnitBase selectable)
+    public bool IsSelected(Unit selectable)
     {
         return selected.Contains(selectable);
     }
@@ -61,31 +61,32 @@ internal class SelectionHandler
                     stack.AddRange(module.BuildGUI());
                 }
             }
-            else if (singleSelected is StructureInstance structureInstance)
+            else if (singleSelected is Structure structure)
             {
                 stack.Clear();
+                var s = structure.GetSelectionGUI();
                 stack.AddRange([
-                    new Label(structureInstance.Structure.Title, 16, Alignment.CenterLeft),
+                    new Label(structure.Prototype.Title, 16, Alignment.CenterLeft),
                     new Label("status: operational", 12, Alignment.CenterLeft),
                     new Separator(),
                      
-                    .. (structureInstance.Behavior?.SelectGUI ?? [])
+                    .. (s ?? [])
                 ]);
             }
             else
             {
-                throw new Exception();
+                throw new Exception("cant select this");
             }
         }
         else
         {
             stack.Clear();
             stack.AddRange([
-                new Label("Selected Units", 32),
+                new Label("Selected Units", 16),
                 new Separator(),
                 new ElementStack(
                     selected.Select(u => new TextButton(
-                        u.ToString() ?? "unit", 
+                        u.GetType().Name ?? "unit", 
                         () => {
                             this.ClearSelection(u);
                         }
@@ -96,7 +97,7 @@ internal class SelectionHandler
         }
     }
 
-    public UnitBase? GetSelectedObject()
+    public Unit? GetSelectedObject()
     {
         if (selected.Count is 1)
         {
@@ -105,12 +106,12 @@ internal class SelectionHandler
         return null;
     }
 
-    public IEnumerable<UnitBase> GetSelectedObjects()
+    public IEnumerable<Unit> GetSelectedObjects()
     {
         return selected;
     }
 
-    public void Deselect(UnitBase selectable)
+    public void Deselect(Unit selectable)
     {
         selected.Remove(selectable);
         UpdateGUI();

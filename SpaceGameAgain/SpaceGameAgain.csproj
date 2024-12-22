@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SimulationFramework" Version="0.3.0-alpha.7" />
-    <PackageReference Include="SimulationFramework.Desktop" Version="0.3.0-alpha.7" />
+    <PackageReference Include="SimulationFramework" Version="0.3.0-alpha.12" />
+    <PackageReference Include="SimulationFramework.Desktop" Version="0.3.0-alpha.12" />
   </ItemGroup>
 	
 	<ItemGroup>
@@ -26,6 +26,9 @@
 
 	<ItemGroup>
 	  <Folder Include="Assets\Icons\" />
+	  <Folder Include="Commands\" />
 	</ItemGroup>
+
+	<ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

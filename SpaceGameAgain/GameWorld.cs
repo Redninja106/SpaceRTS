@@ -8,12 +8,9 @@ using System.Threading.Tasks;
 using SpaceGame.Interaction;
 using SpaceGame.Ships;
 using SpaceGame.Planets;
-using SpaceGame.Stations;
-using SpaceGame.Interaction;
 using SpaceGame.Structures;
 using SpaceGame.Teams;
 using SpaceGame.Combat;
-using SpaceGame.Asteroids;
 using SpaceGame.GUI;
 using System.Threading.Channels;
 using Silk.NET.OpenGL;
@@ -24,18 +21,25 @@ internal class GameWorld
 {
     public static GameWorld World { get; set; }
 
+    public ulong NextID { get; set; } = 1;
+
+    public Dictionary<ulong, Actor> Actors = [];
+
+
     public List<Ship> Ships { get; } = [];
     public List<Planet> Planets { get; } = [];
-    public List<Station> Stations { get; } = [];
     public List<Team> Teams { get; } = [];
     public List<Missile> Missiles { get; } = [];
-    public List<ChaingunRound> ChaingunRounds { get; } = [];
-    public List<Asteroid> Asteroids { get; } = [];
+    public List<Bullet> Bullets { get; } = [];
+    public List<Structure> Structures { get; } = [];
+
+    //public List<Station> Stations { get; } = [];
+    // public List<Asteroid> Asteroids { get; } = [];
 
     // GLOBALS
-    public Camera Camera { get; set; }
-    
-    public Team PlayerTeam { get; set; }
+    public Camera Camera { get; set; } = new FreeCamera();
+
+    public ActorReference<Team> PlayerTeam;
     public Team NeutralTeam { get; set; }
 
     public Sidebar LeftSidebar;
@@ -50,14 +54,13 @@ internal class GameWorld
     public MouseDragHandler MouseDragHandler { get; } = new();
     public SelectInteractionHandler SelectInteractionContext { get; } = new();
     public ConstructionInteractionContext ConstructionInteractionContext { get; } = new();
-    public GameOverviewHandler OverviewHandler { get; } = new();
 
     public IInteractionContext? CurrentInteractionContext { get; set; }
 
     public MouseState leftMouse = new(MouseButton.Left);
     public MouseState rightMouse = new(MouseButton.Right);
 
-    public StructureList Structures { get; } = new();
+    // public StructureList Structures { get; } = new();
 
     public IMask WorldShadowMask { get; private set; }
     public ElementWindow InfoWindow { get; set; } = new()
@@ -99,11 +102,12 @@ internal class GameWorld
         soi?.ApplyTo(ref Camera.Transform);
 
         UpdateActorList(Planets);
-        UpdateActorList(Stations);
+        UpdateActorList(Structures);
+        //UpdateActorList(Stations);
         UpdateActorList(Ships);
-        UpdateActorList(ChaingunRounds);
+        UpdateActorList(Bullets);
         UpdateActorList(Missiles);
-        UpdateActorList(Asteroids);
+        //UpdateActorList(Asteroids);
 
         foreach (var planet in Planets)
         {
@@ -122,7 +126,7 @@ internal class GameWorld
         WorldShadowMask.Clear(true);
 
         RenderActorList(Planets, canvas);
-        RenderActorList(Stations, canvas);
+        //RenderActorList(Stations, canvas);
 
         foreach (var planet in Planets)
         {
@@ -131,6 +135,22 @@ internal class GameWorld
             planet.Grid.Render(canvas);
             canvas.PopState();
         }
+
+        foreach (var structure in Structures)
+        {
+            canvas.PushState();
+            structure.Transform.ApplyTo(canvas);
+            canvas.Mask(World.WorldShadowMask);
+            canvas.WriteMask(World.WorldShadowMask, false);
+            structure.RenderShadow(
+                canvas, 
+                Vector2.TransformNormal(structure.Transform.Position.Normalized() * .4f, 
+                Matrix3x2.CreateRotation(-structure.Rotation * (MathF.Tau / 6f)))
+                );
+            canvas.PopState();
+        }
+
+        RenderActorList(Structures, canvas);
 
         foreach (var ship in Ships)
         {
@@ -142,9 +162,9 @@ internal class GameWorld
         }
 
         RenderActorList(Ships, canvas);
-        RenderActorList(ChaingunRounds, canvas);
+        RenderActorList(Bullets, canvas);
         RenderActorList(Missiles, canvas);
-        RenderActorList(Asteroids, canvas);
+        //RenderActorList(Asteroids, canvas);
         CurrentInteractionContext ??= SelectInteractionContext;
         CurrentInteractionContext.Render(canvas, leftMouse, rightMouse);
     }
@@ -158,6 +178,7 @@ internal class GameWorld
 
             if (actors[i] is IDestructable destructable && destructable.IsDestroyed)
             {
+                destructable.OnDestroyed();
                 actors.RemoveAt(i);
                 i--;
             }
@@ -191,4 +212,38 @@ internal class GameWorld
         }
         return smallest;
     }
+
+    public IEnumerable<Actor> GetActorsByPrototype(Prototype prototype)
+    {
+        foreach (var a in Actors.Values)
+        {
+            if (a.Prototype == prototype)
+            {
+                yield return a;
+            }
+        }
+    }
+
+    public void Add(Actor actor)
+    {
+        Actors.Add(actor.ID, actor);
+
+        if (actor is Ship s) Ships.Add(s);
+        if (actor is Structure t) Structures.Add(t);
+        if (actor is Planet p) Planets.Add(p);
+        if (actor is Team e) Teams.Add(e);
+        if (actor is Bullet b) Bullets.Add(b);
+        if (actor is Missile m) Missiles.Add(m);
+
+    }
+
+    public ulong NewID()
+    {
+        return NextID++;
+    }
+}
+
+class CollisionManager
+{
+    private Dictionary<(int, int), HashSet<Unit>> bins = [];
 }

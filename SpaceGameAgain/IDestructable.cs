@@ -8,4 +8,5 @@ namespace SpaceGame;
 internal interface IDestructable
 {
     bool IsDestroyed { get; }
+    void OnDestroyed();
 }

@@ -1,0 +1,12 @@
+{
+  "prototype": "TurretPrototype",
+  "name": "chaingun_turret",
+  "title": "Chaingun Turret",
+  "max_health": 15,
+  "price": 100,
+  "preset_model": "chaingun_turret",
+  "footprint": [
+    [ 0, 0 ]
+  ],
+  "turret_kind": "chaingun"
+}

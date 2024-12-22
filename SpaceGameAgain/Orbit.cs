@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 namespace SpaceGame;
 internal class Orbit
 {
-    public Actor center;
+    public ActorReference<Actor> center;
     public float radius;
     public float phase;
 
-    public Orbit(Actor center, float radius, float phase, float distance)
+    public Orbit(ActorReference<Actor> center, float radius, float phase)
     {
         this.center = center;
         this.radius = radius;
@@ -22,6 +22,6 @@ internal class Orbit
     public void Update(Actor actor, float speed)
     {
         phase += speed / radius;
-        actor.Transform.Position = center.Transform.Position + Angle.ToVector(phase) * radius;
+        actor.Transform.Position = center.Actor!.Transform.Position + Angle.ToVector(phase) * radius;
     }
 }

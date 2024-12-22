@@ -1,5 +1,4 @@
-﻿using SpaceGame.Stations;
-using SpaceGame.Teams;
+﻿using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,11 +18,11 @@ internal class Grid
         Angle.ToVector(5 * MathF.Tau / 6),
     ];
 
-    private Dictionary<HexCoordinate, GridCell> cells = [];
-    private List<StructureInstance> structures = [];
+    public Dictionary<HexCoordinate, GridCell> cells = [];
+    public List<ActorReference<Structure>> structures = [];
     private Actor parent;
 
-    public IEnumerable<StructureInstance> Structures => structures;
+    public Actor Parent => parent;
 
     public ref Transform Transform => ref parent.Transform;
 
@@ -42,12 +41,12 @@ internal class Grid
         cells.Remove(location);
     }
 
-    public bool IsStructureObstructed(Structure structure, HexCoordinate location, int rotation)
+    public bool IsStructureObstructed(StructurePrototype structure, HexCoordinate location, int rotation)
     {
         foreach (var footprintCell in structure.Footprint)
         {
             var cell = GetCell(location + footprintCell.Rotated(rotation));
-            if (cell is null || cell.Structure is not null)
+            if (cell is null || !cell.Structure.IsNull)
             {
                 return true;
             }
@@ -65,7 +64,7 @@ internal class Grid
         canvas.Stroke(Color.LightGray with { A = 50 });
         foreach (var (coord, cell) in cells)
         {
-            if (cell?.Structure is null)
+            if (cell?.Structure.IsNull ?? false)
             {
                 canvas.PushState();
                 canvas.Translate(coord.ToCartesian());
@@ -74,45 +73,25 @@ internal class Grid
                 canvas.DrawLine(hexagon[2], hexagon[3]);
 
                 GridCell? neighbor = GetCell(coord + new HexCoordinate(-1, 0));
-                if (neighbor is null || neighbor.Structure is not null)
+                if (neighbor is null || !neighbor.Structure.IsNull)
                 {
                     canvas.DrawLine(hexagon[3], hexagon[4]);
                 }
 
                 neighbor = GetCell(coord + new HexCoordinate(0, -1));
-                if (neighbor is null || neighbor.Structure is not null)
+                if (neighbor is null || !neighbor.Structure.IsNull)
                 {
                     canvas.DrawLine(hexagon[4], hexagon[5]);
                 }
 
                 neighbor = GetCell(coord + new HexCoordinate(1, -1));
-                if (neighbor is null || neighbor.Structure is not null)
+                if (neighbor is null || !neighbor.Structure.IsNull)
                 {
                     canvas.DrawLine(hexagon[5], hexagon[0]);
                 }
 
                 canvas.PopState();
             }
-        }
-
-        foreach (var structure in structures)
-        {
-            canvas.PushState();
-            canvas.Translate(structure.Location.ToCartesian());
-            canvas.Rotate(structure.Rotation * (MathF.Tau / 6f));
-            canvas.Mask(World.WorldShadowMask);
-            canvas.WriteMask(World.WorldShadowMask, false);
-            structure.RenderShadow(canvas, Vector2.TransformNormal(structure.Transform.Position.Normalized() * .4f, Matrix3x2.CreateRotation(-structure.Rotation * (MathF.Tau / 6f))));
-            canvas.PopState();
-        }
-
-        foreach (var structure in structures)
-        {
-            canvas.PushState();
-            canvas.Translate(structure.Location.ToCartesian());
-            canvas.Rotate(structure.Rotation * (MathF.Tau / 6f));
-            structure.Render(canvas);
-            canvas.PopState();
         }
     }
 
@@ -137,15 +116,15 @@ internal class Grid
         }
     }
 
-    public void PlaceStructure(Structure structure, HexCoordinate location, int rotation, Team team, List<HexCoordinate>? footprint = null)
+    public void PlaceStructure(StructurePrototype prototype, HexCoordinate location, int rotation, Team team, List<HexCoordinate>? footprint = null)
     {
-        var instance = structure.CreateInstance(this, location, rotation, team, footprint);
-        structures.Add(instance);
+        var structure = prototype.CreateStructure(World.NewID(), this, location, rotation, team);
+        World.Add(structure);
 
-        foreach (var footprintPart in footprint ?? structure.Footprint)
+        foreach (var footprintPart in prototype.Footprint)
         {
             var cellLocation = location + footprintPart.Rotated(rotation);
-            GetCell(cellLocation)!.Structure = instance;
+            GetCell(cellLocation)!.Structure = structure.AsReference();
         }
     }
 
@@ -158,40 +137,19 @@ internal class Grid
 
     public void Update()
     {
-        for (int i = 0; i < structures.Count; i++)
-        {
-            structures[i].Update();
-
-            if (structures[i].IsDestroyed)
-            {
-                RemoveStructureAt(i);
-                i--;
-            }
-        }
+        
     }
 
-    private void RemoveStructureAt(int index)
-    {
-        var instance = structures[index];
-        structures.RemoveAt(index);
 
-        foreach (var cellLoc in instance.Structure.Footprint)
+    internal void RemoveStructure(Structure instance)
+    {
+        foreach (var cellLoc in instance.Prototype.Footprint)
         {
             var cell = GetCell(instance.Location + cellLoc.Rotated(instance.Rotation));
             if (cell != null)
             {
-                cell.Structure = null;
+                cell.Structure = ActorReference<Structure>.Null;
             }
         }
-    }
-
-    internal void RemoveStructure(StructureInstance instance)
-    {
-        RemoveStructureAt(structures.IndexOf(instance));
-    }
-
-    internal void PlaceStructure(Structure resourceNode, HexCoordinate hexCoordinate, int v, object neutralTeam)
-    {
-        throw new NotImplementedException();
     }
 }

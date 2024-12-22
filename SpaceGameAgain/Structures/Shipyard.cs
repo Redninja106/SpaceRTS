@@ -1,20 +1,22 @@
-﻿using NAudio.MediaFoundation;
-using Silk.NET.Input;
-using SpaceGame.GUI;
+﻿using SpaceGame.GUI;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 using SpaceGame.Ships.Orders;
+using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
-internal class ShipyardBehavior : StructureBehavior
+internal class Shipyard : Structure
 {
-    public override Element[] SelectGUI { get; }
+    public Element[] SelectGUI { get; }
+
+
 
     private ElementStack moduleList;
     private Label slotsLabel;
@@ -26,40 +28,38 @@ internal class ShipyardBehavior : StructureBehavior
     private Element currentElement;
     private TextButton buildButton;
 
-    public ShipyardBehavior(StructureInstance instance) : base(instance)
+    public Shipyard(ShipyardPrototype prototype, ulong id, Grid grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
     {
         UpdateQueueUI();
         SelectGUI = [
             buildButton = new TextButton("build ship | 20m")
             { FitContainer = true, Alignment = Alignment.Center },
 
-            new Gap(32),
-
-            new ElementReference(() => this.currentElement),
-            new ElementReference(() => this.buildQueueElement),
-
-            new Gap(32),
-            
-            new Label("CONFIGURATION", 24, Alignment.Center),
-            new Separator(),
             moduleList = new ElementStack([
             ]) {  DrawBorder = true, },
 
-            new ElementStack([
-                new TextButton("construction kit", () => AddModule("construction kit", ship => new ConstructionModule(ship))),
-                new TextButton("missile launcher", () => AddModule("missile launcher", ship => new MissileModule(ship))),
-                new TextButton("chain gun", () => AddModule("chaingun turret", ship => new ChaingunModule(ship))),
+            new ElementRow([
+                new TextButton("con", () => AddModule("construction kit", ship => new ConstructionModule(ship))),
+                new TextButton("msl", () => AddModule("missile launcher", ship => new MissileModule(ship))),
+                new TextButton("gun", () => AddModule("chaingun turret", ship => new ChaingunModule(ship, World.NewID()))),
             ])
             { DrawBorder = true, },
+            new ElementReference(() => this.currentElement),
+            new ElementReference(() => this.buildQueueElement),
+
         ];
 
         UpdateModuleUI();
 
     }
 
+    public override Element[]? GetSelectionGUI()
+    {
+        return SelectGUI;
+    }
+
     private void BuildShip()
     {
-        Instance.Team.Materials -= 20;
         buildQueue.Add(new BuildAction()
         {
             partCounts = moduleSlots.Select(m => 0).ToArray(),
@@ -108,7 +108,6 @@ internal class ShipyardBehavior : StructureBehavior
         else
         {
             buildQueueElement = new ElementStack([
-                new Gap(32),
                 new Label("QUEUE", 24, Alignment.Center),
                 new Gap(Element.DefaultMargin),
                 new ElementStack(
@@ -117,13 +116,13 @@ internal class ShipyardBehavior : StructureBehavior
                             b.cancel = new TextButton("x", () => { }) { Alignment = Alignment.CenterRight },
                             b.now = new TextButton("^", () => { }) { Alignment = Alignment.CenterRight },
                             ]) { Margin = 2 }
-                        ) 
+                        )
                     )
                 { DrawBorder = true,  },
                 ])
             { Margin = 0 };
         }
-        
+
         if (buildQueue.Count > 0)
         {
             var status = buildQueue[0];
@@ -134,7 +133,8 @@ internal class ShipyardBehavior : StructureBehavior
                 ]),
                 new ProgressBar(() => status.timeWorked / 15f),
                 new ElementStack(Enumerable.Range(0, status.partCounts.Length).Select(i => new DynamicLabel(() => $"{status.partCounts[i]}/5 parts"))),
-            ]) { DrawBorder = true };
+            ])
+            { DrawBorder = true };
         }
         else
         {
@@ -161,8 +161,9 @@ internal class ShipyardBehavior : StructureBehavior
 
     public override void Update()
     {
-        if (buildButton.clicked && Instance.Team.Materials >= 20)
+        if (buildButton.clicked && Team.Actor!.Credits >= 20)
         {
+            Team.Actor!.Credits -= 20;
             BuildShip();
         }
 
@@ -189,14 +190,14 @@ internal class ShipyardBehavior : StructureBehavior
 
             if (buildQueue[0].timeWorked > 15)
             {
-                var ship = new Ship(Instance.Team);
-                ship.Transform.Position = Instance.Grid.Transform.Position + Instance.Location.ToCartesian();
-                ship.Transform.Position -= HexCoordinate.UnitR.Rotated(Instance.Rotation).ToCartesian() * .5f;
-                ship.Transform.Rotation = Instance.Rotation * (MathF.Tau / 6f) - MathF.PI / 2f;
+                var ship = new Ship(Prototypes.Get<ShipPrototype>("ship"), World.NewID(), this.Transform, this.Team);
+                // ship.Transform.Position = Structure.Grid.Transform.Position + Structure.Location.ToCartesian();
+                // ship.Transform.Position -= HexCoordinate.UnitR.Rotated(Structure.Rotation).ToCartesian() * .5f;
+                // ship.Transform.Rotation = Structure.Rotation * (MathF.Tau / 6f) - MathF.PI / 2f;
 
                 ship.modules.AddRange(moduleSlots.Where(s => s != null).Select(s => s.provider(ship)));
 
-                ship.orders.Enqueue(new MoveOrder(ship.Transform.Position + (1 + 2 * Random.Shared.NextSingle()) * Random.Shared.NextUnitVector2()));
+                ship.orders.Enqueue(new MoveOrder(null, World.NewID(), Transform.Default, ship.Transform.Position + (1 + 2 * Random.Shared.NextSingle()) * Random.Shared.NextUnitVector2()));
                 World.Ships.Add(ship);
 
                 buildQueue.RemoveAt(0);
@@ -204,7 +205,6 @@ internal class ShipyardBehavior : StructureBehavior
             }
         }
     }
-
     private class BuildAction
     {
         public float timeWorked;
@@ -220,3 +220,18 @@ internal class ShipyardBehavior : StructureBehavior
         public Func<Ship, Module> provider;
     }
 }
+
+class ShipyardPrototype : StructurePrototype
+{
+    public override Type ActorType => typeof(Shipyard);
+    
+    public ShipyardPrototype(string title, int price, Model model, string? presetModel, HexCoordinate[] footprint) : base(title, price, model, presetModel, footprint)
+    {
+    }
+
+    public override Structure CreateStructure(ulong id, Grid grid, HexCoordinate location, int rotation, Team team)
+    {
+        return new Shipyard(this, id, grid, location, rotation, team.AsReference());
+    }
+}
+

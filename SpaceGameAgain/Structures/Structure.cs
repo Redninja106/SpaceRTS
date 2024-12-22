@@ -1,4 +1,7 @@
-﻿using SpaceGame.Teams;
+﻿using SpaceGame.Interaction;
+using SpaceGame.Ships;
+using SpaceGame.Ships.Modules;
+using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,49 +9,151 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
-internal class Structure
+internal class Structure(StructurePrototype prototype, ulong id, Grid grid, HexCoordinate location, int rotation, ActorReference<Team> team) : Unit(prototype, id, Transform.Default, team)
 {
-    public string Name { get; }
-    public string Title { get; }
-    public Model Model { get; }
-    public List<HexCoordinate> Footprint { get; }
-    public Type? BehaviorType { get; }
-    public Vector2[] Outline { get; }
-    public int Price { get; }
+    public override StructurePrototype Prototype => (StructurePrototype)base.Prototype;
 
-    public Structure(string name, int price, Model model, List<HexCoordinate> footprint, Type? behaviorType)
+    public HexCoordinate Location { get; set; } = location;
+    public int Rotation { get; set; } = rotation;
+    public Grid Grid { get; set; } = grid;
+    public List<HexCoordinate>? Footprint { get; set; }
+
+    private Vector2[]? outline;
+
+    public override ref Transform Transform 
     {
-        this.Name = name;
-        this.Price = price;
-        this.Title = name.ToUpper();
-        this.Model = model;
-        this.Footprint = footprint;
-        this.BehaviorType = behaviorType;
-
-        this.Outline = CreateOutline(footprint);
+        get 
+        { 
+            base.Transform = Grid.Transform.Translated(Location.ToCartesian()).Rotated(Rotation * (MathF.Tau / 6f));
+            return ref base.Transform;
+        }
     }
 
-    public static Vector2[] CreateOutline(List<HexCoordinate> footprint)
-    {
-        List<Vector2> segments = [];
+    //public Structure(HexCoordinate location, int rotation, Grid grid, StructurePrototype structure, Team team, Type? behaviorType, List<HexCoordinate>? footprint)
+    //{
+    //    Location = location;
+    //    Rotation = rotation;
+    //    Structure = structure;
+    //    Grid = grid;
+    //    this.Team = team;
+    //    this.Footprint = footprint;
+    //    ComputeOutline();
 
-        foreach (var coordinate in footprint)
+    //    if (behaviorType != null)
+    //        Behavior = (StructureBehavior)Activator.CreateInstance(behaviorType, this)!;
+    //}
+
+    public void ComputeOutline()
+    {
+        if (Footprint != null)
         {
-            for (int i = 0; i < 6; i++)
+            outline = StructurePrototype.CreateOutline(Footprint.ToArray());
+        }
+    }
+
+    public override bool TestPoint(Vector2 point, Transform transform)
+    {
+        Vector2 localPoint = Grid.Transform.WorldToLocal(transform.LocalToWorld(point));
+        HexCoordinate coord = HexCoordinate.FromCartesian(localPoint);
+        return Grid.GetCell(coord) is GridCell cell && cell.Structure.Actor == this;
+    }
+
+    public override void Render(ICanvas canvas)
+    {
+        bool isSelected = World.SelectionHandler.IsSelected(this);
+        if (isSelected)
+        {
+            var outline = this.outline ?? Prototype.Outline;
+
+            for (int i = 0; i < outline.Length; i += 2)
             {
-                if (!footprint.Contains(coordinate + HexCoordinate.UnitQ.Rotated(i)))
-                {
-                    segments.Add(coordinate.ToCartesian() + Angle.ToVector((i + 0) * (MathF.Tau / 6f)));
-                    segments.Add(coordinate.ToCartesian() + Angle.ToVector((i + 1) * (MathF.Tau / 6f)));
-                }
+                canvas.Stroke(Team.Actor!.GetRelationColor(World.PlayerTeam.Actor!));
+                canvas.StrokeWidth(0);
+                canvas.DrawLine(outline[i], outline[i + 1]);
             }
         }
 
-        return segments.ToArray();
+        if (Prototype is ZonedStructurePrototype zone)
+        {
+            if (!isSelected && ((World.SelectionHandler.GetSelectedObject() as Ship)?.modules?.Any(m => m is ConstructionModule) ?? false))
+            {
+                canvas.Fill(zone.Color with { A = .5f });
+                foreach (var cell in Prototype.Footprint)
+                {
+                    canvas.PushState();
+                    canvas.Translate(cell.ToCartesian());
+                    canvas.DrawPolygon(Grid.hexagon);
+                    canvas.PopState();
+                }
+            }
+
+            //if (Behavior != null)
+            //{
+            //    Behavior?.RenderBeforeCells(canvas);
+
+            //    foreach (var cell in Footprint ?? Prototype.Footprint)
+            //    {
+            //        canvas.PushState();
+            //        canvas.Translate(cell.ToCartesian());
+            //        Behavior?.RenderCell(canvas, cell);
+            //        canvas.PopState();
+            //    }
+
+            //    Behavior?.RenderAfterCells(canvas);
+            //}
+        }
+        else
+        {
+            Prototype.Model.Render(canvas);
+        }
     }
 
-    public StructureInstance CreateInstance(Grid grid, HexCoordinate location, int rotation, Team team, List<HexCoordinate>? footprint)
+    public void RenderShadow(ICanvas canvas, Vector2 offset)
     {
-        return new StructureInstance(location, rotation, grid, this, team, BehaviorType, footprint);
+        if (Prototype is ZonedStructurePrototype zone)
+        {
+            foreach (var cell in Prototype.Footprint)
+            {
+                canvas.PushState();
+                canvas.Translate(cell.ToCartesian());
+                // Behavior?.RenderCellShadow(canvas, offset, cell);
+                canvas.PopState();
+            }
+
+            return;
+        }
+
+        Prototype.Model.RenderShadow(canvas, offset);
+    }
+
+    //public override void Damage()
+    //{
+    //    health--;
+    //    if (health <= 0)
+    //        IsDestroyed = true;
+    //}
+
+    public override void Update()
+    {
+        // Behavior?.Update();
+    }
+
+    public override void OnDestroyed()
+    {
+        Grid.RemoveStructure(this);
+        base.OnDestroyed();
+    }
+
+    public override void Serialize(BinaryWriter writer)
+    {
+        writer.Write(ID);
+
+        writer.Write(Team);
+        writer.Write(Grid.Parent.AsReference());
+
+        writer.Write(Location.Q);
+        writer.Write(Location.R);
+        writer.Write(Rotation);
+
     }
 }

@@ -10,12 +10,12 @@ using System.Threading.Tasks;
 namespace SpaceGame.Interaction;
 internal class ConstructionInteractionContext : IInteractionContext
 {
-    private Structure structure;
+    private StructurePrototype prototype;
     private Grid? hoveredGrid;
     private HexCoordinate hoveredLocation;
     // private int rotation;
     private HashSet<HexCoordinate> draggedCells = [];
-    private StructureInstance? appendInstance;
+    private Structure? appendInstance;
 
     public void Update(MouseState leftMouse, MouseState rightMouse)
     {
@@ -45,14 +45,14 @@ internal class ConstructionInteractionContext : IInteractionContext
 
             if (leftMouse.Holding)
             {
-                if (hoveredGrid.IsStructureObstructed(structure, hoveredLocation, 0))
+                if (hoveredGrid.IsStructureObstructed(prototype, hoveredLocation, 0))
                 {
                     if (appendInstance == null && draggedCells.Count == 0)
                     {
                         var cell = hoveredGrid.GetCell(hoveredLocation);
-                        if (cell?.Structure?.Structure == structure)
+                        if (cell?.Structure.Actor?.Prototype == prototype)
                         {
-                            appendInstance = cell.Structure;
+                            appendInstance = cell.Structure.Actor;
                         }
                     }
                 }
@@ -78,8 +78,8 @@ internal class ConstructionInteractionContext : IInteractionContext
             {
                 // make sure the player ends on an empty tile that exists, or the structure we're appending to
                 var cell = hoveredGrid.GetCell(hoveredLocation);
-                bool isOnAppend = appendInstance != null && cell.Structure == appendInstance;
-                if (isOnAppend || (cell != null && cell.Structure == null))
+                bool isOnAppend = appendInstance != null && cell.Structure.Actor == appendInstance;
+                if (isOnAppend || (cell != null && cell.Structure.IsNull))
                 {
                     if (appendInstance is null)
                     {
@@ -91,7 +91,7 @@ internal class ConstructionInteractionContext : IInteractionContext
                             cells[i] -= origin;
                         }
 
-                        hoveredGrid.PlaceStructure(structure, origin, 0, World.PlayerTeam, [.. cells]);
+                        hoveredGrid.PlaceStructure(prototype, origin, 0, World.PlayerTeam.Actor!, [.. cells]);
                     }
                     else
                     {
@@ -99,8 +99,8 @@ internal class ConstructionInteractionContext : IInteractionContext
                         foreach (var c in draggedCells)
                         {
                             appendInstance.Footprint!.Add(c - appendInstance.Location);
-                            hoveredGrid.GetCell(c).Structure = appendInstance;
-                            (appendInstance.Behavior as ZoneBehavior)?.OnFootprintChanged();
+                            hoveredGrid.GetCell(c).Structure = appendInstance.AsReference();
+                            // (appendInstance.Behavior as ZoneBehavior)?.OnFootprintChanged();
                         }
                         appendInstance.ComputeOutline();
                     }
@@ -142,27 +142,27 @@ internal class ConstructionInteractionContext : IInteractionContext
             canvas.PushState();
             canvas.Translate(hoveredGrid.Transform.LocalToWorld(cell.ToCartesian()));
             // canvas.Rotate(rotation * (MathF.Tau / 6f));
-            structure.Model.Render(canvas);
+            prototype.Model.Render(canvas);
             canvas.PopState();
         }
 
         bool obstructed = false;
         if (hoveredGrid is not null)
         {
-            obstructed = hoveredGrid.IsStructureObstructed(structure, hoveredLocation, 0);
+            obstructed = hoveredGrid.IsStructureObstructed(prototype, hoveredLocation, 0);
             canvas.Translate(hoveredGrid.Transform.LocalToWorld(hoveredLocation.ToCartesian()));
         }
         else
         {
             canvas.Translate(World.MousePosition);
         }
-        structure.Model.Render(canvas, alpha: 100, color: obstructed ? Color.Red : null);
+        prototype.Model.Render(canvas, alpha: 100, color: obstructed ? Color.Red : null);
     }
 
-    public void BeginPlacing(Structure structre)
+    public void BeginPlacing(StructurePrototype structre)
     {
         Reset();
-        this.structure = structre;
+        this.prototype = structre;
         World.CurrentInteractionContext = this;
     }
 

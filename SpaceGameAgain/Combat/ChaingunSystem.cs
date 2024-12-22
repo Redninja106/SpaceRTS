@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal class ChaingunSystem(UnitBase unit)
+internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Transform transform, Unit unit) : WeaponSystem(prototype, id, transform)
 {
     public float fireRate = 17;
     public float range = 4;
@@ -21,14 +21,14 @@ internal class ChaingunSystem(UnitBase unit)
     private float angle;
     private float timeSinceShot;
 
-    public void Update()
+    public override void Update()
     {
         turnSpeed = MathF.Tau;
         Missile? target = null;
         float minDistance = float.PositiveInfinity;
         foreach (var missile in World.Missiles)
         {
-            if (Vector2.Distance(missile.Transform.Position, unit.Transform.Position) <= range && missile.Target.Team.GetRelation(unit.Team) is TeamRelation.Allies or TeamRelation.Self)
+            if (Vector2.Distance(missile.Transform.Position, unit.Transform.Position) <= range && missile.Target.Actor!.Team.Actor!.GetRelation(unit.Team!.Actor) is TeamRelation.Allies or TeamRelation.Self)
             {
                 if (missile.exploding)
                     continue;
@@ -64,7 +64,7 @@ internal class ChaingunSystem(UnitBase unit)
                 {
                     var soi = World.GetSphereOfInfluence(unit.Transform.Position);
                     var transform = unit.Transform with { Rotation = Angle.FromVector(targetPos - unit.Transform.Position) + .01f * MathF.Sin(Time.TotalTime * 50) };
-                    World.ChaingunRounds.Add(new ChaingunRound(transform, target, soi, speed, range / speed));
+                    World.Add(new Bullet(Prototypes.Get<BulletPrototype>("bullet"), World.NewID(), transform, target, soi, speed, range / speed));
 
                     timeSinceShot = 0;
                     ammo--;
@@ -98,5 +98,10 @@ internal class ChaingunSystem(UnitBase unit)
     public Vector2 Forecast(Vector2 p, Vector2 v, Vector2 a, Vector2 j, float t)
     {
         return p + v * t + (1 / 2f) * a * t * t + (1 / 6f) * j * t * t * t;
+    }
+
+    public override void Serialize(BinaryWriter writer)
+    {
+        throw new NotImplementedException();
     }
 }

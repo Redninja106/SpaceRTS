@@ -11,6 +11,13 @@ using System.Threading.Tasks;
 namespace SpaceGame;
 internal class Model
 {
+    public static readonly Model Default = new([
+        new(-1, -1),
+        new(-1, +1),
+        new(+1, +1),
+        new(+1, -1),
+        ], Color.Purple);
+
     public Shape[] Shapes { get; }
 
     public Model(Vector2[] vertices, Color color) : this([new PolygonShape(vertices, color)])

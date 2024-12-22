@@ -1,4 +1,5 @@
-﻿using SimulationFramework.Drawing.Shaders;
+﻿using ImGuiNET;
+using SimulationFramework.Drawing.Shaders;
 using SimulationFramework.Drawing.Shaders.Compiler;
 using SpaceGame;
 using SpaceGame.Structures;
@@ -46,7 +47,7 @@ internal class Planet : Actor
     private Orbit? orbit;
     private PlanetShader shader;
 
-    public Planet()
+    public Planet(PlanetPrototype prototype, ulong id, Transform transform) : base(prototype, id, transform)
     {
         Grid = new(this);
         SphereOfInfluence = new(this);
@@ -63,13 +64,53 @@ internal class Planet : Actor
         canvas.Fill(shader);
         canvas.DrawCircle(0, 0, Radius);
         
-        // Grid.Render(canvas);
+        Grid.Render(canvas);
         SphereOfInfluence.Render(canvas);
     }
 
     public void UpdateOrbit()
     {
         Orbit?.Update(this, Time.DeltaTime);
+    }
+
+    public override void Serialize(BinaryWriter writer)
+    {
+        writer.Write(ID);
+        writer.Write(Transform);
+        writer.Write(Radius);
+        writer.Write(Color.Value);
+
+        writer.Write(Orbit is not null);
+
+        if (Orbit is not null)
+        {
+            writer.Write(Orbit.center);
+            writer.Write(Orbit.phase);
+            writer.Write(Orbit.radius);
+        }
+
+        writer.Write(Grid.structures.Count);
+        foreach (var actor in Grid.structures)
+        {
+            writer.Write(actor);
+        }
+
+        writer.Write(Grid.cells.Count);
+        foreach (var (coordinate, cell) in Grid.cells)
+        {
+            writer.Write(coordinate);
+            writer.Write(cell.Structure);
+        }
+    }
+
+    public override void Layout()
+    {
+        base.Layout();
+
+        if (ImGui.CollapsingHeader("Planet"))
+        {
+            ImGui.Text(Grid.Parent.ToString());
+        }
     }
 }
 

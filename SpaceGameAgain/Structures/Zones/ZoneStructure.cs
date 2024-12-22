@@ -5,13 +5,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpaceGame.Structures;
+namespace SpaceGame.Structures.Zones;
 internal class ZoneStructure : Structure
 {
-    public ColorF Color { get; }
-
-    public ZoneStructure(string name, int price, Model model, List<HexCoordinate> footprint, Type? behaviorType, ColorF color) : base(name, price, model, footprint, behaviorType)
+    public ZoneStructure(ZoneStructurePrototype prototype, ulong id, Grid grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
     {
-        this.Color = color;
+    }
+}
+
+class ZoneStructurePrototype : StructurePrototype
+{
+    public ZoneStructurePrototype(string title, int price, Model model, string? presetModel) : base(title, price, model, presetModel, [new(0, 0)])
+    {
+
     }
 }

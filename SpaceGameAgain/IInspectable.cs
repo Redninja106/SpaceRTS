@@ -5,8 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame;
-internal interface IService
+internal interface IInspectable
 {
-    void Update();
-    void Render(ICanvas canvas);
+    void Layout();
 }

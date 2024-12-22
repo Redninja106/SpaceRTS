@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal class ChaingunRound : Actor, IDestructable
+internal class Bullet : Actor, IDestructable
 {
     private readonly Missile target;
     private readonly float speed;
@@ -16,7 +16,7 @@ internal class ChaingunRound : Actor, IDestructable
 
     public bool IsDestroyed => age > lifetime;
 
-    public ChaingunRound(Transform transform, Missile target, SphereOfInfluence? sphereOfInfluence, float speed, float lifetime)
+    public Bullet(BulletPrototype prototype, ulong id, Transform transform, Missile target, SphereOfInfluence? sphereOfInfluence, float speed, float lifetime) : base(prototype, id, transform)
     {
         Transform = transform;
         this.target = target;
@@ -48,5 +48,13 @@ internal class ChaingunRound : Actor, IDestructable
     {
         canvas.Fill(Color.Yellow with { A = (byte)MathF.Min(255, 255 * (lifetime - age + .9f * lifetime)) });
         canvas.DrawRect(0, 0, .1f, .015f, Alignment.Center);
+    }
+
+    public void OnDestroyed()
+    {
+    }
+
+    public override void Serialize(BinaryWriter writer)
+    {
     }
 }

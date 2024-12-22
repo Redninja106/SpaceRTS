@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Ships.Orders;
-internal abstract class Order
+internal abstract class Order(OrderPrototype prototype, ulong id, Transform transform) : Actor(prototype, id, transform)
 {
     public abstract bool Complete(Ship ship);
 

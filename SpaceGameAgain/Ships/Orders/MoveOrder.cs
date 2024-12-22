@@ -10,7 +10,7 @@ internal class MoveOrder : Order
 {
     public List<Vector2> targets = [];
 
-    public MoveOrder(Vector2 target)
+    public MoveOrder(MoveOrderPrototype prototype, ulong id, Transform transform, Vector2 target) : base(prototype, id, transform)
     {
         targets.Add(target);
     }
@@ -45,5 +45,9 @@ internal class MoveOrder : Order
             shipPos = target;
         }
         canvas.PushState();
+    }
+
+    public override void Serialize(BinaryWriter writer)
+    {
     }
 }

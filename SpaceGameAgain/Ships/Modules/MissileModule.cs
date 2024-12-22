@@ -13,7 +13,7 @@ internal class MissileModule : Module
 
     public MissileModule(Ship ship) : base(ship)
     {
-        system = new(ship);
+        system = new(null, World.NewID(), Transform.Default, ship);
     }
 
     public override Element[] BuildGUI()
