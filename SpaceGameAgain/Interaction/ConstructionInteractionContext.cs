@@ -13,7 +13,7 @@ internal class ConstructionInteractionContext : IInteractionContext
     private StructurePrototype prototype;
     private Grid? hoveredGrid;
     private HexCoordinate hoveredLocation;
-    // private int rotation;
+    private int rotation;
     private HashSet<HexCoordinate> draggedCells = [];
     private Structure? appendInstance;
 
@@ -26,26 +26,26 @@ internal class ConstructionInteractionContext : IInteractionContext
             return;
         }
 
-        // if (Keyboard.IsKeyPressed(Key.R))
-        // {
-        //     if (Keyboard.IsKeyDown(Key.LeftShift))
-        //     {
-        //         rotation--;
-        //     }
-        //     else
-        //     {
-        //         rotation++;
-        //     }
-        // }
+        if (prototype.CanBeRotated && Keyboard.IsKeyPressed(Key.R))
+        {
+            if (Keyboard.IsKeyDown(Key.LeftShift))
+            {
+                rotation--;
+            }
+            else
+            {
+                rotation++;
+            }
+        }
 
         UpdateHoveredGrid();
         if (hoveredGrid != null)
         {
-            hoveredLocation = HexCoordinate.FromCartesian(hoveredGrid.Transform.WorldToLocal(World.MousePosition));
+            hoveredLocation = HexCoordinate.FromCartesian(hoveredGrid.Transform.WorldToLocal(World.MousePosition)) - prototype.Center.Rotated(rotation);
 
             if (leftMouse.Holding)
             {
-                if (hoveredGrid.IsStructureObstructed(prototype, hoveredLocation, 0))
+                if (hoveredGrid.IsStructureObstructed(prototype, hoveredLocation, rotation))
                 {
                     if (appendInstance == null && draggedCells.Count == 0)
                     {
@@ -91,7 +91,7 @@ internal class ConstructionInteractionContext : IInteractionContext
                             cells[i] -= origin;
                         }
 
-                        hoveredGrid.PlaceStructure(prototype, origin, 0, World.PlayerTeam.Actor!, [.. cells]);
+                        hoveredGrid.PlaceStructure(prototype, origin, rotation, World.PlayerTeam.Actor!, [.. cells]);
                     }
                     else
                     {
@@ -133,6 +133,7 @@ internal class ConstructionInteractionContext : IInteractionContext
     {
         draggedCells.Clear();
         appendInstance = null;
+        rotation = 0;
     }
 
     public void Render(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)
@@ -141,7 +142,7 @@ internal class ConstructionInteractionContext : IInteractionContext
         {
             canvas.PushState();
             canvas.Translate(hoveredGrid.Transform.LocalToWorld(cell.ToCartesian()));
-            // canvas.Rotate(rotation * (MathF.Tau / 6f));
+            canvas.Rotate(rotation * (MathF.Tau / 6f));
             prototype.Model.Render(canvas);
             canvas.PopState();
         }
@@ -156,6 +157,15 @@ internal class ConstructionInteractionContext : IInteractionContext
         {
             canvas.Translate(World.MousePosition);
         }
+
+        canvas.Stroke(Color.Gray);
+        canvas.StrokeWidth(0);
+        for (int i = 0; i < prototype.Outline.Length; i += 2)
+        {
+            canvas.DrawLine(prototype.Outline[i], prototype.Outline[i + 1]);
+        }
+
+        canvas.Rotate(rotation * (MathF.Tau / 6f));
         prototype.Model.Render(canvas, alpha: 100, color: obstructed ? Color.Red : null);
     }
 

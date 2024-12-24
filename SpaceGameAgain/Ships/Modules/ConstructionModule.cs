@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Ships.Modules;
-internal class ConstructionModule(Ship ship) : Module(ship)
+internal class ConstructionModule(ConstructionModulePrototype prototype, ulong id, ActorReference<Ship> ship) : Module(prototype, id, ship)
 {
     static ITexture defensive = Graphics.LoadTexture("./Assets/Icons/defensive.png");
     static ITexture industrial = Graphics.LoadTexture("./Assets/Icons/industrial.png");
@@ -25,24 +25,23 @@ internal class ConstructionModule(Ship ship) : Module(ship)
     public override Element[] BuildGUI()
     {
         return [
-            new ElementRow([
-                BuildButton(research, Prototypes.Get<StructurePrototype>("particle_accelerator")),
-                BuildButton(industrial, Prototypes.Get<StructurePrototype>("shipyard")),
-                //BuildButton(economic, Prototypes.Get<StructurePrototype>("generator")),
-                //BuildButton(defensive, Prototypes.Get<StructurePrototype>("turret")),
-
-                //BuildButton(defensive, World.Structures.DefensiveZone),
-                //BuildButton(industrial, World.Structures.IndustrialZone),
-                //BuildButton(economic, World.Structures.EconomicZone),
-                //BuildButton(research, World.Structures.ResearchZone),
-            ]),
+            new ElementStack(
+                Prototypes.RegisteredPrototypes.OfType<StructurePrototype>().Select(proto => {
+                    return new TextButton(proto.Title, () => {
+                        if (Ship.Actor!.Team.Actor!.Credits >= proto.Price)
+                        {
+                            World.ConstructionInteractionContext.BeginPlacing(proto);
+                        }
+                    }){FitContainer = true };
+                }).ToArray()
+            ),
         ];
 
         ImageButton BuildButton(ITexture texture, StructurePrototype structure)
         {
             return new ImageButton(texture, 16, 16, () =>
             {
-                if (Ship.Team.Actor!.Credits >= structure.Price)
+                if (Ship.Actor!.Team.Actor!.Credits >= structure.Price)
                 {
                     World.ConstructionInteractionContext.BeginPlacing(structure);
                 }
@@ -64,5 +63,28 @@ internal class ConstructionModule(Ship ship) : Module(ship)
 
     public override void RenderSelected(ICanvas canvas)
     {
+    }
+
+    public override void Serialize(BinaryWriter writer)
+    {
+        writer.Write(ID);
+        writer.Write(Ship);
+    }
+}
+
+class ConstructionModulePrototype : ModulePrototype
+{
+
+    public override Actor? Deserialize(BinaryReader reader)
+    {
+        ulong id = reader.ReadUInt64();
+        ActorReference<Ship> ship = reader.ReadActorReference<Ship>();
+
+        return new ConstructionModule(this, id, ship);
+    }
+
+    public override Module CreateModule(ulong id, ActorReference<Ship> ship)
+    {
+        return new ConstructionModule(this, id, ship);
     }
 }

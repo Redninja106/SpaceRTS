@@ -11,27 +11,27 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal class MissileSystem(MissileSystemPrototype prototype, ulong id, Transform transform, Unit unit) : WeaponSystem(prototype, id, transform)
+internal class MissileSystem(MissileSystemPrototype prototype, ulong id, ActorReference<Unit> unit) : WeaponSystem(prototype, id, unit)
 {
     public int SalvoSize { get; } = 5;
     public int MissilesRemaining { get; set; } = 5;
     public float FireRate { get; } = 2f;
 
-    private float timeSinceMissile;
-    private ActorReference<Unit> target;
+    public float timeSinceMissile;
+    public ActorReference<Unit> target;
 
     public override void Update()
     {
-        if (unit is Ship ship && ship.orders.Count > 0 && ship.orders.Peek() is AttackOrder attackOrder)
+        if (unit.Actor is Ship ship && ship.orders.Count > 0 && ship.orders.Peek() is AttackOrder attackOrder)
         {
             target = attackOrder.target;
         }
-        else if (target == null)
+        else if (target.IsNull)
         {
             // TODO: replace this awful, no good, terrible way of doing this with some kind of bin system
             foreach (var s in World.Ships)
             {
-                if (unit.Team.Actor!.GetRelation(s.Team.Actor!) is TeamRelation.Enemies && unit.Transform.Distance(s.Transform) < 12)
+                if (unit.Actor!.Team.Actor!.GetRelation(s.Team.Actor!) is TeamRelation.Enemies && unit.Actor!.Transform.Distance(s.Transform) < 12)
                 {
                     target = ActorReference<Unit>.Create(s);
                     break;
@@ -39,7 +39,7 @@ internal class MissileSystem(MissileSystemPrototype prototype, ulong id, Transfo
             }
             foreach (var s in World.Structures)
             {
-                if (unit.Team.Actor!.GetRelation(s.Team.Actor!) is TeamRelation.Enemies && unit.Transform.Distance(s.Transform) < 12)
+                if (unit.Actor!.Team.Actor!.GetRelation(s.Team.Actor!) is TeamRelation.Enemies && unit.Actor!.Transform.Distance(s.Transform) < 12)
                 {
                     target = ActorReference<Unit>.Create(s);
                     break;
@@ -73,7 +73,7 @@ internal class MissileSystem(MissileSystemPrototype prototype, ulong id, Transfo
         World.Add(new Missile(
             Prototypes.Get<MissilePrototype>("missile"),
             World.NewID(),
-            unit.Transform.Rotated((Random.Shared.NextSingle() - .5f) * MathF.PI / 10f),
+            unit.Actor!.Transform.Rotated((Random.Shared.NextSingle() - .5f) * MathF.PI / 10f),
             ActorReference<Unit>.Create(target),
             Random.Shared.NextUnitVector2() * Random.Shared.NextSingle() * 1.5f
             ));
@@ -91,5 +91,10 @@ internal class MissileSystem(MissileSystemPrototype prototype, ulong id, Transfo
 
     public override void Serialize(BinaryWriter writer)
     {
+        writer.Write(ID);
+        writer.Write(unit);
+        writer.Write(target);
+        writer.Write(MissilesRemaining);
+        writer.Write(timeSinceMissile);
     }
 }

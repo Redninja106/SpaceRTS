@@ -1,0 +1,14 @@
+{
+  "prototype": "ManufactoryPrototype",
+  "name": "manufactory",
+  "title": "Manufactory",
+  "footprint": [
+    [ 0, 0 ],
+    [ 0, 1 ],
+    [ 1, 0 ]
+  ],
+  "price": 100,
+  "preset_model": "manufactory",
+  "can_be_rotated": true,
+  "max_health": 10
+}

@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Transform transform, Unit unit) : WeaponSystem(prototype, id, transform)
+internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, ActorReference<Unit> unit) : WeaponSystem(prototype, id, unit)
 {
     public float fireRate = 17;
     public float range = 4;
@@ -18,8 +18,8 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Trans
     public float turnSpeed = MathF.Tau;
 
     public int ammo = 150;
-    private float angle;
-    private float timeSinceShot;
+    public float angle;
+    public float timeSinceShot;
 
     public override void Update()
     {
@@ -28,12 +28,12 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Trans
         float minDistance = float.PositiveInfinity;
         foreach (var missile in World.Missiles)
         {
-            if (Vector2.Distance(missile.Transform.Position, unit.Transform.Position) <= range && missile.Target.Actor!.Team.Actor!.GetRelation(unit.Team!.Actor) is TeamRelation.Allies or TeamRelation.Self)
+            if (Vector2.Distance(missile.Transform.Position, unit.Actor!.Transform.Position) <= range && missile.Target.Actor!.Team.Actor!.GetRelation(unit.Actor!.Team.Actor!) is TeamRelation.Allies or TeamRelation.Self)
             {
                 if (missile.exploding)
                     continue;
 
-                float dist = Vector2.Distance(missile.Transform.Position, unit.Transform.Position);
+                float dist = Vector2.Distance(missile.Transform.Position, unit.Actor!.Transform.Position);
                 if (dist < minDistance)
                 {
                     target = missile;
@@ -55,16 +55,16 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Trans
 
                 for (int i = 0; i < 8; i++)
                 {
-                    targetPos = PredictBullet(unit.Transform.Position, targetPos, speed, position, velocity, acceleration, jerk, 1);
+                    targetPos = PredictBullet(unit.Actor!.Transform.Position, targetPos, speed, position, velocity, acceleration, jerk, 1);
                 }
 
-                float targetAngle = Angle.FromVector(targetPos - unit.Transform.Position);
+                float targetAngle = Angle.FromVector(targetPos - unit.Actor!.Transform.Position);
                 angle = Angle.Step(angle, targetAngle, turnSpeed * Time.DeltaTime);
                 if (Angle.Distance(angle, targetAngle) < 0.05f)
                 {
-                    var soi = World.GetSphereOfInfluence(unit.Transform.Position);
-                    var transform = unit.Transform with { Rotation = Angle.FromVector(targetPos - unit.Transform.Position) + .01f * MathF.Sin(Time.TotalTime * 50) };
-                    World.Add(new Bullet(Prototypes.Get<BulletPrototype>("bullet"), World.NewID(), transform, target, soi, speed, range / speed));
+                    var soi = World.GetSphereOfInfluence(unit.Actor!.Transform.Position);
+                    var transform = unit.Actor!.Transform with { Rotation = Angle.FromVector(targetPos - unit.Actor!.Transform.Position) + .01f * MathF.Sin(Time.TotalTime * 50) };
+                    World.Add(new Bullet(Prototypes.Get<BulletPrototype>("bullet"), World.NewID(), transform, target.AsReference(), range / speed));
 
                     timeSinceShot = 0;
                     ammo--;
@@ -102,6 +102,10 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Trans
 
     public override void Serialize(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write(ID);
+        writer.Write(unit);
+        writer.Write(ammo);
+        writer.Write(angle);
+        writer.Write(timeSinceShot);
     }
 }

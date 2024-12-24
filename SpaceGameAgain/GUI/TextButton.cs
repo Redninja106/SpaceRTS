@@ -55,8 +55,8 @@ internal class TextButton : Element
         clicked = false;
 
         Rectangle bounds = new(locationX, locationY, Width, Height);
-        hovered = bounds.ContainsPoint(Program.ViewportMousePosition);
-
+        hovered = bounds.ContainsPoint(Mouse.Position / Program.actualGUIScale);
+       
         if (hovered && Mouse.IsButtonPressed(MouseButton.Left))
         {
             pressed = true;

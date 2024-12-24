@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Structures.Zones;
 internal class ZoneStructure : Structure
 {
-    public ZoneStructure(ZoneStructurePrototype prototype, ulong id, Grid grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
+    public ZoneStructure(ZoneStructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
     {
     }
 }

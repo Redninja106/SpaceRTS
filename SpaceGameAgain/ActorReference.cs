@@ -60,4 +60,20 @@ struct ActorReference<TActor>
     {
         return id.GetHashCode();
     }
+
+    public ActorReference<T> Cast<T>()
+        where T : Actor
+    {
+        if (actor == null)
+        {
+            return ActorReference<T>.Create(id);
+        }
+        
+        if (actor is T result)
+        {
+            return ActorReference<T>.Create(result);
+        }
+
+        throw new InvalidCastException();
+    }
 }

@@ -15,6 +15,8 @@ internal class StructurePrototype : UnitPrototype
     public Vector2[] Outline { get; }
     public int Price { get; }
     public string? PresetModel { get; }
+    public HexCoordinate Center { get; set; }
+    public bool CanBeRotated { get; set; }
 
     public StructurePrototype(string title, int price, Model model, string? presetModel, HexCoordinate[] footprint)
     {
@@ -47,23 +49,23 @@ internal class StructurePrototype : UnitPrototype
     }
 
     
-    public virtual Structure CreateStructure(ulong id, Grid grid, HexCoordinate location, int rotation, Team team)
+    public virtual Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
     {
-        return new Structure(this, id, grid, location, rotation, team.AsReference());
+        return new Structure(this, id, grid, location, rotation, team);
     }
 
     public override Actor? Deserialize(BinaryReader reader)
     {
-        ulong id = reader.ReadUInt64();
+        DeserializeArgs(reader, out var id, out var team, out var grid, out var location, out var rotation);
+        return CreateStructure(id, team, grid, location, rotation);
+    }
 
-        ActorReference<Team> team = reader.ReadActorReference<Team>();
-        ActorReference<Actor> gridParent = reader.ReadActorReference<Actor>();
-
-        int q = reader.ReadInt32();
-        int r = reader.ReadInt32();
-        int rotation = reader.ReadInt32();
-
-        return new Structure(this, id, ((Planet)gridParent.Actor!).Grid, new(q, r), rotation, team);
-
+    public void DeserializeArgs(BinaryReader reader, out ulong id, out ActorReference<Team> team, out ActorReference<Grid> grid, out HexCoordinate location, out int rotation)
+    {
+        id = reader.ReadUInt64();
+        team = reader.ReadActorReference<Team>();
+        grid = reader.ReadActorReference<Grid>();
+        location = reader.ReadHexCoordinate();
+        rotation = reader.ReadInt32();
     }
 }

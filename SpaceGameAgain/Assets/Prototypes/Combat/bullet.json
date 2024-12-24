@@ -1,4 +1,5 @@
 {
   "prototype": "BulletPrototype",
-  "name": "bullet"
+  "name": "bullet",
+  "speed": 10
 }

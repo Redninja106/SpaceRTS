@@ -26,6 +26,7 @@
 
 	<ItemGroup>
 	  <Folder Include="Assets\Icons\" />
+	  <Folder Include="Assets\Prototypes\Modules\" />
 	  <Folder Include="Commands\" />
 	</ItemGroup>
 

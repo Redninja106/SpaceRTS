@@ -10,5 +10,5 @@
     [ 1, 0 ],
     [ 0, 1 ]
   ],
-  "turret_kind": "missile"
+  "weapon_system_prototype": "missile_system"
 }

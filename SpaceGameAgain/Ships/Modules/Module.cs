@@ -6,17 +6,25 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Ships.Modules;
-internal abstract class Module
+internal abstract class Module : Actor
 {
-    public Ship Ship { get; }
+    public ActorReference<Ship> Ship { get; }
 
-    public Module(Ship ship)
+    public Module(ModulePrototype prototype, ulong id, ActorReference<Ship> ship) : base(prototype, id, Transform.Default)
     {
         this.Ship = ship;
     }
 
     public abstract Element[] BuildGUI();
-    public abstract void Update();
-    public abstract void Render(ICanvas canvas);
     public abstract void RenderSelected(ICanvas canvas);
+}
+
+abstract class ModulePrototype : Prototype
+{
+    public override Actor? Deserialize(BinaryReader reader)
+    {
+        return null;
+    }
+
+    public abstract Module CreateModule(ulong id, ActorReference<Ship> ship);
 }

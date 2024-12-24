@@ -1,0 +1,17 @@
+{
+  "prototype": "StructurePrototype",
+  "name": "spaceport",
+  "title": "Spaceport",
+  "max_health": 10,
+  "footprint": [
+    [ 0, 0 ],
+    [ 1, 0 ],
+    [ 0, 1 ],
+    [ -1, 1 ],
+    [ -1, 0 ],
+    [ 0, -1 ],
+    [ 1, -1 ]
+  ],
+  "preset_model": "default"
+
+}

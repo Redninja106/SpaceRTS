@@ -9,6 +9,22 @@ internal class MissileSystemPrototype : WeaponSystemPrototype
 {
     public override Actor? Deserialize(BinaryReader reader)
     {
-        throw new NotImplementedException();
+        ulong id = reader.ReadUInt64();
+        ActorReference<Unit> unit = reader.ReadActorReference<Unit>();
+        ActorReference<Unit> target = reader.ReadActorReference<Unit>();
+        int missilesRemaining = reader.ReadInt32();
+        float timeSinceMissile = reader.ReadSingle();
+
+        return new MissileSystem(this, id, unit)
+        {
+            MissilesRemaining = missilesRemaining,
+            timeSinceMissile = timeSinceMissile,
+            target = target
+        };
+    }
+
+    public override WeaponSystem CreateWeapon(ulong id, ActorReference<Unit> unit)
+    {
+        return new MissileSystem(this, id, unit);
     }
 }

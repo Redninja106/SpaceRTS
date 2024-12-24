@@ -25,7 +25,7 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
     ];
 
     public Queue<Order> orders = [];
-    public List<Module> modules = [];
+    public List<ActorReference<Module>> modules = [];
 
     public float height = height;
     
@@ -76,7 +76,7 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
         foreach (var module in modules)
         {
-            module.Update();
+            module.Actor!.Update();
         }
 
         if (orders.Count > 0 && height >= .4f) 
@@ -130,5 +130,11 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
         writer.Write(Transform);
         writer.Write(Team);
         writer.Write(height);
+
+        writer.Write(modules.Count);
+        foreach (var module in modules)
+        {
+            writer.Write(module);
+        }
     }
 }

@@ -7,19 +7,28 @@ using System.Threading.Tasks;
 namespace SpaceGame.Combat;
 internal class MissilePrototype : Prototype
 {
-    public override Type ActorType => typeof(Missile);
-
     public float Acceleration { get; set; }
     public float MaxSpeed { get; set; }
 
     public override Actor? Deserialize(BinaryReader reader)
     {
-        return new Missile(
-            this, 
-            reader.ReadUInt64(), 
-            reader.ReadTransform(),
-            reader.ReadActorReference<Unit>(), 
-            reader.ReadVector2()
-            );
+        ulong id = reader.ReadUInt64();
+        Transform transform = reader.ReadTransform();
+        ActorReference<Unit> target = reader.ReadActorReference<Unit>();
+        Vector2 targetOffset = reader.ReadVector2();
+        Vector2 lastAcceleration = reader.ReadVector2();
+        Vector2 currentAcceleration = reader.ReadVector2();
+        bool exploding = reader.ReadBoolean();
+        float explosionProgress = reader.ReadSingle();
+        float age = reader.ReadSingle();
+
+        return new Missile(this, id, transform, target, targetOffset)
+        {
+            LastAcceleration = lastAcceleration,
+            CurrentAcceleration = currentAcceleration,
+            exploding = exploding,
+            explosionProgress = explosionProgress,
+            age = age,
+        };
     }
 }

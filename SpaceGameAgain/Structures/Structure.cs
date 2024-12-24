@@ -1,4 +1,5 @@
 ﻿using SpaceGame.Interaction;
+using SpaceGame.Planets;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 using SpaceGame.Teams;
@@ -9,16 +10,19 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
-internal class Structure(StructurePrototype prototype, ulong id, Grid grid, HexCoordinate location, int rotation, ActorReference<Team> team) : Unit(prototype, id, Transform.Default, team)
+internal class Structure(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : Unit(prototype, id, Transform.Default, team)
 {
     public override StructurePrototype Prototype => (StructurePrototype)base.Prototype;
 
     public HexCoordinate Location { get; set; } = location;
     public int Rotation { get; set; } = rotation;
-    public Grid Grid { get; set; } = grid;
+    public Grid Grid => grid.Actor!;
     public List<HexCoordinate>? Footprint { get; set; }
 
     private Vector2[]? outline;
+    private ActorReference<Grid> grid = grid;
+
+    public HashSet<Structure> neighbors = [];
 
     public override ref Transform Transform 
     {
@@ -48,6 +52,27 @@ internal class Structure(StructurePrototype prototype, ulong id, Grid grid, HexC
         if (Footprint != null)
         {
             outline = StructurePrototype.CreateOutline(Footprint.ToArray());
+        }
+    }
+
+    public IEnumerable<HexCoordinate> GetAdjacentCells()
+    {
+        foreach (var cell in Prototype.Footprint)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                HexCoordinate neighbor = cell + HexCoordinate.UnitQ.Rotated(i);
+                if (Prototype.Footprint.Contains(neighbor))
+                {
+                    continue;
+                }
+                if (Grid.GetCell(neighbor) is null)
+                {
+                    continue;
+                }
+
+                yield return neighbor;
+            }
         }
     }
 
@@ -126,6 +151,20 @@ internal class Structure(StructurePrototype prototype, ulong id, Grid grid, HexC
         Prototype.Model.RenderShadow(canvas, offset);
     }
 
+    public override void FinalizeDeserialization()
+    {
+        base.FinalizeDeserialization();
+
+        foreach (var cell in this.GetAdjacentCells())
+        {
+            var structure = Grid.GetCell(Location + cell)?.Structure.Actor;
+            if (structure != null)
+            {
+                neighbors.Add(structure);
+            }
+        }
+    }
+
     //public override void Damage()
     //{
     //    health--;
@@ -149,11 +188,19 @@ internal class Structure(StructurePrototype prototype, ulong id, Grid grid, HexC
         writer.Write(ID);
 
         writer.Write(Team);
-        writer.Write(Grid.Parent.AsReference());
+        writer.Write(grid);
 
         writer.Write(Location.Q);
         writer.Write(Location.R);
         writer.Write(Rotation);
+    }
+
+    public virtual void OnNeighborAdded(Structure neighbor)
+    {
+    }
+
+    public virtual void OnNeighborRemoved(Structure neighbor)
+    {
 
     }
 }

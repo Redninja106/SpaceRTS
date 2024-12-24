@@ -58,7 +58,7 @@ internal class SelectionHandler
                 
                 foreach (var module in ship.modules)
                 {
-                    stack.AddRange(module.BuildGUI());
+                    stack.AddRange(module.Actor!.BuildGUI());
                 }
             }
             else if (singleSelected is Structure structure)

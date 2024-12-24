@@ -40,23 +40,32 @@ internal class Planet : Actor
         }
     }
 
-    public Grid Grid { get; }
+    public Grid Grid => grid.Actor!;
 
     public SphereOfInfluence SphereOfInfluence { get; }
 
+    private ActorReference<Grid> grid;
     private Orbit? orbit;
     private PlanetShader shader;
 
-    public Planet(PlanetPrototype prototype, ulong id, Transform transform) : base(prototype, id, transform)
+    public Planet(PlanetPrototype prototype, ulong id, Transform transform, ActorReference<Grid> grid = default) : base(prototype, id, transform)
     {
-        Grid = new(this);
+        if (grid.IsNull)
+        {
+            this.grid = new Grid(Prototypes.Get<GridPrototype>("grid"), World.NewID(), this.AsReference().Cast<Actor>()).AsReference();
+            World.Add(this.grid.Actor!);
+        }
+        else
+        {
+            this.grid = grid;
+        }
+
         SphereOfInfluence = new(this);
         shader = new PlanetShader();
     }
 
     public override void Update()
     {
-        Grid.Update();
     }
 
     public override void Render(ICanvas canvas)
@@ -64,7 +73,6 @@ internal class Planet : Actor
         canvas.Fill(shader);
         canvas.DrawCircle(0, 0, Radius);
         
-        Grid.Render(canvas);
         SphereOfInfluence.Render(canvas);
     }
 
@@ -80,6 +88,8 @@ internal class Planet : Actor
         writer.Write(Radius);
         writer.Write(Color.Value);
 
+        writer.Write(grid);
+
         writer.Write(Orbit is not null);
 
         if (Orbit is not null)
@@ -89,18 +99,6 @@ internal class Planet : Actor
             writer.Write(Orbit.radius);
         }
 
-        writer.Write(Grid.structures.Count);
-        foreach (var actor in Grid.structures)
-        {
-            writer.Write(actor);
-        }
-
-        writer.Write(Grid.cells.Count);
-        foreach (var (coordinate, cell) in Grid.cells)
-        {
-            writer.Write(coordinate);
-            writer.Write(cell.Structure);
-        }
     }
 
     public override void Layout()

@@ -17,7 +17,7 @@ internal class ElementWindow
     public float Width { get; set; }
     public float Height { get; set; }
 
-    public void Update(int displayWidth, int displayHeight)
+    public void Update(float displayWidth, float displayHeight)
     {
         CalculateBounds(displayWidth, displayHeight, out var bounds, out var content);
         Stack.UpdateSize(content.Width, content.Height);
@@ -25,7 +25,7 @@ internal class ElementWindow
         Stack.Update(content.Position.X, content.Position.Y);
     }
 
-    public void Render(ICanvas canvas, int displayWidth, int displayHeight)
+    public void Render(ICanvas canvas, float displayWidth, float displayHeight)
     {
         CalculateBounds(displayWidth, displayHeight, out var bounds, out var content);
         
@@ -40,7 +40,7 @@ internal class ElementWindow
         Stack.Render(canvas);
     }
 
-    public void CalculateBounds(int displayWidth, int displayHeight, out Rectangle bounds, out Rectangle content)
+    public void CalculateBounds(float displayWidth, float displayHeight, out Rectangle bounds, out Rectangle content)
     {
         Rectangle viewport = new(0, 0, displayWidth, displayHeight);
 

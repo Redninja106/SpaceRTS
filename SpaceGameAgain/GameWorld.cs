@@ -32,6 +32,7 @@ internal class GameWorld
     public List<Missile> Missiles { get; } = [];
     public List<Bullet> Bullets { get; } = [];
     public List<Structure> Structures { get; } = [];
+    public List<Grid> Grids { get; } = [];
 
     //public List<Station> Stations { get; } = [];
     // public List<Asteroid> Asteroids { get; } = [];
@@ -67,7 +68,7 @@ internal class GameWorld
     {
         Anchor = Alignment.BottomRight,
         Width = 240,
-        Height = 120,
+        Height = 240,
     }; 
     public ElementWindow MapWindow { get; set; } = new()
     {
@@ -113,6 +114,9 @@ internal class GameWorld
         {
             planet.SphereOfInfluence.Update();
         }
+
+        MapWindow.Stack.Clear();
+        MapWindow.Stack.Add(new Label("Credits: " + PlayerTeam.Actor!.Credits));
     }
 
     public void Render(ICanvas canvas)
@@ -128,13 +132,7 @@ internal class GameWorld
         RenderActorList(Planets, canvas);
         //RenderActorList(Stations, canvas);
 
-        foreach (var planet in Planets)
-        {
-            canvas.PushState();
-            planet.Transform.ApplyTo(canvas);
-            planet.Grid.Render(canvas);
-            canvas.PopState();
-        }
+        RenderActorList(Grids, canvas);
 
         foreach (var structure in Structures)
         {
@@ -234,6 +232,7 @@ internal class GameWorld
         if (actor is Team e) Teams.Add(e);
         if (actor is Bullet b) Bullets.Add(b);
         if (actor is Missile m) Missiles.Add(m);
+        if (actor is Grid g) Grids.Add(g);
 
     }
 

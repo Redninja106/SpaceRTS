@@ -261,6 +261,11 @@ static class PresetModels
         ]),
         ["chaingun_turret"] = new Model([new Vector2(-.5f, -.5f), new Vector2(-.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, -.5f)], Color.DarkCyan),
         ["missile_turret"] = new Model([new Vector2(0, 0), HexCoordinate.UnitQ.ToCartesian(), HexCoordinate.UnitR.ToCartesian()], Color.Gray),
+        ["manufactory"] = new Model([
+            new PolygonShape(new Rectangle(-.4f, .85f, .9f, 2.9f, Alignment.CenterLeft).ToPolygon(), Color.Blue),
+            new PolygonShape(new Rectangle(-.4f + .9f, .85f, 2.4f - .9f, 1, Alignment.CenterLeft).ToPolygon(), Color.Blue),
+        ]),
+        ["default"] = new Model([new Vector2(-.5f, -.5f), new Vector2(-.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, -.5f)], Color.Gray),
 
     };
 }

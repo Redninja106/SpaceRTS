@@ -1,4 +1,5 @@
 ﻿using ImGuiNET;
+using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,7 +61,7 @@ internal static class DebugMenu
 
         if (ObjectViewerOpen && ImGui.Begin("object viewer", ref ObjectViewerOpen))
         {
-            LayoutActorWindow();
+            LayoutObjectViewer();
         }
         ImGui.End();
     }
@@ -76,12 +77,17 @@ internal static class DebugMenu
         }
     }
 
-    private static void LayoutActorWindow()
+    private static void LayoutObjectViewer()
     {
         if (objectViewerObject == null)
         {
             ImGui.Text("no actor selected");
             return;
+        }
+
+        if (objectViewerObject is StructurePrototype structurePrototype && ImGui.Button("place"))
+        {
+            World.ConstructionInteractionContext.BeginPlacing(structurePrototype);
         }
 
         if (objectViewerObject is IInspectable inspectable)

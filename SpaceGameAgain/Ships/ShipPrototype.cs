@@ -1,4 +1,5 @@
-﻿using SpaceGame.Teams;
+﻿using SpaceGame.Ships.Modules;
+using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +9,6 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships;
 internal class ShipPrototype : UnitPrototype
 {
-    public override Type ActorType => typeof(Ship);
-
     public override Actor? Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
@@ -17,6 +16,13 @@ internal class ShipPrototype : UnitPrototype
         ActorReference<Team> team = reader.ReadActorReference<Team>();
         float height = reader.ReadSingle();
 
-        return new Ship(this, id, transform, team, height);
+        var ship = new Ship(this, id, transform, team, height);
+        int moduleCount = reader.ReadInt32();
+        for (int i = 0; i < moduleCount; i++)
+        {
+            ship.modules.Add(reader.ReadActorReference<Module>());
+        }
+
+        return ship;
     }
 }

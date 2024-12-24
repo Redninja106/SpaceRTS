@@ -1,4 +1,5 @@
-﻿using SpaceGame.Teams;
+﻿using SpaceGame.Planets;
+using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
-internal class Grid
+internal class Grid : Actor
 {
     public static Vector2[] hexagon = [
         Angle.ToVector(0 * MathF.Tau / 6),
@@ -20,13 +21,13 @@ internal class Grid
 
     public Dictionary<HexCoordinate, GridCell> cells = [];
     public List<ActorReference<Structure>> structures = [];
-    private Actor parent;
+    private ActorReference<Actor> parent;
 
-    public Actor Parent => parent;
+    public Actor Parent => parent.Actor!;
 
-    public ref Transform Transform => ref parent.Transform;
+    public override ref Transform Transform => ref parent.Actor!.Transform;
 
-    public Grid(Actor parent)
+    public Grid(GridPrototype prototype, ulong id, ActorReference<Actor> parent) : base(prototype, id, Transform.Default)
     {
         this.parent = parent;
     }
@@ -59,7 +60,7 @@ internal class Grid
         return cells.TryGetValue(coord, out var cell) ? cell : null;
     }
 
-    public void Render(ICanvas canvas)
+    public override void Render(ICanvas canvas)
     {
         canvas.Stroke(Color.LightGray with { A = 50 });
         foreach (var (coord, cell) in cells)
@@ -118,13 +119,30 @@ internal class Grid
 
     public void PlaceStructure(StructurePrototype prototype, HexCoordinate location, int rotation, Team team, List<HexCoordinate>? footprint = null)
     {
-        var structure = prototype.CreateStructure(World.NewID(), this, location, rotation, team);
+        var structure = prototype.CreateStructure(World.NewID(), team.AsReference(), this.AsReference(), location, rotation);
         World.Add(structure);
 
         foreach (var footprintPart in prototype.Footprint)
         {
             var cellLocation = location + footprintPart.Rotated(rotation);
             GetCell(cellLocation)!.Structure = structure.AsReference();
+        }
+
+        foreach (var cell in structure.GetAdjacentCells())
+        {
+            var neighbor = GetCell(structure.Location + cell)?.Structure.Actor;
+
+            if (neighbor != null)
+            {
+                if (structure.neighbors.Add(neighbor))
+                {
+                    structure.OnNeighborAdded(neighbor);
+                }
+                if (neighbor.neighbors.Add(structure))
+                {
+                    neighbor.OnNeighborAdded(structure);
+                }
+            }
         }
     }
 
@@ -135,21 +153,78 @@ internal class Grid
         return GetCell(coord);
     }
 
-    public void Update()
+    public override void Update()
     {
         
     }
 
 
-    internal void RemoveStructure(Structure instance)
+    internal void RemoveStructure(Structure structure)
     {
-        foreach (var cellLoc in instance.Prototype.Footprint)
+        foreach (var adj in structure.GetAdjacentCells())
         {
-            var cell = GetCell(instance.Location + cellLoc.Rotated(instance.Rotation));
+            var neighbor = GetCell(structure.Location + adj)?.Structure.Actor;
+            neighbor?.OnNeighborRemoved(structure);
+        }
+
+        foreach (var cellLoc in structure.Prototype.Footprint)
+        {
+            var cell = GetCell(structure.Location + cellLoc.Rotated(structure.Rotation));
             if (cell != null)
             {
                 cell.Structure = ActorReference<Structure>.Null;
             }
         }
+    }
+
+    public override void Serialize(BinaryWriter writer)
+    {
+        writer.Write(ID);
+        writer.Write(parent);
+
+        writer.Write(structures.Count);
+        foreach (var actor in structures)
+        {
+            writer.Write(actor);
+        }
+
+        writer.Write(cells.Count);
+        foreach (var (coordinate, cell) in cells)
+        {
+            writer.Write(coordinate);
+            writer.Write(cell.Structure);
+        }
+    }
+}
+
+class GridPrototype : Prototype
+{
+    public override Actor? Deserialize(BinaryReader reader)
+    {
+        ulong id = reader.ReadUInt64();
+        ActorReference<Actor> parent = reader.ReadActorReference<Actor>();
+
+        List<ActorReference<Structure>> structures = new();
+        int structureCount = reader.ReadInt32();
+        for (int i = 0; i < structureCount; i++)
+        {
+            structures.Add(reader.ReadActorReference<Structure>());
+        }
+
+        Dictionary<HexCoordinate, GridCell> cells = new();
+        int cellCount = reader.ReadInt32();
+        for (int i = 0; i < cellCount; i++)
+        {
+            HexCoordinate coordinate = reader.ReadHexCoordinate();
+            ActorReference<Structure> cell = reader.ReadActorReference<Structure>();
+            cells.Add(coordinate, new() { Structure = cell });
+        }
+
+        return new Grid(this, id, parent)
+        {
+            cells = cells,
+            structures = structures,
+        };
+
     }
 }

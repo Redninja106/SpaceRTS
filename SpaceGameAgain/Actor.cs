@@ -29,7 +29,7 @@ internal abstract class Actor(Prototype prototype, ulong id, Transform transform
     {
         if (ImGui.CollapsingHeader("Actor"))
         {
-            ImGui.Text("Prototype: " + Prototype.ToString());
+            ImGui.Text("Prototype: " + Prototype.Name);
             ImGui.Text("ID: " + ID);
             if (ImGui.TreeNode("Transform"))
             {
@@ -46,5 +46,9 @@ internal abstract class Actor(Prototype prototype, ulong id, Transform transform
     public override string ToString()
     {
         return base.ToString() + " (id: " + id + ")";
+    }
+
+    public virtual void FinalizeDeserialization()
+    {
     }
 }

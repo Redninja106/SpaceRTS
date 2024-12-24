@@ -8,8 +8,6 @@ using System.Threading.Tasks;
 namespace SpaceGame.Planets;
 internal class PlanetPrototype : Prototype
 {
-    public override Type ActorType => typeof(Planet);
-
     public override Actor? Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
@@ -18,8 +16,9 @@ internal class PlanetPrototype : Prototype
         float radius = reader.ReadSingle();
         Color color = (Color)reader.ReadUInt32();
 
+        ActorReference<Grid> grid = reader.ReadActorReference<Grid>();
 
-        Planet planet = new Planet(this, id, transform)
+        Planet planet = new Planet(this, id, transform, grid)
         {
             Radius = radius,
             Color = color,
@@ -34,25 +33,6 @@ internal class PlanetPrototype : Prototype
 
             planet.Orbit = new Orbit(center, orbitRadius, phase);
         }
-
-        List<ActorReference<Structure>> structures = new();
-        int structureCount = reader.ReadInt32();
-        for (int i = 0; i < structureCount; i++)
-        {
-            structures.Add(reader.ReadActorReference<Structure>());
-        }
-
-        Dictionary<HexCoordinate, GridCell> cells = new();
-        int cellCount = reader.ReadInt32();
-        for (int i = 0; i < cellCount; i++)
-        {
-            HexCoordinate coordinate = reader.ReadHexCoordinate();
-            ActorReference<Structure> cell = reader.ReadActorReference<Structure>();
-            cells.Add(coordinate, new() { Structure = cell });
-        }
-
-        planet.Grid.structures = structures;
-        planet.Grid.cells = cells;
 
         return planet;
     }

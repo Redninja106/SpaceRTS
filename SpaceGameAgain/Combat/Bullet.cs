@@ -8,32 +8,31 @@ using System.Threading.Tasks;
 namespace SpaceGame.Combat;
 internal class Bullet : Actor, IDestructable
 {
-    private readonly Missile target;
-    private readonly float speed;
-    private readonly float lifetime;
-    private float age;
+    public override BulletPrototype Prototype => (BulletPrototype)base.Prototype;
+
+    private ActorReference<Missile> target;
+    private float lifetime;
     public SphereOfInfluence? sphereOfInfluence;
 
-    public bool IsDestroyed => age > lifetime;
+    public bool IsDestroyed => lifetime <= 0;
 
-    public Bullet(BulletPrototype prototype, ulong id, Transform transform, Missile target, SphereOfInfluence? sphereOfInfluence, float speed, float lifetime) : base(prototype, id, transform)
+    public Bullet(BulletPrototype prototype, ulong id, Transform transform, ActorReference<Missile> target, float lifetime) : base(prototype, id, transform)
     {
         Transform = transform;
         this.target = target;
-        this.speed = speed;
         this.lifetime = lifetime;
-        this.sphereOfInfluence = sphereOfInfluence;
+        this.sphereOfInfluence = World.GetSphereOfInfluence(transform.Position);
     }
 
     public override void Update()
     {
         sphereOfInfluence?.ApplyTo(ref this.Transform);
-        Transform.Position += Transform.Forward * speed * Time.DeltaTime;
+        Transform.Position += Transform.Forward * Prototype.Speed * Time.DeltaTime;
 
         Rectangle bounds = new(0, 0, .1f, .015f, Alignment.Center);
-        if (bounds.ContainsPoint(Transform.WorldToLocal(target.Transform.Position)))
+        if (bounds.ContainsPoint(Transform.WorldToLocal(target.Actor!.Transform.Position)))
         {
-            target.Detonate();
+            target.Actor!.Detonate();
         }
 
         // if (Vector2.Distance(Transform.Position, target.Transform.Position) < 0.015f)
@@ -41,12 +40,12 @@ internal class Bullet : Actor, IDestructable
         //     target.Detonate();
         // }
 
-        age += Time.DeltaTime;
+        lifetime -= Time.DeltaTime;
     }
 
     public override void Render(ICanvas canvas)
     {
-        canvas.Fill(Color.Yellow with { A = (byte)MathF.Min(255, 255 * (lifetime - age + .9f * lifetime)) });
+        canvas.Fill(Color.Yellow with { A = (byte)MathF.Min(255, 255 * (lifetime - lifetime + .9f * lifetime)) });
         canvas.DrawRect(0, 0, .1f, .015f, Alignment.Center);
     }
 
@@ -56,5 +55,9 @@ internal class Bullet : Actor, IDestructable
 
     public override void Serialize(BinaryWriter writer)
     {
+        writer.Write(ID);
+        writer.Write(Transform);
+        writer.Write(target);
+        writer.Write(lifetime);
     }
 }

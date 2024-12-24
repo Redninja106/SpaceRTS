@@ -14,14 +14,14 @@ internal class Missile : Actor, IDestructable
     public Vector2 TargetOffset { get; set; }
 
     public Vector2 Velocity { get; set; }
-    public bool IsDestroyed { get; set; }
+    public bool IsDestroyed => explosionProgress > 1;
 
     public Vector2 LastAcceleration { get; set; }
     public Vector2 CurrentAcceleration { get; set; }
 
     public bool exploding = false;
-    private float explosionProgress;
-    private float age;
+    public float explosionProgress;
+    public float age;
 
     public Missile(MissilePrototype prototype, ulong id, Transform transform, ActorReference<Unit> target, Vector2 targetOffset) : base(prototype, id, transform)
     {
@@ -38,11 +38,6 @@ internal class Missile : Actor, IDestructable
 
         if (exploding)
         {
-            if (explosionProgress > 1)
-            {
-                IsDestroyed = true;
-            }
-
             explosionProgress += Time.DeltaTime;
             return;
         }
@@ -62,7 +57,6 @@ internal class Missile : Actor, IDestructable
 
         var lastVelocity = Velocity;
         Velocity = Util.Step(Velocity, positionDelta, Prototype.Acceleration * Time.DeltaTime);
-        LastAcceleration = CurrentAcceleration;
         CurrentAcceleration = (Velocity - lastVelocity) / Time.DeltaTime;
 
         Transform.Position += Velocity * Time.DeltaTime;
@@ -111,5 +105,15 @@ internal class Missile : Actor, IDestructable
 
     public override void Serialize(BinaryWriter writer)
     {
+        writer.Write(ID);
+        writer.Write(Transform);
+        writer.Write(Target);
+        writer.Write(TargetOffset);
+        writer.Write(Velocity);
+        writer.Write(LastAcceleration);
+        writer.Write(CurrentAcceleration);
+        writer.Write(exploding);
+        writer.Write(explosionProgress);
+        writer.Write(age);
     }
 }

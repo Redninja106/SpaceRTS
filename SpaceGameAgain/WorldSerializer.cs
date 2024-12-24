@@ -39,6 +39,11 @@ internal class WorldSerializer
             }
         }
 
+        foreach (var (id, actor) in world.Actors)
+        {
+            actor.FinalizeDeserialization();
+        }
+
         return world;
     }
 

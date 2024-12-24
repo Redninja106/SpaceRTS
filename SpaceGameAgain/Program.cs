@@ -20,10 +20,12 @@ Start<Program>();
 partial class Program : Simulation
 {
     ITexture view;
-    ITexture uiView;
     public static IFont font;
     public static Vector2 ViewportMousePosition;
-    const float UIResolutionScale = 2f;
+    public static float uiscale = 2f;
+    public static float uiscaleResolutionFactor = 1 / 1920f;
+
+    public static float actualGUIScale = 0;
 
     public override void OnInitialize()
     {
@@ -50,7 +52,9 @@ partial class Program : Simulation
 
         World.Add(new Ship((ShipPrototype)Prototypes.Get("ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(playerTeam)));
 
-        World.Ships[0].modules.Add(new ConstructionModule(World.Ships[0]));
+        var constMod = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), World.Ships[0].AsReference());
+        World.Ships[0].modules.Add(((Module)constMod).AsReference());
+        World.Add(constMod);
 
         PlanetPrototype planetProto = Prototypes.Get<PlanetPrototype>("generic_planet");
 
@@ -109,7 +113,7 @@ partial class Program : Simulation
         //planet1.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(3, -3), 0, enemies);
 
         planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("headquarters"), new(0, 0), 1, enemies);
-        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("shipyard"), new(1, 3), 0, enemies);
+        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("small_assembly_bay"), new(1, 3), 0, enemies);
 
         planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(2, 0), 0, enemies);
         planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(2, 4), 0, enemies);
@@ -157,9 +161,7 @@ partial class Program : Simulation
         if (view is null || view.Width != targetViewWidth)
         {
             view?.Dispose();
-            uiView?.Dispose();
             view = Graphics.CreateTexture(targetViewWidth, 480);
-            uiView = Graphics.CreateTexture((int)(targetViewWidth * UIResolutionScale), (int)(480 * UIResolutionScale));
         }
 
         float vpScaleY = canvas.Height / (float)view.Height;
@@ -189,17 +191,19 @@ partial class Program : Simulation
         World.Camera.Update(view.Width, view.Height);
         Rectangle vp = new(0, 0, view.Width, view.Height);
 
+        actualGUIScale = uiscale * Math.Clamp(canvas.Width * uiscaleResolutionFactor, 1 / uiscale, 1);
+
         ViewportMousePosition = Vector2.Transform(Mouse.Position, viewMatrix.InverseMatrix);
-        World.InfoWindow.CalculateBounds(view.Width, view.Height, out var infoBounds, out _);
-        World.MapWindow.CalculateBounds(view.Width, view.Height, out var mapBounds, out _);
+        World.InfoWindow.CalculateBounds(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale, out var infoBounds, out _);
+        World.MapWindow.CalculateBounds(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale, out var mapBounds, out _);
 
         bool worldFocused = vp.ContainsPoint(ViewportMousePosition) && 
-            !infoBounds.ContainsPoint(ViewportMousePosition) && 
-            !mapBounds.ContainsPoint(ViewportMousePosition);
+            !infoBounds.ContainsPoint(Mouse.Position / actualGUIScale) && 
+            !mapBounds.ContainsPoint(Mouse.Position / actualGUIScale);
 
         World.Update(ViewportMousePosition, worldFocused);
-        World.InfoWindow.Update(view.Width, view.Height);
-        World.MapWindow.Update(view.Width, view.Height);
+        World.InfoWindow.Update(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale);
+        World.MapWindow.Update(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale);
         // World.LeftSidebar.Update(canvas.Width, canvas.Height);
         // World.RightSidebar.Update(canvas.Width, canvas.Height);
 
@@ -207,16 +211,14 @@ partial class Program : Simulation
             return;
 
         RenderView();
-        RenderUI();
 
         canvas.Clear(Color.FromHSV(0, 0, .1f));
 
         canvas.PushState();
         canvas.Transform(viewMatrix.Matrix);
         canvas.DrawTexture(view);
-        canvas.Scale(1f / UIResolutionScale);
-        canvas.DrawTexture(uiView);
         canvas.PopState();
+        RenderUI(canvas);
 
         // canvas.Font(font);
         // canvas.PushState();
@@ -254,21 +256,19 @@ partial class Program : Simulation
         canvas.PopState();
     }
 
-    private void RenderUI()
+    private void RenderUI(ICanvas canvas)
     {
-        var canvas = uiView.GetCanvas();
         canvas.ResetState();
         canvas.Font(font);
-        canvas.Scale(UIResolutionScale);
+
+        canvas.Scale(actualGUIScale);
 
         canvas.PushState();
-        World.InfoWindow.Render(canvas, (int)(canvas.Width / UIResolutionScale), (int)(canvas.Height / UIResolutionScale));
+        World.InfoWindow.Render(canvas, (int)(canvas.Width / actualGUIScale), (int)(canvas.Height / actualGUIScale));
         canvas.PopState();
 
         canvas.PushState();
-        World.MapWindow.Render(canvas, (int)(canvas.Width / UIResolutionScale), (int)(canvas.Height / UIResolutionScale));
+        World.MapWindow.Render(canvas, (int)(canvas.Width / actualGUIScale), (int)(canvas.Height / actualGUIScale));
         canvas.PopState();
-
-
     }
 }

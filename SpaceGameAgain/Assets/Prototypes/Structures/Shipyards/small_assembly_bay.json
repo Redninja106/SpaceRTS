@@ -1,0 +1,14 @@
+{
+  "prototype": "AssemblyBayPrototype",
+  "name": "small_assembly_bay",
+  "title": "Small Assembly Bay",
+  "price": 100,
+  "preset_model": "default",
+  "can_be_rotated": true,
+  "footprint": [
+    [ 0, 0 ],
+    [ 0, 1 ]
+  ],
+  "max_health": 10,
+  "ship_prototype": "ship"
+}

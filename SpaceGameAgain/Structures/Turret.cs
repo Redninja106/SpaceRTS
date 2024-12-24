@@ -9,23 +9,20 @@ using System.Threading.Tasks;
 namespace SpaceGame.Structures;
 internal class Turret : Structure
 {
-    WeaponSystem system;
+    public ActorReference<WeaponSystem> weaponSystem;
 
-    public Turret(TurretPrototype prototype, ulong id, Grid grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
+    public Turret(TurretPrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
     {
-        if (prototype.TurretKind == "missile")
-        {
-            system = new MissileSystem(null, World.NewID(), Transform.Default, this);
-        }
-        else
-        {
-            system = new ChaingunSystem(null, World.NewID(), Transform.Default, this);
-        }
     }
 
     public override void Update()
     {
-        system.Update();
         base.Update();
+    }
+
+    public override void Serialize(BinaryWriter writer)
+    {
+        base.Serialize(writer);
+        writer.Write(weaponSystem);
     }
 }

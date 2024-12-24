@@ -5,6 +5,7 @@
   "price": 500,
   "max_health": 10,
   "preset_model": "particle_accelerator",
+  "center": [ 2, 0 ],
   "footprint": [
     [ 2, -2 ],
     [ 3, -2 ],

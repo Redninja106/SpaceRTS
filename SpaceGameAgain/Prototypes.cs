@@ -38,39 +38,59 @@ static class Prototypes
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
             AllowTrailingCommas = true,
             UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
+            ReadCommentHandling = JsonCommentHandling.Skip,
         };
         options.Converters.Add(new HexCoordinateConverter());
 
+        JsonDocumentOptions docOptions = new()
+        {
+            AllowTrailingCommas = true,
+            CommentHandling = JsonCommentHandling.Skip,
+        };
+
         foreach (var file in Directory.GetFiles("Assets/Prototypes", "*", SearchOption.AllDirectories))
         {
-            JsonDocument document = JsonDocument.Parse(File.ReadAllText(file));
-
-            Type? prototypeType = null;
-            string? prototypeName = null;
-            foreach (var property in document.RootElement.EnumerateObject())
+            try
             {
-                if (property.Name == "prototype")
+                JsonDocument document = JsonDocument.Parse(File.ReadAllText(file), docOptions);
+
+                Type? prototypeType = null;
+                string? prototypeName = null;
+                foreach (var property in document.RootElement.EnumerateObject())
                 {
-                    prototypeType = prototypeTypes[property.Value.GetString()!];
+                    if (property.Name == "prototype")
+                    {
+                        prototypeType = prototypeTypes[property.Value.GetString()!];
+                    }
+
+                    if (property.Name == "name")
+                    {
+                        prototypeName = property.Value.GetString()!;
+                    }
                 }
 
-                if (property.Name == "name")
+                if (prototypeType is null)
                 {
-                    prototypeName = property.Value.GetString()!;
+                    throw new($"could not find prototype type");
                 }
-            }
 
-            if (prototypeType is null || prototypeName is null)
-            {
-                throw new();
-            }
+                if (prototypeType is null)
+                {
+                    throw new($"could not find prototype name for");
+                }
 
-            Prototype? prototype = (Prototype?)document.Deserialize(prototypeType, options);
-            if (prototype is null)
-            {
-                throw new();
+                Prototype? prototype = (Prototype?)document.Deserialize(prototypeType, options);
+                if (prototype is null)
+                {
+                    throw new($"could not deserialize");
+                }
+                prototypes.Add(prototypeName, prototype);
             }
-            prototypes.Add(prototypeName, prototype);
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(file + ": " + ex.Message);
+            }
         }
     }
 

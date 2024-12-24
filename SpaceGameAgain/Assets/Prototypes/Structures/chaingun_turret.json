@@ -8,5 +8,5 @@
   "footprint": [
     [ 0, 0 ]
   ],
-  "turret_kind": "chaingun"
+  "weapon_system_prototype": "chaingun_system"
 }
