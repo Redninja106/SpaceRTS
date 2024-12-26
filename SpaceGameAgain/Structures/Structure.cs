@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
-internal class Structure(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : Unit(prototype, id, Transform.Default, team)
+internal class Structure(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : Unit(prototype, id, grid.Actor!.Transform.Translated(location.ToCartesian()).Rotated(rotation * (MathF.Tau / 6f)), team)
 {
     public override StructurePrototype Prototype => (StructurePrototype)base.Prototype;
 
@@ -172,8 +172,9 @@ internal class Structure(StructurePrototype prototype, ulong id, ActorReference<
     //        IsDestroyed = true;
     //}
 
-    public override void Update()
+    public override void Tick()
     {
+        base.Tick();
         // Behavior?.Update();
     }
 

@@ -32,13 +32,15 @@ internal class Missile : Actor, IDestructable
         Velocity = Angle.ToVector(transform.Rotation) * prototype.MaxSpeed;
     }
 
-    public override void Update()
+    public override void Tick()
     {
+        base.Tick();
+
         World.GetSphereOfInfluence(Transform.Position)?.ApplyTo(this);
 
         if (exploding)
         {
-            explosionProgress += Time.DeltaTime;
+            explosionProgress += Program.Timestep;
             return;
         }
 
@@ -49,17 +51,16 @@ internal class Missile : Actor, IDestructable
         }
 
         var positionDelta = (Target.Actor!.Transform.Position + TargetOffset - Transform.Position).Normalized() * Prototype.MaxSpeed;
-
         if (Vector2.Distance(Target.Actor!.Transform.Position + TargetOffset, Transform.Position) < .05f)
         {
             TargetOffset = Vector2.Zero;
         }
 
         var lastVelocity = Velocity;
-        Velocity = Util.Step(Velocity, positionDelta, Prototype.Acceleration * Time.DeltaTime);
-        CurrentAcceleration = (Velocity - lastVelocity) / Time.DeltaTime;
+        Velocity = Util.Step(Velocity, positionDelta, Prototype.Acceleration * Program.Timestep);
+        CurrentAcceleration = (Velocity - lastVelocity) / Program.Timestep;
 
-        Transform.Position += Velocity * Time.DeltaTime;
+        Transform.Position += Velocity * Program.Timestep;
 
         if (age > 1 && Target.Actor!.TestPoint(Transform.Position, Transform.Default))
         {
@@ -67,7 +68,7 @@ internal class Missile : Actor, IDestructable
             Target.Actor!.Health--;
         }
 
-        age += Time.DeltaTime;
+        age += Program.Timestep;
     }
 
     public void Detonate()

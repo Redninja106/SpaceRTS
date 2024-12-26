@@ -15,15 +15,17 @@ internal class MissilePrototype : Prototype
         ulong id = reader.ReadUInt64();
         Transform transform = reader.ReadTransform();
         ActorReference<Unit> target = reader.ReadActorReference<Unit>();
+        Vector2 velocity = reader.ReadVector2();
         Vector2 targetOffset = reader.ReadVector2();
         Vector2 lastAcceleration = reader.ReadVector2();
         Vector2 currentAcceleration = reader.ReadVector2();
         bool exploding = reader.ReadBoolean();
         float explosionProgress = reader.ReadSingle();
         float age = reader.ReadSingle();
-
+        
         return new Missile(this, id, transform, target, targetOffset)
         {
+            Velocity = velocity,
             LastAcceleration = lastAcceleration,
             CurrentAcceleration = currentAcceleration,
             exploding = exploding,

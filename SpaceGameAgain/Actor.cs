@@ -13,12 +13,21 @@ internal abstract class Actor(Prototype prototype, ulong id, Transform transform
 
     private readonly ulong id = id;
     private Transform transform = transform;
+    private Transform previousTransform = transform;
+    private Transform interpolatedTransform = transform;
 
+    public virtual Transform InterpolatedTransform => interpolatedTransform;
     public virtual ref Transform Transform => ref transform;
     public ulong ID => id;
 
-    public virtual void Update()
+    public virtual void Update(float tickProgress)
     {
+        interpolatedTransform = Transform.Lerp(previousTransform, Transform, tickProgress);
+    }
+    
+    public virtual void Tick()
+    {
+        previousTransform = Transform;
     }
 
     public virtual void Render(ICanvas canvas)

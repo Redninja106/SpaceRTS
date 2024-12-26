@@ -24,28 +24,30 @@ internal class Bullet : Actor, IDestructable
         this.sphereOfInfluence = World.GetSphereOfInfluence(transform.Position);
     }
 
-    public override void Update()
+    public override void Tick()
     {
-        sphereOfInfluence?.ApplyTo(ref this.Transform);
-        Transform.Position += Transform.Forward * Prototype.Speed * Time.DeltaTime;
+        base.Tick();
 
-        Rectangle bounds = new(0, 0, .1f, .015f, Alignment.Center);
-        if (bounds.ContainsPoint(Transform.WorldToLocal(target.Actor!.Transform.Position)))
+        sphereOfInfluence?.ApplyTo(ref this.Transform);
+        Transform.Position += Transform.Forward * Prototype.Speed * Program.Timestep;
+        
+        if (Vector2.Distance(Transform.Position, target.Actor!.Transform.Position) < 0.1f)
         {
+            //DebugDraw.Circle(Vector2.Zero, 0.15f, this.Transform, Color.Orange);
             target.Actor!.Detonate();
         }
+        else
+        {
+            //DebugDraw.Circle(Vector2.Zero, 0.15f, this.Transform, Color.Blue);
+        }
 
-        // if (Vector2.Distance(Transform.Position, target.Transform.Position) < 0.015f)
-        // {
-        //     target.Detonate();
-        // }
-
-        lifetime -= Time.DeltaTime;
+        lifetime -= Program.Timestep;
     }
 
     public override void Render(ICanvas canvas)
     {
-        canvas.Fill(Color.Yellow with { A = (byte)MathF.Min(255, 255 * (lifetime - lifetime + .9f * lifetime)) });
+        // TODO: add alpha effect
+        canvas.Fill(Color.Yellow);
         canvas.DrawRect(0, 0, .1f, .015f, Alignment.Center);
     }
 

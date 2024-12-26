@@ -27,6 +27,13 @@ partial class Program : Simulation
 
     public static float actualGUIScale = 0;
 
+    public const float Timestep = 1 / 50f;
+    public static float GameSpeed = 1f;
+    public static bool forceTickThisFrame = false;
+
+
+    private float timeAccumulated = 0;
+
     public override void OnInitialize()
     {
         Time.MaxDeltaTime = 1 / 30f;
@@ -164,14 +171,6 @@ partial class Program : Simulation
             view = Graphics.CreateTexture(targetViewWidth, 480);
         }
 
-        float vpScaleY = canvas.Height / (float)view.Height;
-        float vpScaleX = canvas.Width / (float)view.Width;
-
-        MatrixBuilder viewMatrix = new MatrixBuilder()
-            .Translate(canvas.Width / 2f, canvas.Height / 2f)
-            .Scale(MathF.Min(vpScaleX, vpScaleY))
-            .Translate(-view.Width / 2f, -view.Height / 2f);
-
         // if (vpScaleY < vpScaleX)
         // {
         //     float leftGap = canvas.Width / 2f - (view.Width * vpScaleY) / 2f - World.LeftSidebar.MinWidth;
@@ -188,24 +187,15 @@ partial class Program : Simulation
 
         DebugMenu.Layout();
 
-        World.Camera.Update(view.Width, view.Height);
-        Rectangle vp = new(0, 0, view.Width, view.Height);
+        float vpScaleY = canvas.Height / (float)view.Height;
+        float vpScaleX = canvas.Width / (float)view.Width;
 
-        actualGUIScale = uiscale * Math.Clamp(canvas.Width * uiscaleResolutionFactor, 1 / uiscale, 1);
+        MatrixBuilder viewMatrix = new MatrixBuilder()
+            .Translate(canvas.Width / 2f, canvas.Height / 2f)
+            .Scale(MathF.Min(vpScaleX, vpScaleY))
+            .Translate(-view.Width / 2f, -view.Height / 2f);
 
-        ViewportMousePosition = Vector2.Transform(Mouse.Position, viewMatrix.InverseMatrix);
-        World.InfoWindow.CalculateBounds(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale, out var infoBounds, out _);
-        World.MapWindow.CalculateBounds(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale, out var mapBounds, out _);
-
-        bool worldFocused = vp.ContainsPoint(ViewportMousePosition) && 
-            !infoBounds.ContainsPoint(Mouse.Position / actualGUIScale) && 
-            !mapBounds.ContainsPoint(Mouse.Position / actualGUIScale);
-
-        World.Update(ViewportMousePosition, worldFocused);
-        World.InfoWindow.Update(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale);
-        World.MapWindow.Update(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale);
-        // World.LeftSidebar.Update(canvas.Width, canvas.Height);
-        // World.RightSidebar.Update(canvas.Width, canvas.Height);
+        Update(canvas, viewMatrix);
 
         if (canvas.Width is 0 && canvas.Height is 0)
             return;
@@ -231,6 +221,43 @@ partial class Program : Simulation
 
     }
 
+    private void Update(ICanvas canvas, MatrixBuilder viewMatrix)
+    {
+        World.Camera.Update(view.Width, view.Height);
+        Rectangle vp = new(0, 0, view.Width, view.Height);
+
+        actualGUIScale = uiscale * Math.Clamp(canvas.Width * uiscaleResolutionFactor, 1 / uiscale, 1);
+
+        ViewportMousePosition = Vector2.Transform(Mouse.Position, viewMatrix.InverseMatrix);
+        World.InfoWindow.CalculateBounds(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale, out var infoBounds, out _);
+        World.MapWindow.CalculateBounds(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale, out var mapBounds, out _);
+
+        bool worldFocused = vp.ContainsPoint(ViewportMousePosition) &&
+            !infoBounds.ContainsPoint(Mouse.Position / actualGUIScale) &&
+            !mapBounds.ContainsPoint(Mouse.Position / actualGUIScale);
+
+        timeAccumulated += Time.DeltaTime;
+        if (forceTickThisFrame || GameSpeed >= 0 && timeAccumulated >= Timestep / GameSpeed)
+        {
+            forceTickThisFrame = false;
+            DebugDraw.Clear();
+
+            World.Tick(ViewportMousePosition, worldFocused);
+            timeAccumulated = 0;
+        }
+
+        float tickProgress = MathF.Min(timeAccumulated * GameSpeed / Timestep, 1);
+
+        if (GameSpeed == 0)
+        {
+            tickProgress = 1;
+        }
+
+        World.Update(ViewportMousePosition, worldFocused, tickProgress);
+        World.InfoWindow.Update(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale);
+        World.MapWindow.Update(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale);
+    }
+
     private void RenderView()
     {
         var canvas = view.GetCanvas();
@@ -240,7 +267,7 @@ partial class Program : Simulation
         canvas.Antialias(true);
         World.Camera.RenderSetup(canvas);
         World.Render(canvas);
-        DebugDraw.Flush(canvas);
+        DebugDraw.Draw(canvas);
 
         // canvas.ResetState();
         // canvas.Font(font);

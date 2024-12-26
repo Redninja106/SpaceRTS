@@ -30,7 +30,7 @@ internal class WeaponModule : Module
         // system.RenderSelected(canvas);
     }
 
-    public override void Update()
+    public override void Tick()
     {
         // system.Update();
     }
@@ -58,6 +58,7 @@ class WeaponModulePrototype : ModulePrototype
     public override Module CreateModule(ulong id, ActorReference<Ship> ship)
     {
         WeaponSystem weaponSystem = Prototypes.Get<WeaponSystemPrototype>(WeaponSystemPrototype).CreateWeapon(World.NewID(), ship.Cast<Unit>());
+        World.Add(weaponSystem);
         return new WeaponModule(this, id, ship, weaponSystem.AsReference());
     }
 }

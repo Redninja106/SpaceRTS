@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Combat;
 internal class BulletPrototype() : Prototype()
 {
-    public float Speed;
+    public float Speed { get; set; }
 
     public override Actor? Deserialize(BinaryReader reader)
     {

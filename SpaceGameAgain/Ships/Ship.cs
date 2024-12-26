@@ -69,14 +69,16 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
     }
 
-    public override void Update()
+    public override void Tick()
     {
+        base.Tick();
+
         if (height < .4f)
-            height += Time.DeltaTime * .5f;
+            height += Program.Timestep * .5f;
 
         foreach (var module in modules)
         {
-            module.Actor!.Update();
+            module.Actor!.Tick();
         }
 
         if (orders.Count > 0 && height >= .4f) 
@@ -111,16 +113,16 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
     public void RenderShadow(ICanvas canvas, float floorHeight)
     {
-        canvas.Translate(Transform.Position);
-        canvas.Translate(Transform.Position.Normalized() * (height - floorHeight));
+        canvas.Translate(InterpolatedTransform.Position);
+        canvas.Translate(InterpolatedTransform.Position.Normalized() * (height - floorHeight));
         canvas.Fill(Color.Black with { A = 100 });
 
         for (int i = 0; i < 8; i++)
         {
-            canvas.Translate(Transform.Position.Normalized() * .005f);
-            canvas.Rotate(Transform.Rotation);
+            canvas.Translate(InterpolatedTransform.Position.Normalized() * .005f);
+            canvas.Rotate(InterpolatedTransform.Rotation);
             canvas.DrawPolygon(verts);
-            canvas.Rotate(-Transform.Rotation);
+            canvas.Rotate(-InterpolatedTransform.Rotation);
         }
     }
 

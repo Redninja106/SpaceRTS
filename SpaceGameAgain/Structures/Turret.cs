@@ -15,9 +15,9 @@ internal class Turret : Structure
     {
     }
 
-    public override void Update()
+    public override void Tick()
     {
-        base.Update();
+        base.Tick();
     }
 
     public override void Serialize(BinaryWriter writer)

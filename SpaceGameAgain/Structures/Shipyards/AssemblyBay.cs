@@ -39,11 +39,11 @@ internal class AssemblyBay : Structure
         }
     }
 
-    public override void Update()
+    public override void Tick()
     {
         if (isBuildingShip)
         {
-            progress += Time.DeltaTime * manufactoryCount * .2f;
+            progress += Program.Timestep * manufactoryCount * .2f;
         }
 
         if (progress >= 1)
@@ -62,7 +62,7 @@ internal class AssemblyBay : Structure
             Reset();
         }
 
-        base.Update();
+        base.Tick();
     }
 
     [MemberNotNull(nameof(SelectionGUI))]

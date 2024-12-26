@@ -53,7 +53,7 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, ulong i
         }
     }
 
-    public override void Update()
+    public override void Tick()
     {
     }
 

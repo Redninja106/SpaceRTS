@@ -21,7 +21,14 @@ public static class DebugDraw
         lines.Add(((from, to), color ?? Color.Red, transform ?? Transform.Default));
     }
 
-    public static void Flush(ICanvas canvas)
+    public static void Clear()
+    {
+        lines.Clear();
+        polygons.Clear();
+        circles.Clear();
+    }
+
+    public static void Draw(ICanvas canvas)
     {
         canvas.PushState();
         canvas.StrokeWidth(0);
@@ -36,7 +43,6 @@ public static class DebugDraw
 
             canvas.PopState();
         }
-        polygons.Clear();
 
         foreach (var ((from, to), color, t) in lines)
         {
@@ -48,7 +54,6 @@ public static class DebugDraw
 
             canvas.PopState();
         }
-        lines.Clear();
 
         foreach (var (circle, color, t) in circles)
         {
@@ -60,7 +65,6 @@ public static class DebugDraw
 
             canvas.PopState();
         }
-        circles.Clear();
         canvas.PopState();
     }
 

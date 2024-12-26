@@ -64,8 +64,9 @@ internal class Planet : Actor
         shader = new PlanetShader();
     }
 
-    public override void Update()
+    public override void Tick()
     {
+        base.Tick();
     }
 
     public override void Render(ICanvas canvas)
@@ -76,9 +77,9 @@ internal class Planet : Actor
         SphereOfInfluence.Render(canvas);
     }
 
-    public void UpdateOrbit()
+    public void TickOrbit()
     {
-        Orbit?.Update(this, Time.DeltaTime);
+        Orbit?.Update(this, Program.Timestep);
     }
 
     public override void Serialize(BinaryWriter writer)

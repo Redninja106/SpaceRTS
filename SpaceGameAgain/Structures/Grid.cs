@@ -26,6 +26,7 @@ internal class Grid : Actor
     public Actor Parent => parent.Actor!;
 
     public override ref Transform Transform => ref parent.Actor!.Transform;
+    public override Transform InterpolatedTransform => parent.Actor!.InterpolatedTransform;
 
     public Grid(GridPrototype prototype, ulong id, ActorReference<Actor> parent) : base(prototype, id, Transform.Default)
     {
@@ -153,9 +154,9 @@ internal class Grid : Actor
         return GetCell(coord);
     }
 
-    public override void Update()
+    public override void Tick()
     {
-        
+        base.Tick();
     }
 
 

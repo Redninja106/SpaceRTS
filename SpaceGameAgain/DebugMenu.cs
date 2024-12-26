@@ -48,6 +48,12 @@ internal static class DebugMenu
                     ImGui.EndTabItem();
                 }
 
+                if (ImGui.BeginTabItem("settings"))
+                {
+                    LayoutSettingsTab();
+                    ImGui.EndTabItem();
+                }
+
                 ImGui.EndTabBar();
             }
         }
@@ -64,6 +70,20 @@ internal static class DebugMenu
             LayoutObjectViewer();
         }
         ImGui.End();
+    }
+
+    private static void LayoutSettingsTab()
+    {
+        ImGui.SliderFloat("game speed", ref Program.GameSpeed, 0.0f, 2);
+        ImGui.SameLine();
+        if (ImGui.SmallButton("reset"))
+        {
+            Program.GameSpeed = 1;
+        }
+        if (ImGui.SmallButton("tick"))
+        {
+            Program.forceTickThisFrame = true;
+        }
     }
 
     private static void LayoutPrototypesTab()

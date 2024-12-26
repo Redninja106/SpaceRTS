@@ -1,6 +1,6 @@
 {
   "prototype": "MissilePrototype",
   "name": "missile",
-  "acceleration": 8,
-  "max_speed": 8
+  "acceleration": 4,
+  "max_speed": 4
 }

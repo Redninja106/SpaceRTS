@@ -33,6 +33,7 @@ internal class GameWorld
     public List<Bullet> Bullets { get; } = [];
     public List<Structure> Structures { get; } = [];
     public List<Grid> Grids { get; } = [];
+    public List<WeaponSystem> WeaponSystems { get; } = [];
 
     //public List<Station> Stations { get; } = [];
     // public List<Asteroid> Asteroids { get; } = [];
@@ -81,16 +82,9 @@ internal class GameWorld
     {
     }
 
-    public void Update(Vector2 viewportMousePosition, bool hasFocus)
+    public void Update(Vector2 viewportMousePosition, bool hasFocus, float tickProgress)
     {
-        this.HasFocus = hasFocus;
-        foreach (var planet in Planets)
-        {
-            planet.UpdateOrbit();
-        }
-
         MousePosition = Camera.ScreenToWorld(viewportMousePosition);
-
         leftMouse.Update();
         rightMouse.Update();
 
@@ -99,15 +93,38 @@ internal class GameWorld
         CurrentInteractionContext ??= SelectInteractionContext;
         CurrentInteractionContext.Update(leftMouse, rightMouse);
 
+        UpdateActorList(Planets, tickProgress);
+        UpdateActorList(Grids, tickProgress);
+        UpdateActorList(Structures, tickProgress);
+        //UpdateActorList(Stations);
+        UpdateActorList(WeaponSystems, tickProgress);
+        UpdateActorList(Ships, tickProgress);
+        UpdateActorList(Bullets, tickProgress);
+        UpdateActorList(Missiles, tickProgress);
+    }
+
+    public void Tick(Vector2 viewportMousePosition, bool hasFocus)
+    {
+        this.HasFocus = hasFocus;
+        
+        TickActorList(Planets); 
+        
+        foreach (var planet in Planets)
+        {
+            planet.TickOrbit();
+        }
+
         var soi = World.GetSphereOfInfluence(Camera.Transform.Position);
         soi?.ApplyTo(ref Camera.Transform);
+        soi?.ApplyTo(ref Camera.SmoothTransform);
 
-        UpdateActorList(Planets);
-        UpdateActorList(Structures);
+        TickActorList(Structures);
+        TickActorList(Grids);
         //UpdateActorList(Stations);
-        UpdateActorList(Ships);
-        UpdateActorList(Bullets);
-        UpdateActorList(Missiles);
+        TickActorList(WeaponSystems);
+        TickActorList(Ships);
+        TickActorList(Bullets);
+        TickActorList(Missiles);
         //UpdateActorList(Asteroids);
 
         foreach (var planet in Planets)
@@ -137,12 +154,12 @@ internal class GameWorld
         foreach (var structure in Structures)
         {
             canvas.PushState();
-            structure.Transform.ApplyTo(canvas);
+            structure.InterpolatedTransform.ApplyTo(canvas);
             canvas.Mask(World.WorldShadowMask);
             canvas.WriteMask(World.WorldShadowMask, false);
             structure.RenderShadow(
                 canvas, 
-                Vector2.TransformNormal(structure.Transform.Position.Normalized() * .4f, 
+                Vector2.TransformNormal(structure.InterpolatedTransform.Position.Normalized() * .4f, 
                 Matrix3x2.CreateRotation(-structure.Rotation * (MathF.Tau / 6f)))
                 );
             canvas.PopState();
@@ -160,19 +177,29 @@ internal class GameWorld
         }
 
         RenderActorList(Ships, canvas);
-        RenderActorList(Bullets, canvas);
         RenderActorList(Missiles, canvas);
+        RenderActorList(Bullets, canvas);
+        RenderActorList(WeaponSystems, canvas);
         //RenderActorList(Asteroids, canvas);
         CurrentInteractionContext ??= SelectInteractionContext;
         CurrentInteractionContext.Render(canvas, leftMouse, rightMouse);
     }
 
-    private void UpdateActorList<TActor>(List<TActor> actors)
+    private void UpdateActorList<TActor>(List<TActor> actors, float tickProgress)
         where TActor : Actor
     {
         for (int i = 0; i < actors.Count; i++)
         {
-            actors[i].Update();
+            actors[i].Update(tickProgress);
+        }
+    }
+
+    private void TickActorList<TActor>(List<TActor> actors)
+        where TActor : Actor
+    {
+        for (int i = 0; i < actors.Count; i++)
+        {
+            actors[i].Tick();
 
             if (actors[i] is IDestructable destructable && destructable.IsDestroyed)
             {
@@ -189,7 +216,7 @@ internal class GameWorld
         foreach (var actor in actors)
         {
             canvas.PushState();
-            actor.Transform.ApplyTo(canvas);
+            actor.InterpolatedTransform.ApplyTo(canvas);
             actor.Render(canvas);
             canvas.PopState();
         }
@@ -233,6 +260,7 @@ internal class GameWorld
         if (actor is Bullet b) Bullets.Add(b);
         if (actor is Missile m) Missiles.Add(m);
         if (actor is Grid g) Grids.Add(g);
+        if (actor is WeaponSystem w) WeaponSystems.Add(w);
 
     }
 

@@ -20,8 +20,9 @@ internal class MissileSystem(MissileSystemPrototype prototype, ulong id, ActorRe
     public float timeSinceMissile;
     public ActorReference<Unit> target;
 
-    public override void Update()
+    public override void Tick()
     {
+        base.Tick();
         if (unit.Actor is Ship ship && ship.orders.Count > 0 && ship.orders.Peek() is AttackOrder attackOrder)
         {
             target = attackOrder.target;
@@ -65,7 +66,7 @@ internal class MissileSystem(MissileSystemPrototype prototype, ulong id, ActorRe
             MissilesRemaining = SalvoSize;
         }
 
-        timeSinceMissile += Time.DeltaTime;
+        timeSinceMissile += Program.Timestep;
     }
 
     private void Fire(Unit target)

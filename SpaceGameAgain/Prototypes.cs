@@ -38,7 +38,7 @@ static class Prototypes
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
             AllowTrailingCommas = true,
             UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
-            ReadCommentHandling = JsonCommentHandling.Skip,
+            ReadCommentHandling = JsonCommentHandling.Skip
         };
         options.Converters.Add(new HexCoordinateConverter());
 
