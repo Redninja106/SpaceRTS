@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships;
 internal class ShipPrototype : UnitPrototype
 {
-    public override Actor? Deserialize(BinaryReader reader)
+    public override WorldActor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
         Transform transform = reader.ReadTransform();

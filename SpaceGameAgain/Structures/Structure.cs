@@ -2,6 +2,7 @@
 using SpaceGame.Planets;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
+using SpaceGame.Structures.Zones;
 using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;

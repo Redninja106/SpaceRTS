@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
-internal class Grid : Actor
+internal class Grid : WorldActor
 {
     public static Vector2[] hexagon = [
         Angle.ToVector(0 * MathF.Tau / 6),
@@ -21,14 +21,14 @@ internal class Grid : Actor
 
     public Dictionary<HexCoordinate, GridCell> cells = [];
     public List<ActorReference<Structure>> structures = [];
-    private ActorReference<Actor> parent;
+    private ActorReference<WorldActor> parent;
 
-    public Actor Parent => parent.Actor!;
+    public WorldActor Parent => parent.Actor!;
 
     public override ref Transform Transform => ref parent.Actor!.Transform;
     public override Transform InterpolatedTransform => parent.Actor!.InterpolatedTransform;
 
-    public Grid(GridPrototype prototype, ulong id, ActorReference<Actor> parent) : base(prototype, id, Transform.Default)
+    public Grid(GridPrototype prototype, ulong id, ActorReference<WorldActor> parent) : base(prototype, id, Transform.Default)
     {
         this.parent = parent;
     }
@@ -198,12 +198,12 @@ internal class Grid : Actor
     }
 }
 
-class GridPrototype : Prototype
+class GridPrototype : WorldActorPrototype
 {
-    public override Actor? Deserialize(BinaryReader reader)
+    public override WorldActor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
-        ActorReference<Actor> parent = reader.ReadActorReference<Actor>();
+        ActorReference<WorldActor> parent = reader.ReadActorReference<WorldActor>();
 
         List<ActorReference<Structure>> structures = new();
         int structureCount = reader.ReadInt32();

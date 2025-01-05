@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Planets;
-internal class Planet : Actor
+internal class Planet : WorldActor
 {
     public float Radius { get; init; } = 26;
     public Color Color 
@@ -52,7 +52,7 @@ internal class Planet : Actor
     {
         if (grid.IsNull)
         {
-            this.grid = new Grid(Prototypes.Get<GridPrototype>("grid"), World.NewID(), this.AsReference().Cast<Actor>()).AsReference();
+            this.grid = new Grid(Prototypes.Get<GridPrototype>("grid"), World.NewID(), this.AsReference().Cast<WorldActor>()).AsReference();
             World.Add(this.grid.Actor!);
         }
         else

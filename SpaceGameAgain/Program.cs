@@ -1,18 +1,13 @@
-﻿
-using SimulationFramework;
-using SimulationFramework.Drawing;
+﻿using SimulationFramework.Desktop;
 using SpaceGame;
-using SpaceGame.Ships;
+using SpaceGame.Commands;
+using SpaceGame.Networking;
 using SpaceGame.Planets;
-//using SpaceGame.Stations;
-using System.Numerics;
-using SpaceGame.Structures;
-using SpaceGame.GUI;
+using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
+//using SpaceGame.Stations;
+using SpaceGame.Structures;
 using SpaceGame.Teams;
-using SimulationFramework.Desktop;
-using SimulationFramework.Drawing.Shaders;
-using ImGuiNET;
 
 DesktopPlatform.Register();
 Start<Program>();
@@ -31,37 +26,45 @@ partial class Program : Simulation
     public static float GameSpeed = 1f;
     public static bool forceTickThisFrame = false;
 
-
     private float timeAccumulated = 0;
+
+    public static Lobby? Lobby;
+    public static NetworkSerializer NetworkSerializer = new();
+
 
     public override void OnInitialize()
     {
         Time.MaxDeltaTime = 1 / 30f;
         // view = Graphics.CreateTexture(640, 480);
         font ??= Graphics.LoadFont("Assets/Fonts/VictorMono-Regular.ttf");
-
+        
         Prototypes.Load();
 
         World = new();
 
         var playerTeam = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
+        playerTeam.CommandProcessor = new PlayerCommandProcessor();
+
         var enemies = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
-        var neutral = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
+        enemies.CommandProcessor = new PlayerCommandProcessor();
+
 
         playerTeam.MakeEnemies(enemies);
 
         World.Add(playerTeam);
         World.Add(enemies);
-        World.Add(neutral);
 
         World.PlayerTeam = playerTeam.AsReference();
-        World.NeutralTeam = neutral;
 
         World.Add(new Ship((ShipPrototype)Prototypes.Get("ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(playerTeam)));
-
         var constMod = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), World.Ships[0].AsReference());
         World.Ships[0].modules.Add(((Module)constMod).AsReference());
         World.Add(constMod);
+
+        World.Add(new Ship((ShipPrototype)Prototypes.Get("ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(enemies)));
+        var constMod2 = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), World.Ships[1].AsReference());
+        World.Ships[1].modules.Add(((Module)constMod2).AsReference());
+        World.Add(constMod2);
 
         PlanetPrototype planetProto = Prototypes.Get<PlanetPrototype>("generic_planet");
 
@@ -75,7 +78,7 @@ partial class Program : Simulation
         
         var planet1 = new Planet(planetProto, World.NewID(), Transform.Default)
         {
-            Orbit = new(((Actor)sun).AsReference(), 500, 0),
+            Orbit = new(((WorldActor)sun).AsReference(), 500, 0),
             Color = Color.DarkGreen,
             Radius = 26,
         }; 
@@ -84,7 +87,7 @@ partial class Program : Simulation
 
         var moon = new Planet(planetProto, World.NewID(), Transform.Default)
         {
-            Orbit = new(((Actor)planet1).AsReference(), 100, MathF.PI * 1.25f),
+            Orbit = new(((WorldActor)planet1).AsReference(), 100, MathF.PI * 1.25f),
             Color = Color.DarkGray,
             Radius = 9,
         };
@@ -93,7 +96,7 @@ partial class Program : Simulation
 
         var planet2 = new Planet(planetProto, World.NewID(), Transform.Default)
         {
-            Orbit = new(((Actor)sun).AsReference(), 400, MathF.PI * .75f),
+            Orbit = new(((WorldActor)sun).AsReference(), 400, MathF.PI * .75f),
             Color = Color.DarkOliveGreen,
             Radius = 17,
         };
@@ -102,7 +105,7 @@ partial class Program : Simulation
 
         var planet3 = new Planet(planetProto, World.NewID(), Transform.Default)
         {
-            Orbit = new(((Actor)sun).AsReference(), 800, MathF.PI * 1.75f),
+            Orbit = new(((WorldActor)sun).AsReference(), 800, MathF.PI * 1.75f),
             Color = Color.Lerp(Color.OrangeRed, Color.Black, 0.25f),
             Radius = 13,
         };
@@ -120,7 +123,6 @@ partial class Program : Simulation
         //planet1.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(3, -3), 0, enemies);
 
         planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("headquarters"), new(0, 0), 1, enemies);
-        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("small_assembly_bay"), new(1, 3), 0, enemies);
 
         planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(2, 0), 0, enemies);
         planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(2, 4), 0, enemies);
@@ -131,7 +133,6 @@ partial class Program : Simulation
         planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(-1, 2), 0, enemies);
 
         World.Ships.First().Transform.Position = planet1.Transform.Position;
-
 
         // World.LeftSidebar = new Sidebar(Alignment.TopLeft, 300, 400);
         // World.RightSidebar = new Sidebar(Alignment.TopRight, 300, 400);
@@ -223,6 +224,8 @@ partial class Program : Simulation
 
     private void Update(ICanvas canvas, MatrixBuilder viewMatrix)
     {
+        Lobby?.Update();
+
         World.Camera.Update(view.Width, view.Height);
         Rectangle vp = new(0, 0, view.Width, view.Height);
 
@@ -245,7 +248,7 @@ partial class Program : Simulation
             World.Tick(ViewportMousePosition, worldFocused);
             timeAccumulated = 0;
         }
-
+        
         float tickProgress = MathF.Min(timeAccumulated * GameSpeed / Timestep, 1);
 
         if (GameSpeed == 0)

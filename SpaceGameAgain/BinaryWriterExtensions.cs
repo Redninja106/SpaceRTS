@@ -28,7 +28,7 @@ internal static class BinaryWriterExtensions
     }
 
     public static void Write<TActor>(this BinaryWriter writer, ActorReference<TActor> actor)
-        where TActor : Actor
+        where TActor : WorldActor
     {
         writer.Write(actor.ID);
     }

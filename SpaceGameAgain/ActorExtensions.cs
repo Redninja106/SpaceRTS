@@ -8,7 +8,7 @@ namespace SpaceGame;
 internal static class ActorExtensions
 {
     public static ActorReference<TActor> AsReference<TActor>(this TActor actor)
-        where TActor : Actor
+        where TActor : WorldActor
     {
         return ActorReference<TActor>.Create(actor);
     } 

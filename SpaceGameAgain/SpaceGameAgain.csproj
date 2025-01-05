@@ -26,8 +26,6 @@
 
 	<ItemGroup>
 	  <Folder Include="Assets\Icons\" />
-	  <Folder Include="Assets\Prototypes\Modules\" />
-	  <Folder Include="Commands\" />
 	</ItemGroup>
 
 	<ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

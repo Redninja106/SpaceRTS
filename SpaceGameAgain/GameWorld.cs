@@ -23,7 +23,7 @@ internal class GameWorld
 
     public ulong NextID { get; set; } = 1;
 
-    public Dictionary<ulong, Actor> Actors = [];
+    public Dictionary<ulong, WorldActor> Actors = [];
 
 
     public List<Ship> Ships { get; } = [];
@@ -42,13 +42,16 @@ internal class GameWorld
     public Camera Camera { get; set; } = new FreeCamera();
 
     public ActorReference<Team> PlayerTeam;
-    public Team NeutralTeam { get; set; }
 
     public Sidebar LeftSidebar;
     public Sidebar RightSidebar;
 
     public Vector2 MousePosition;
     public bool HasFocus;
+
+    public ulong tick;
+    public Random TickRandom;
+    public ulong idleTicks;
 
     // HANDLERS
 
@@ -58,6 +61,8 @@ internal class GameWorld
     public ConstructionInteractionContext ConstructionInteractionContext { get; } = new();
 
     public IInteractionContext? CurrentInteractionContext { get; set; }
+
+    public TurnProcessor TurnProcessor { get; } = new();
 
     public MouseState leftMouse = new(MouseButton.Left);
     public MouseState rightMouse = new(MouseButton.Right);
@@ -78,6 +83,8 @@ internal class GameWorld
         Height = 120,
     };
 
+    // public FogOfWarHandler FogOfWar { get; set; } = new();
+
     public GameWorld()
     {
     }
@@ -85,6 +92,9 @@ internal class GameWorld
     public void Update(Vector2 viewportMousePosition, bool hasFocus, float tickProgress)
     {
         MousePosition = Camera.ScreenToWorld(viewportMousePosition);
+
+        UpdateActorList(Planets, tickProgress);
+
         leftMouse.Update();
         rightMouse.Update();
 
@@ -93,7 +103,6 @@ internal class GameWorld
         CurrentInteractionContext ??= SelectInteractionContext;
         CurrentInteractionContext.Update(leftMouse, rightMouse);
 
-        UpdateActorList(Planets, tickProgress);
         UpdateActorList(Grids, tickProgress);
         UpdateActorList(Structures, tickProgress);
         //UpdateActorList(Stations);
@@ -106,13 +115,35 @@ internal class GameWorld
     public void Tick(Vector2 viewportMousePosition, bool hasFocus)
     {
         this.HasFocus = hasFocus;
-        
+
+        if (TurnProcessor.RemainingTicks == 0)
+        {
+            if (!TurnProcessor.TryPerformTurn())
+            {
+                idleTicks++;
+                return;
+            }
+            else
+            {
+                idleTicks = 0;
+            }
+        }
+        else
+        {
+            TurnProcessor.RemainingTicks--;
+        }
+
+        TickRandom = new(unchecked((int)tick));
+
         TickActorList(Planets); 
         
         foreach (var planet in Planets)
         {
             planet.TickOrbit();
         }
+
+        leftMouse.Tick();
+        rightMouse.Tick();
 
         var soi = World.GetSphereOfInfluence(Camera.Transform.Position);
         soi?.ApplyTo(ref Camera.Transform);
@@ -134,6 +165,8 @@ internal class GameWorld
 
         MapWindow.Stack.Clear();
         MapWindow.Stack.Add(new Label("Credits: " + PlayerTeam.Actor!.Credits));
+
+        tick++;
     }
 
     public void Render(ICanvas canvas)
@@ -186,7 +219,7 @@ internal class GameWorld
     }
 
     private void UpdateActorList<TActor>(List<TActor> actors, float tickProgress)
-        where TActor : Actor
+        where TActor : WorldActor
     {
         for (int i = 0; i < actors.Count; i++)
         {
@@ -195,7 +228,7 @@ internal class GameWorld
     }
 
     private void TickActorList<TActor>(List<TActor> actors)
-        where TActor : Actor
+        where TActor : WorldActor
     {
         for (int i = 0; i < actors.Count; i++)
         {
@@ -211,7 +244,7 @@ internal class GameWorld
     }
 
     private void RenderActorList<TActor>(List<TActor> actors, ICanvas canvas)
-        where TActor : Actor
+        where TActor : WorldActor
     {
         foreach (var actor in actors)
         {
@@ -238,7 +271,7 @@ internal class GameWorld
         return smallest;
     }
 
-    public IEnumerable<Actor> GetActorsByPrototype(Prototype prototype)
+    public IEnumerable<WorldActor> GetActorsByPrototype(WorldActorPrototype prototype)
     {
         foreach (var a in Actors.Values)
         {
@@ -249,7 +282,7 @@ internal class GameWorld
         }
     }
 
-    public void Add(Actor actor)
+    public void Add(WorldActor actor)
     {
         Actors.Add(actor.ID, actor);
 
@@ -267,6 +300,14 @@ internal class GameWorld
     public ulong NewID()
     {
         return NextID++;
+    }
+
+    public void ClientInitialize(Team playerTeam)
+    {
+        this.PlayerTeam = playerTeam.AsReference();
+
+        this.Camera = new FreeCamera();
+
     }
 }
 

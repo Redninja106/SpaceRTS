@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Ships.Modules;
-internal abstract class Module : Actor
+internal abstract class Module : WorldActor
 {
     public ActorReference<Ship> Ship { get; }
 
@@ -19,9 +19,9 @@ internal abstract class Module : Actor
     public abstract void RenderSelected(ICanvas canvas);
 }
 
-abstract class ModulePrototype : Prototype
+abstract class ModulePrototype : WorldActorPrototype
 {
-    public override Actor? Deserialize(BinaryReader reader)
+    public override WorldActor Deserialize(BinaryReader reader)
     {
         return null;
     }

@@ -30,7 +30,7 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, ulong i
                     return new TextButton(proto.Title, () => {
                         if (Ship.Actor!.Team.Actor!.Credits >= proto.Price)
                         {
-                            World.ConstructionInteractionContext.BeginPlacing(proto);
+                            World.ConstructionInteractionContext.BeginPlacing(proto, this.Ship.Actor!);
                         }
                     }){FitContainer = true };
                 }).ToArray()
@@ -43,7 +43,7 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, ulong i
             {
                 if (Ship.Actor!.Team.Actor!.Credits >= structure.Price)
                 {
-                    World.ConstructionInteractionContext.BeginPlacing(structure);
+                    World.ConstructionInteractionContext.BeginPlacing(structure, this.Ship.Actor!);
                 }
             })
             {
@@ -75,7 +75,7 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, ulong i
 class ConstructionModulePrototype : ModulePrototype
 {
 
-    public override Actor? Deserialize(BinaryReader reader)
+    public override WorldActor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
         ActorReference<Ship> ship = reader.ReadActorReference<Ship>();

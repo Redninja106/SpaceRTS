@@ -1,11 +1,12 @@
-﻿using System;
+﻿using SpaceGame.Commands;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Teams;
-internal class Team : Actor
+internal class Team : WorldActor
 {
     public static readonly Color PlayerColor = Color.SkyBlue;
     public static readonly Color AllyColor = Color.LawnGreen;
@@ -16,6 +17,7 @@ internal class Team : Actor
 
     public int Credits;
     public int ZoneSizeLimit = 3;
+    public ICommandProcessor CommandProcessor;
 
     public Team(TeamPrototype prototype, ulong id, Transform transform, int credits = 10000, Dictionary<ActorReference<Team>, TeamRelation>? relationships = null) : base(prototype, id, transform)
     {

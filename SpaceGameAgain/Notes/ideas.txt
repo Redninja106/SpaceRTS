@@ -1,0 +1,7 @@
+- trade route system
+
+- money making
+  - ore mining->trade routes&silos->processing
+
+- warp gates/hyper relay
+  

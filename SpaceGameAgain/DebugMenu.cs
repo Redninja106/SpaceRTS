@@ -1,8 +1,12 @@
 ﻿using ImGuiNET;
+using SpaceGame.Commands;
+using SpaceGame.Networking;
 using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,6 +58,12 @@ internal static class DebugMenu
                     ImGui.EndTabItem();
                 }
 
+                if (ImGui.BeginTabItem("network"))
+                {
+                    LayoutNetworkTab();
+                    ImGui.EndTabItem();
+                }
+
                 ImGui.EndTabBar();
             }
         }
@@ -72,6 +82,90 @@ internal static class DebugMenu
         ImGui.End();
     }
 
+
+    private static string addressOrPort = "45454";
+    private static void LayoutNetworkTab()
+    {
+        ImGui.InputText("address/port", ref addressOrPort, 64);
+
+        if (ImGui.Button("host"))
+        {
+            if (ParseAddressAndPort(out var _, out var port))
+            {
+                NetworkHost host = new(port);
+                Program.Lobby = new LocalLobby(host);
+            }
+        }
+
+        ImGui.SameLine();
+        if (ImGui.Button("join"))
+        {
+            if (ParseAddressAndPort(out var address, out var port))
+            {
+                NetworkClient client = new(address, port);
+                Program.Lobby = new NetworkLobby(client);
+            }
+        }
+
+        static bool ParseAddressAndPort([NotNullWhen(true)] out string? address, out int port)
+        {
+            string[] addressParts = addressOrPort.Split(":");
+
+            if (addressParts.Length == 2 && int.TryParse(addressParts[1], out port))
+            {
+                address = addressParts[0];
+                return true;
+            }
+            
+            if (int.TryParse(addressParts[0], out port))
+            {
+                address = "localhost";
+                return true;
+            }
+
+            address = null;
+            port = 0;
+            return false;
+        }
+
+        ImGui.SeparatorText("Command buffers");
+
+        foreach (var team in World.Teams)
+        {
+            if (ImGui.TreeNode($"team {team.ID}: {team.CommandProcessor?.GetType()?.Name ?? "(none)"}")) 
+            {
+                Dictionary<ulong, Command[]>? commands = team.CommandProcessor switch
+                {
+                    NetworkCommandProcessor network => network.commands,
+                    PlayerCommandProcessor player => player.commands,
+                    _ => null
+                };
+
+                if (commands != null)
+                {
+                    foreach (var (turn, cmds) in commands)
+                    {
+                        if (ImGui.TreeNode("turn " + turn))
+                        {
+                            foreach (var cmd in cmds)
+                            {
+                                ImGui.Text(cmd.ToString());
+                            }
+
+                            ImGui.TreePop();
+                        }
+                    }
+                }
+                else
+                {
+                    ImGui.Text("(none)");
+                }
+
+                ImGui.TreePop();
+            }
+        }
+    }
+
     private static void LayoutSettingsTab()
     {
         ImGui.SliderFloat("game speed", ref Program.GameSpeed, 0.0f, 2);
@@ -86,9 +180,15 @@ internal static class DebugMenu
         }
     }
 
+    private static DebugSearch<Prototype>? prototypeSearch = null;
     private static void LayoutPrototypesTab()
     {
-        foreach (var prototype in Prototypes.RegisteredPrototypes)
+        prototypeSearch ??= new DebugSearch<Prototype>(() => Prototypes.RegisteredPrototypes.ToList(), proto => [proto.Name, proto.ToString()!]);
+
+        prototypeSearch.Layout();
+        prototypeSearch.Prune();
+
+        foreach (var prototype in prototypeSearch.QueryItems)
         {
             if (ImGui.Selectable($"{prototype.Name} ({prototype.GetType().Name})"))
             {
@@ -105,10 +205,10 @@ internal static class DebugMenu
             return;
         }
 
-        if (objectViewerObject is StructurePrototype structurePrototype && ImGui.Button("place"))
-        {
-            World.ConstructionInteractionContext.BeginPlacing(structurePrototype);
-        }
+        //if (objectViewerObject is StructurePrototype structurePrototype && ImGui.Button("place"))
+        //{
+        //    World.ConstructionInteractionContext.BeginPlacing(structurePrototype);
+        //}
 
         if (objectViewerObject is IInspectable inspectable)
         {
@@ -150,13 +250,90 @@ internal static class DebugMenu
         ObjectViewerOpen = true;
     }
 
+
+    private static DebugSearch<WorldActor>? actorList;
     private static void LayoutWorldTab()
     {
-        foreach (var actor in World.Actors.Values)
+        ImGui.Text($"turn: {World.TurnProcessor.turn}");
+        ImGui.Text($"remaining ticks: {World.TurnProcessor.RemainingTicks}");
+
+        ImGui.Separator();
+
+        ImGui.Text("next id:" + World.NextID);
+
+        ImGui.SeparatorText("actors");
+
+        actorList ??= new(() => World.Actors.Values.ToList(), a => [a.ToString(), a.Prototype.Name]);
+        actorList.Layout();
+        actorList.Prune();
+
+        foreach (var actor in actorList.QueryItems)
         {
             if (ImGui.Selectable(actor.ToString()))
             {
                 ViewObject(actor);
+            }
+        }
+    }
+}
+
+class DebugSearch<T>
+{
+    private string query = "";
+    private int pruneIndex = 0;
+    private Func<T, string[]>? stringProvider;
+    private Func<List<T>> allItems;
+
+    public List<T> QueryItems { get; private set; }
+
+    public string Query 
+    { 
+        get => query; 
+        set
+        {
+            query = value;
+            pruneIndex = 0;
+        }
+    }
+
+    public DebugSearch(Func<List<T>> allItems, Func<T, string[]>? stringProvider = null)
+    {
+        this.allItems = allItems;
+        this.stringProvider = stringProvider;
+
+        this.QueryItems = this.allItems();
+    }
+
+    public void Layout()
+    {
+        string prevQuery = query;
+        if (ImGui.InputTextWithHint("##search", "search", ref query, 128))
+        {
+            pruneIndex = 0;
+            if (!query.Contains(prevQuery))
+            {
+                QueryItems = allItems();
+            }
+        }
+    }
+
+    public void Prune(int count = 10)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            if (QueryItems.Count > pruneIndex)
+            {
+                T item = QueryItems[pruneIndex];
+                string[] strings = stringProvider?.Invoke(item) ?? [item?.ToString() ?? ""];
+
+                if (strings.Any(s => s.Contains(query, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    pruneIndex++;
+                }
+                else
+                {
+                    QueryItems.RemoveAt(pruneIndex);
+                }
             }
         }
     }

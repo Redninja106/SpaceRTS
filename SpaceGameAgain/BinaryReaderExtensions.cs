@@ -29,7 +29,7 @@ internal static class BinaryReaderExtensions
     }
 
     public static ActorReference<TActor> ReadActorReference<TActor>(this BinaryReader reader)
-        where TActor : Actor
+        where TActor : WorldActor
     {
         ulong id = reader.ReadUInt64();
         return ActorReference<TActor>.Create(id);

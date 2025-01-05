@@ -1,0 +1,5 @@
+money/resources
+power
+trade routes
+
+fog of war

@@ -1,7 +1,7 @@
 ﻿using SpaceGame.GUI;
+using SpaceGame.Orders;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
-using SpaceGame.Ships.Orders;
 using SpaceGame.Structures;
 using SpaceGame.Teams;
 using System;
@@ -23,7 +23,7 @@ internal class MissileSystem(MissileSystemPrototype prototype, ulong id, ActorRe
     public override void Tick()
     {
         base.Tick();
-        if (unit.Actor is Ship ship && ship.orders.Count > 0 && ship.orders.Peek() is AttackOrder attackOrder)
+        if (unit.Actor is Ship ship && ship.orders.Count > 0 && ship.orders.Peek().Actor is AttackOrder attackOrder)
         {
             target = attackOrder.target;
         }
@@ -74,9 +74,9 @@ internal class MissileSystem(MissileSystemPrototype prototype, ulong id, ActorRe
         World.Add(new Missile(
             Prototypes.Get<MissilePrototype>("missile"),
             World.NewID(),
-            unit.Actor!.Transform.Rotated((Random.Shared.NextSingle() - .5f) * MathF.PI / 10f),
+            unit.Actor!.Transform.Rotated((World.TickRandom.NextSingle() - .5f) * MathF.PI / 10f),
             ActorReference<Unit>.Create(target),
-            Random.Shared.NextUnitVector2() * Random.Shared.NextSingle() * 1.5f
+            World.TickRandom.NextUnitVector2() * World.TickRandom.NextSingle() * 1.5f
             ));
 
         MissilesRemaining--;

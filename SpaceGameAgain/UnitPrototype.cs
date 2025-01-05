@@ -3,7 +3,7 @@ using SpaceGame.Teams;
 
 namespace SpaceGame;
 
-abstract class UnitPrototype : Prototype
+abstract class UnitPrototype : WorldActorPrototype
 {
     public int MaxHealth { get; set; }
 

@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal class MissilePrototype : Prototype
+internal class MissilePrototype : WorldActorPrototype
 {
     public float Acceleration { get; set; }
     public float MaxSpeed { get; set; }
 
-    public override Actor? Deserialize(BinaryReader reader)
+    public override WorldActor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
         Transform transform = reader.ReadTransform();

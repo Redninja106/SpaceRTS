@@ -1,7 +1,8 @@
-﻿using SpaceGame.Interaction;
+﻿using SpaceGame.Commands;
+using SpaceGame.Interaction;
+using SpaceGame.Orders;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Formations;
-using SpaceGame.Ships.Orders;
 using SpaceGame.Structures;
 using SpaceGame.Teams;
 using System;
@@ -29,7 +30,7 @@ internal class SelectInteractionHandler : IInteractionContext
             else
             {
                 World.SelectionHandler.ClearSelection();
-                var pickedUnit= PickUnit();
+                var pickedUnit = PickUnit();
                 if (pickedUnit != null)
                 {
                     World.SelectionHandler.Add(pickedUnit);
@@ -58,9 +59,16 @@ internal class SelectInteractionHandler : IInteractionContext
                 {
                     if (selectedObject is Ship ship && ship.Team == World.PlayerTeam)
                     {
-                        if (!Keyboard.IsKeyDown(Key.LeftShift))
-                            ship.orders.Clear();
-                        ship.orders.Enqueue(new AttackOrder(new(), World.NewID(), Transform.Default, ActorReference<Unit>.Create(target)));
+                        // IssueOrder(target, order.AsReference().Cast<Order>(), ship.orders.ToList());
+
+                        var command = new AttackCommand(
+                            Prototypes.Get<AttackCommandPrototype>("attack_command"),
+                            ship.AsReference().Cast<Unit>(),
+                            target.AsReference()
+                            );
+
+                        var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+                        commandProcessor.AddCommand(command);
                     }
                     else
                     {
@@ -87,18 +95,20 @@ internal class SelectInteractionHandler : IInteractionContext
 
                 for (int i = 0; i < ships.Count; i++)
                 {
-                    if (!Keyboard.IsKeyDown(Key.LeftShift))
+                    if (Keyboard.IsKeyDown(Key.LeftShift) && ships[i].orders.TryPeek(out ActorReference<Order> order) && order.Actor is MoveOrder)
                     {
-                        ships[i].orders.Clear();
-                    }
-
-                    if (ships[i].orders.TryPeek(out Order? order) && order is MoveOrder moveOrder)
-                    {
-                        moveOrder.targets.Add(World.MousePosition + positions[i]);
+                        // moveOrder.targets.Add(World.MousePosition + positions[i]);
                     }
                     else
                     {
-                        ships[i].orders.Enqueue(new MoveOrder(null, World.NewID(), Transform.Default, World.MousePosition + positions[i]));
+                        var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+                        // MoveOrder moveOrder = new MoveOrder(Prototypes.Get<MoveOrderPrototype>("move_order"), World.NewID(), ships[i].AsReference().Cast<Unit>(), World.MousePosition + positions[i]);
+
+                        commandProcessor.AddCommand(new MoveCommand(Prototypes.Get<MoveCommandPrototype>("move_command"), ships[i], World.MousePosition + positions[i]));
+                        // ships[i].Team.SubmitCommand(new UpdateOrdersCommand());
+                        // IssueOrder(ships[i], o.AsReference().Cast<Order>(), ships[i].orders.ToList());
+                        // ships[i].orders.Enqueue(o.AsReference().Cast<Order>());
+
                     }
                 }
             }
@@ -135,6 +145,27 @@ internal class SelectInteractionHandler : IInteractionContext
         //    World.CurrentInteractionContext = World.ConstructionInteractionContext;
         //}
     }
+
+    //private void IssueOrder(Unit target, ActorReference<Order> order, List<ActorReference<Order>>? prevOrders)
+    //{
+    //    var cmdProc = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+
+    //    // var order = new AttackOrder(new(), World.NewID(), Transform.Default, ActorReference<Unit>.Create(target)).AsReference().Cast<Order>();
+
+    //    var prototype = Prototypes.Get<MoveOrderPrototype>("update_orders_command");
+
+    //    // if shift is held append to existing commands
+    //    if (Keyboard.IsKeyDown(Key.LeftShift))
+    //    {
+    //        cmdProc.AddCommand(new CancelOrdersCommand(
+    //            Prototypes.Get<CancelOrdersCommandPrototype>("cancel_orders_command"),
+    //            World.NewID(),
+    //            target.AsReference()
+    //            ));
+    //    }
+        
+    //    cmdProc.AddCommand(new MoveCommand(prototype, World.NewID(), target.AsReference(), orders));
+    //}
 
     public void Render(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)
     {

@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal abstract class WeaponSystem : Actor, IDestructable
+internal abstract class WeaponSystem : WorldActor, IDestructable
 {
     public ActorReference<Unit> unit;
 
 
-    protected WeaponSystem(Prototype prototype, ulong id, ActorReference<Unit> unit) : base(prototype, id, Transform.Default)
+    protected WeaponSystem(WorldActorPrototype prototype, ulong id, ActorReference<Unit> unit) : base(prototype, id, Transform.Default)
     {
         this.unit = unit;
     }

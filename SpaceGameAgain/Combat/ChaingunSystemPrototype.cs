@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Combat;
 internal class ChaingunSystemPrototype : WeaponSystemPrototype
 {
-    public override Actor? Deserialize(BinaryReader reader)
+    public override WorldActor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
         ActorReference<Unit> unit = reader.ReadActorReference<Unit>();

@@ -14,7 +14,7 @@ internal class MouseState(MouseButton button)
         Dragged = false;
         Pressed = World.HasFocus && Mouse.IsButtonPressed(button);
         Released = Holding && Mouse.IsButtonReleased(button);
-        World.GetSphereOfInfluence(DragStart)?.ApplyTo(ref DragStart);
+        
         if (Pressed)
         {
             DragStart = World.MousePosition;
@@ -35,4 +35,12 @@ internal class MouseState(MouseButton button)
         }
     }
 
+    public void Tick()
+    {
+        var soi = World.GetSphereOfInfluence(DragStart);
+        if (soi != null)
+        {
+            soi.ApplyTo(ref DragStart);
+        }
+    }
 }

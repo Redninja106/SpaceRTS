@@ -67,7 +67,7 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
                 {
                     var transform = unit.Actor!.Transform with 
                     { 
-                        Rotation = Angle.FromVector(targetPos - unit.Actor!.Transform.Position) + Random.Shared.NextSingle() * 0.05f
+                        Rotation = Angle.FromVector(targetPos - unit.Actor!.Transform.Position) + World.TickRandom.NextSingle() * 0.05f
                     };
                     World.Add(new Bullet(bulletProto, World.NewID(), transform, target.AsReference(), range / bulletProto.Speed));
 

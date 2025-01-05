@@ -1,16 +1,13 @@
-﻿using System.Transactions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SpaceGame;
-
-abstract class Prototype
+internal abstract class Prototype
 {
     public string Name { get; set; }
 
-    public abstract Actor? Deserialize(BinaryReader reader);
-
-    public void DeserializeArgs(BinaryReader reader, out ulong id, out Transform transform)
-    {
-        id = reader.ReadUInt64();
-        transform = reader.ReadTransform();
-    }
+    public abstract Actor Deserialize(BinaryReader reader);
 }

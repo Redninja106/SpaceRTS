@@ -11,7 +11,7 @@ namespace SpaceGame;
 internal class PolygonCollider
 {
     public Vector2[] Bounds;
-    public Actor actor;
+    public WorldActor actor;
 
     
 }

@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Teams;
-internal class TeamPrototype : Prototype
+internal class TeamPrototype : WorldActorPrototype
 {
-    public override Actor? Deserialize(BinaryReader reader)
+    public override WorldActor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
 

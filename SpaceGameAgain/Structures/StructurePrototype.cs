@@ -54,7 +54,7 @@ internal class StructurePrototype : UnitPrototype
         return new Structure(this, id, grid, location, rotation, team);
     }
 
-    public override Actor? Deserialize(BinaryReader reader)
+    public override WorldActor Deserialize(BinaryReader reader)
     {
         DeserializeArgs(reader, out var id, out var team, out var grid, out var location, out var rotation);
         return CreateStructure(id, team, grid, location, rotation);

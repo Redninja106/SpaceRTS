@@ -24,7 +24,7 @@ internal class TurretPrototype : StructurePrototype
     {
     }
 
-    public override Actor? Deserialize(BinaryReader reader)
+    public override WorldActor Deserialize(BinaryReader reader)
     {
         base.DeserializeArgs(reader, out var id, out var team, out var grid, out var location, out var rotation);
         ActorReference<WeaponSystem> weaponSystem = reader.ReadActorReference<WeaponSystem>();

@@ -74,7 +74,7 @@ static class Prototypes
                     throw new($"could not find prototype type");
                 }
 
-                if (prototypeType is null)
+                if (prototypeName is null)
                 {
                     throw new($"could not find prototype name for");
                 }

@@ -2,10 +2,10 @@
 using SimulationFramework;
 using SimulationFramework.Drawing;
 using SpaceGame.Interaction;
+using SpaceGame.Orders;
 using SpaceGame.Planets;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
-using SpaceGame.Ships.Orders;
 using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
@@ -24,8 +24,9 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
         new(-.5f / 2f, -.2f / 2f),
     ];
 
-    public Queue<Order> orders = [];
+    public Queue<ActorReference<Order>> orders = [];
     public List<ActorReference<Module>> modules = [];
+    public Order? potentialOrder = null;
 
     public float height = height;
     
@@ -56,11 +57,17 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
         if (selected)
         {
-            if (orders.Count > 0)
+            if (potentialOrder != null)
+            {
+                canvas.PushState();
+                potentialOrder.Render(canvas);
+                canvas.PopState();
+            }
+            else if (orders.Count > 0)
             {
                 var order = orders.Peek();
                 canvas.PushState();
-                order.Render(this, canvas);
+                order.Actor!.Render(canvas);
                 canvas.PopState();
             }
         }
@@ -84,7 +91,8 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
         if (orders.Count > 0 && height >= .4f) 
         {
             var order = orders.Peek();
-            if (order.Complete(this))
+            order.Actor!.Tick();
+            if (order.Actor!.IsCompleted)
             {
                 orders.Dequeue();
             }

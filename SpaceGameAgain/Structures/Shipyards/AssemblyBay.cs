@@ -1,4 +1,5 @@
-﻿using SpaceGame.GUI;
+﻿using SpaceGame.Commands;
+using SpaceGame.GUI;
 using SpaceGame.Planets;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
@@ -26,10 +27,14 @@ internal class AssemblyBay : Structure
 
     public AssemblyBay(AssemblyBayPrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
     {
-        SelectionGUI = new TextButton("make ship", BuildShip);
+        SelectionGUI = new TextButton("make ship", () =>
+        {
+            var cmdProc = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+            cmdProc.AddCommand(new AssembleShipCommand(Prototypes.Get<AssembleShipCommandPrototype>("assemble_ship_command"), this));
+        });
     }
 
-    private void BuildShip()
+    public void BuildShip()
     {
         if (Team.Actor!.Credits >= 100)
         {
@@ -117,7 +122,7 @@ class AssemblyBayPrototype : StructurePrototype
         return new AssemblyBay(this, id, grid, location, rotation, team);
     }
 
-    public override Actor? Deserialize(BinaryReader reader)
+    public override WorldActor Deserialize(BinaryReader reader)
     {
         base.DeserializeArgs(reader, out var id, out var team, out var grid, out var location, out var rotation);
         bool isBuildingShip = reader.ReadBoolean();

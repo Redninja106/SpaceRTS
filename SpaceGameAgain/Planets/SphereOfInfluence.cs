@@ -25,7 +25,7 @@ internal class SphereOfInfluence
         lastPosition = planet.Transform.Position;
     }
 
-    public void ApplyTo(Actor actor)
+    public void ApplyTo(WorldActor actor)
     {
         ApplyTo(ref actor.Transform);
     }
