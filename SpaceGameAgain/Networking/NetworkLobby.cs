@@ -38,8 +38,6 @@ class NetworkLobby : Lobby
             }
 
             Console.WriteLine("downloaded world!");
-
-            // World.ClientInitialize(worldDownload.team.Actor!);
         }
 
         if (network.ReceivePacket(out TurnRequestPacket? turnRequest))

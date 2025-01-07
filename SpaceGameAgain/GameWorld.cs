@@ -43,8 +43,8 @@ internal class GameWorld
 
     public ActorReference<Team> PlayerTeam;
 
-    public Sidebar LeftSidebar;
-    public Sidebar RightSidebar;
+    // public Sidebar LeftSidebar;
+    // public Sidebar RightSidebar;
 
     public Vector2 MousePosition;
     public bool HasFocus;

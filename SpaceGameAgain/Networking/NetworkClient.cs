@@ -18,6 +18,7 @@ internal class NetworkClient
         connection = new Socket(AddressFamily.InterNetwork, SocketType.Stream, 0);
         connection.Connect(host, port);
         connection.Blocking = false;
+        connection.NoDelay = true;
 
         Console.WriteLine("connected to " + connection.RemoteEndPoint?.ToString());
     }

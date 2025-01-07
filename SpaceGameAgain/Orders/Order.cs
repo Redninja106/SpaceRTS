@@ -14,12 +14,6 @@ internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference
 
     public bool IsCompleted { get; private set; } = false;
 
-    public abstract void Tick();
-
-    public virtual void Render(ICanvas canvas)
-    {
-    }
-
     public bool MoveTo(Vector2 targetPosition, float? targetRotation = null)
     {
         ref Transform transform = ref Unit.Actor!.Transform;
@@ -32,7 +26,9 @@ internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference
             {
                 transform.Rotation = Angle.Step(transform.Rotation, Angle.FromVector(delta), MathF.Tau * Program.Timestep);
                 if (Angle.Distance(transform.Rotation, Angle.FromVector(delta)) > .01f)
+                {
                     return false;
+                }
             }
 
             transform.Position = Util.Step(transform.Position, targetPosition, 100 * Program.Timestep);

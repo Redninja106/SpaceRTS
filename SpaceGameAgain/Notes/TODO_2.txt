@@ -3,3 +3,5 @@ power
 trade routes
 
 fog of war
+
+star systems <- fixed point transforms

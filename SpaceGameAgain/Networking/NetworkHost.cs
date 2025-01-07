@@ -20,8 +20,9 @@ internal class NetworkHost
     public NetworkHost(int port)
     {
         listeningSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, 0);
-        listeningSocket.Bind(new IPEndPoint(new IPAddress([127, 0, 0, 1]), port));
+        listeningSocket.Bind(new IPEndPoint(IPAddress.Any, port));
         listeningSocket.Listen();
+        listeningSocket.NoDelay = true;
         Console.WriteLine("listening on port " + port.ToString());
     }
 
@@ -30,6 +31,7 @@ internal class NetworkHost
         if (listeningSocket.Poll(10, SelectMode.SelectRead))
         {
             var client = listeningSocket.Accept();
+            client.NoDelay = true;
             clients.Add(client);
 
             Console.WriteLine("accepted connection from " + client.RemoteEndPoint!.ToString());

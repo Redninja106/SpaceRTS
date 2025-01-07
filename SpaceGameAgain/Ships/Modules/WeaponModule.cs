@@ -13,6 +13,7 @@ internal class WeaponModule : Module
 
     public WeaponModule(WeaponModulePrototype prototype, ulong id, ActorReference<Ship> ship, ActorReference<WeaponSystem> system) : base(prototype, id, ship)
     {
+        this.system = system;
     }
 
     public override Element[] BuildGUI()

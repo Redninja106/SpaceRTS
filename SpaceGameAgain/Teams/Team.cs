@@ -16,7 +16,9 @@ internal class Team : WorldActor
     private Dictionary<ActorReference<Team>, TeamRelation> relationships = [];
 
     public int Credits;
-    public int ZoneSizeLimit = 3;
+    public int Metals;
+    public int Antimatter;
+
     public ICommandProcessor CommandProcessor;
 
     public Team(TeamPrototype prototype, ulong id, Transform transform, int credits = 10000, Dictionary<ActorReference<Team>, TeamRelation>? relationships = null) : base(prototype, id, transform)
