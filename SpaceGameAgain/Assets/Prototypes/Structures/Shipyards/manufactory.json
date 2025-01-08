@@ -10,5 +10,6 @@
   "price": 100,
   "preset_model": "manufactory",
   "can_be_rotated": true,
-  "max_health": 10
+  "max_health": 10,
+  "power_consumed": 3
 }

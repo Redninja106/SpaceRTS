@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 namespace SpaceGame.Orders;
 internal class MoveOrder : Order
 {
-    public Vector2 target;
+    public FixedVector2 target;
 
-    public MoveOrder(MoveOrderPrototype prototype, ulong id, ActorReference<Unit> unit, Vector2 target) : base(prototype, id, unit)
+    public MoveOrder(MoveOrderPrototype prototype, ulong id, ActorReference<Unit> unit, FixedVector2 target) : base(prototype, id, unit)
     {
         this.target = target;
     }
@@ -19,7 +19,10 @@ internal class MoveOrder : Order
     public override void Tick()
     {
         var soi = World.GetSphereOfInfluence(target);
-        soi?.ApplyTo(ref target);
+        if (soi != null)
+        {
+            target = soi.ApplyTo(target);
+        }
 
         if (MoveTo(target))
         {
@@ -32,8 +35,8 @@ internal class MoveOrder : Order
     {
         canvas.PopState();
         canvas.Stroke(Color.White with { A = 200 });
-        Vector2 shipPos = Unit.Actor!.Transform.Position;
-        canvas.DrawLine(shipPos, target);
+        Vector2 shipPos = Unit.Actor!.Transform.Position.ToVector2();
+        canvas.DrawLine(shipPos, target.ToVector2());
         canvas.PushState();
     }
 

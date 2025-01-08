@@ -19,25 +19,25 @@ internal class FreeCamera : Camera
 
         zoom -= Mouse.ScrollWheelDelta;
 
-        Vector2 delta = Vector2.Zero;
+        FixedVector2 delta = FixedVector2.Zero;
 
-        Vector2 zoomTarget = this.ScreenToWorld(Program.ViewportMousePosition, false);
+        FixedVector2 zoomTarget = FixedVector2.FromVector2(this.ScreenToWorld(Program.ViewportMousePosition, false));
 
         float zoomFac = MathF.Pow(1.1f, zoom);
         VerticalSize = zoomFac;
 
-        Vector2 newZoomTarget = this.ScreenToWorld(Program.ViewportMousePosition, false);
+        FixedVector2 newZoomTarget = FixedVector2.FromVector2(this.ScreenToWorld(Program.ViewportMousePosition, false));
         
         this.Transform.Position += zoomTarget - newZoomTarget;
 
         if (Keyboard.IsKeyDown(Key.W))
-            delta -= Vector2.UnitY;
+            delta -= FixedVector2.FromVector2(0, 1);
         if (Keyboard.IsKeyDown(Key.A))
-            delta -= Vector2.UnitX;
+            delta -= FixedVector2.FromVector2(1, 0);
         if (Keyboard.IsKeyDown(Key.S))
-            delta += Vector2.UnitY;
+            delta += FixedVector2.FromVector2(0, 1);
         if (Keyboard.IsKeyDown(Key.D))
-            delta += Vector2.UnitX;
+            delta += FixedVector2.FromVector2(1, 0);
 
         Transform.Position += zoomFac * delta * Time.DeltaTime;
     }

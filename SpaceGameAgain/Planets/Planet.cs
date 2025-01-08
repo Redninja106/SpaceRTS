@@ -14,6 +14,10 @@ namespace SpaceGame.Planets;
 internal class Planet : WorldActor
 {
     public float Radius { get; init; } = 26;
+    public int PowerProduced = 0;
+    public int PowerConsumed = 0;
+    public int NetPower => PowerProduced - PowerConsumed;
+
     public Color Color 
     { 
         get
@@ -73,8 +77,24 @@ internal class Planet : WorldActor
     {
         canvas.Fill(shader);
         canvas.DrawCircle(0, 0, Radius);
-        
+
+        if (World.Camera.SmoothVerticalSize < Radius * 10 && World.GetSphereOfInfluence(World.MousePosition) == this.SphereOfInfluence)
+        {
+            canvas.PushState();
+            canvas.Translate(0, -Radius);
+            canvas.Scale(World.Camera.SmoothVerticalSize);
+            DrawPlanetBreakdown(canvas);
+            canvas.PopState();
+        }
+
         SphereOfInfluence.Render(canvas);
+    }
+
+    private void DrawPlanetBreakdown(ICanvas canvas)
+    {
+        canvas.DrawAlignedText("planet", .04f, 0, -.1f, Alignment.BottomCenter);
+        canvas.Fill(Color.Yellow);
+        canvas.DrawAlignedText("power: " + NetPower, .03f, 0, -.05f, Alignment.BottomCenter);
     }
 
     public void TickOrbit()

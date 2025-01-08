@@ -26,6 +26,15 @@ internal static class Util
         }
         return point + delta.Normalized() * distance;
     }
+    public static FixedVector2 Step(FixedVector2 point, FixedVector2 towards, float distance)
+    {
+        var delta = towards - point;
+        if (delta.LengthSquared() < distance * distance)
+        {
+            return towards;
+        }
+        return point + delta.Normalized() * distance;
+    }
 
     public static float? RayLineIntersect(Vector2 position, Vector2 direction, Vector2 from, Vector2 to)
     {

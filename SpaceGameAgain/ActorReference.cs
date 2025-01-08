@@ -36,9 +36,9 @@ struct ActorReference<TActor>
         return new ActorReference<TActor>() { id = id, actor = null };
     }
 
-    public static ActorReference<TActor> Create(TActor actor)
+    public static ActorReference<TActor> Create(TActor? actor)
     {
-        return new ActorReference<TActor>() { id = actor.ID, actor = actor };
+        return new ActorReference<TActor>() { id = actor?.ID ?? 0, actor = actor };
     }
 
     public static bool operator ==(ActorReference<TActor> a, ActorReference<TActor> b)

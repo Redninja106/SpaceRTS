@@ -46,7 +46,7 @@ internal class GameWorld
     // public Sidebar LeftSidebar;
     // public Sidebar RightSidebar;
 
-    public Vector2 MousePosition;
+    public FixedVector2 MousePosition;
     public bool HasFocus;
 
     public ulong tick;
@@ -91,7 +91,7 @@ internal class GameWorld
 
     public void Update(Vector2 viewportMousePosition, bool hasFocus, float tickProgress)
     {
-        MousePosition = Camera.ScreenToWorld(viewportMousePosition);
+        MousePosition = FixedVector2.FromVector2(Camera.ScreenToWorld(viewportMousePosition));
 
         UpdateActorList(Planets, tickProgress);
 
@@ -192,7 +192,7 @@ internal class GameWorld
             canvas.WriteMask(World.WorldShadowMask, false);
             structure.RenderShadow(
                 canvas, 
-                Vector2.TransformNormal(structure.InterpolatedTransform.Position.Normalized() * .4f, 
+                Vector2.TransformNormal(structure.InterpolatedTransform.Position.ToVector2().Normalized() * .4f, 
                 Matrix3x2.CreateRotation(-structure.Rotation * (MathF.Tau / 6f)))
                 );
             canvas.PopState();
@@ -255,7 +255,7 @@ internal class GameWorld
         }
     }
 
-    public SphereOfInfluence? GetSphereOfInfluence(Vector2 point)
+    public SphereOfInfluence? GetSphereOfInfluence(FixedVector2 point)
     {
         SphereOfInfluence? smallest = null;
         foreach (var planet in Planets)

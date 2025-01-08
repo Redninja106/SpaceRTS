@@ -32,7 +32,7 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, ulong i
                         {
                             World.ConstructionInteractionContext.BeginPlacing(proto, this.Ship.Actor!);
                         }
-                    }){FitContainer = true };
+                    }) { FitContainer = true , Margin   = 0};
                 }).ToArray()
             ),
         ];

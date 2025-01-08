@@ -12,7 +12,7 @@ internal class SphereOfInfluence
     public float Radius => planet.Radius * 4;
 
     public Planet planet;
-    public Vector2 lastPosition;
+    public FixedVector2 lastPosition;
 
     public SphereOfInfluence(Planet planet)
     {
@@ -36,10 +36,10 @@ internal class SphereOfInfluence
         transform.Position += delta;
     }
 
-    public void ApplyTo(ref Vector2 position)
+    public FixedVector2 ApplyTo(FixedVector2 position)
     {
         var delta = planet.Transform.Position - lastPosition;
-        position += delta;
+        return position + delta;
     }
 
     public void Render(ICanvas canvas)
@@ -49,8 +49,8 @@ internal class SphereOfInfluence
         canvas.DrawCircle(0, 0, Radius);
     }
 
-    internal bool ContainsPoint(Vector2 point)
+    internal bool ContainsPoint(FixedVector2 point)
     {
-        return Vector2.Distance(planet.Transform.Position, point) <= Radius;
+        return Vector2.Distance(planet.Transform.Position.ToVector2(), point.ToVector2()) <= Radius;
     }
 }

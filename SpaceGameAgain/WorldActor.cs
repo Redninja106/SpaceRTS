@@ -40,9 +40,13 @@ internal abstract class WorldActor(WorldActorPrototype prototype, ulong id, Tran
             ImGui.Text("ID: " + ID);
             if (ImGui.TreeNode("Transform"))
             {
-                ImGui.DragFloat2("Position", ref this.transform.Position);
+                Vector2 pos = this.transform.Position.ToVector2();
+                if (ImGui.DragFloat2("Position", ref pos)) 
+                {
+                    this.transform.Position = FixedVector2.FromVector2(pos);
+                }
                 ImGui.SliderAngle("Rotation", ref this.transform.Rotation);
-                ImGui.DragFloat2("Scale", ref this.transform.Position);
+                ImGui.DragFloat2("Scale", ref this.transform.Scale);
                 ImGui.TreePop();
             }
         }

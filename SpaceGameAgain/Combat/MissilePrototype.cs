@@ -15,10 +15,10 @@ internal class MissilePrototype : WorldActorPrototype
         ulong id = reader.ReadUInt64();
         Transform transform = reader.ReadTransform();
         ActorReference<Unit> target = reader.ReadActorReference<Unit>();
-        Vector2 velocity = reader.ReadVector2();
-        Vector2 targetOffset = reader.ReadVector2();
-        Vector2 lastAcceleration = reader.ReadVector2();
-        Vector2 currentAcceleration = reader.ReadVector2();
+        FixedVector2 velocity = reader.ReadFixedVector2();
+        FixedVector2 targetOffset = reader.ReadFixedVector2();
+        FixedVector2 lastAcceleration = reader.ReadFixedVector2();
+        FixedVector2 currentAcceleration = reader.ReadFixedVector2();
         bool exploding = reader.ReadBoolean();
         float explosionProgress = reader.ReadSingle();
         float age = reader.ReadSingle();

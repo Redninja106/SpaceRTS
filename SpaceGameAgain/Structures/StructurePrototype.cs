@@ -10,23 +10,25 @@ namespace SpaceGame.Structures;
 internal class StructurePrototype : UnitPrototype
 {
     public string Title { get; }
-    public Model Model { get; }
+    public Model Model { get; } = null!;
     public HexCoordinate[] Footprint { get; }
     public Vector2[] Outline { get; }
     public int Price { get; }
     public string? PresetModel { get; }
-    public HexCoordinate Center { get; set; }
-    public bool CanBeRotated { get; set; }
+    public HexCoordinate Center { get; set; } = HexCoordinate.Zero;
+    public bool CanBeRotated { get; set; } = true;
+    public int PowerProduced { get; set; } = 0;
+    public int PowerConsumed { get; set; } = 0;
 
     public StructurePrototype(string title, int price, Model model, string? presetModel, HexCoordinate[] footprint)
     {
         this.Title = title;
         this.Price = price;
-        this.PresetModel = presetModel;
+        this.PresetModel = presetModel ?? "default";
         this.Model = model ?? PresetModels.presetModels[presetModel!];
-        this.Footprint = footprint;
+        this.Footprint = footprint ?? [HexCoordinate.Zero];
 
-        this.Outline = CreateOutline(footprint);
+        this.Outline = CreateOutline(this.Footprint);
     }
 
     public static Vector2[] CreateOutline(HexCoordinate[] footprint)

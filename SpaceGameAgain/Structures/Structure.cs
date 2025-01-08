@@ -11,25 +11,36 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
-internal class Structure(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : Unit(prototype, id, grid.Actor!.Transform.Translated(location.ToCartesian()).Rotated(rotation * (MathF.Tau / 6f)), team)
+internal class Structure : Unit
 {
     public override StructurePrototype Prototype => (StructurePrototype)base.Prototype;
 
-    public HexCoordinate Location { get; set; } = location;
-    public int Rotation { get; set; } = rotation;
+    public HexCoordinate Location { get; set; }
+    public int Rotation { get; set; }
     public Grid Grid => grid.Actor!;
     public List<HexCoordinate>? Footprint { get; set; }
 
     private Vector2[]? outline;
-    private ActorReference<Grid> grid = grid;
+    private ActorReference<Grid> grid;
 
     public HashSet<Structure> neighbors = [];
+
+    public Structure(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid.Actor!.Transform.Translated(FixedVector2.FromVector2(location.ToCartesian())).Rotated(rotation * (MathF.Tau / 6f)), team)
+    {
+        Location = location;
+        Rotation = rotation;
+        this.grid = grid;
+
+        var planet = (Planet)Grid.Parent;
+        planet.PowerProduced += Prototype.PowerProduced;
+        planet.PowerConsumed += Prototype.PowerConsumed;
+    }
 
     public override ref Transform Transform 
     {
         get 
         { 
-            base.Transform = Grid.Transform.Translated(Location.ToCartesian()).Rotated(Rotation * (MathF.Tau / 6f));
+            base.Transform = Grid.Transform.Translated(FixedVector2.FromVector2(Location.ToCartesian())).Rotated(Rotation * (MathF.Tau / 6f));
             return ref base.Transform;
         }
     }
@@ -99,11 +110,20 @@ internal class Structure(StructurePrototype prototype, ulong id, ActorReference<
             }
         }
 
+        if (((Planet)Grid.Parent).NetPower < 0 && Prototype.PowerConsumed > 0)
+        {
+            Prototype.Model.Render(canvas);
+            Prototype.Model.Render(canvas, new RenderParameters() { colorOverride = Color.Black with { A = 100 } });
+            canvas.Fill(Color.Red);
+            canvas.DrawAlignedText("no power", .25f, Prototype.Center.ToCartesian(), Alignment.Center);
+            return;
+        }
+
         if (Prototype is ZonedStructurePrototype zone)
         {
             if (!isSelected && ((World.SelectionHandler.GetSelectedObject() as Ship)?.modules?.Any(m => m is ConstructionModule) ?? false))
             {
-                canvas.Fill(zone.Color with { A = .5f });
+                canvas.Fill((zone.Color with { A = .5f }));
                 foreach (var cell in Prototype.Footprint)
                 {
                     canvas.PushState();
@@ -181,6 +201,10 @@ internal class Structure(StructurePrototype prototype, ulong id, ActorReference<
 
     public override void OnDestroyed()
     {
+        var planet = (Planet)Grid.Parent;
+        planet.PowerProduced -= Prototype.PowerProduced;
+        planet.PowerConsumed -= Prototype.PowerConsumed;
+
         Grid.RemoveStructure(this);
         base.OnDestroyed();
     }

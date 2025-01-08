@@ -121,13 +121,13 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
     public void RenderShadow(ICanvas canvas, float floorHeight)
     {
-        canvas.Translate(InterpolatedTransform.Position);
-        canvas.Translate(InterpolatedTransform.Position.Normalized() * (height - floorHeight));
+        canvas.Translate(InterpolatedTransform.Position.ToVector2());
+        canvas.Translate(InterpolatedTransform.Position.ToVector2().Normalized() * (height - floorHeight));
         canvas.Fill(Color.Black with { A = 100 });
 
         for (int i = 0; i < 8; i++)
         {
-            canvas.Translate(InterpolatedTransform.Position.Normalized() * .005f);
+            canvas.Translate(InterpolatedTransform.Position.ToVector2().Normalized() * .005f);
             canvas.Rotate(InterpolatedTransform.Rotation);
             canvas.DrawPolygon(verts);
             canvas.Rotate(-InterpolatedTransform.Rotation);

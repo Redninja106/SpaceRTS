@@ -11,5 +11,6 @@
   ],
   "max_health": 10,
   "provided_module": "chaingun_module",
-  "can_be_rotated": true
+  "can_be_rotated": true,
+  "power_consumed": 1
 }

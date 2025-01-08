@@ -1,0 +1,11 @@
+{
+  "prototype": "ResourceDepositPrototype",
+  "name": "rare_metals_deposit",
+  "title": "Rare Metals",
+  "price": 100,
+  "max_health": 10,
+  "preset_model": "default",
+  "footprint": [
+    [ 0, 0 ]
+  ]
+}

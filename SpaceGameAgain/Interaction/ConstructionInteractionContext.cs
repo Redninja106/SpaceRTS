@@ -46,7 +46,7 @@ internal class ConstructionInteractionContext : IInteractionContext
         UpdateHoveredGrid();
         if (hoveredGrid != null)
         {
-            hoveredLocation = HexCoordinate.FromCartesian(hoveredGrid.Transform.WorldToLocal(World.MousePosition)) - prototype.Center.Rotated(rotation);
+            hoveredLocation = HexCoordinate.FromCartesian(hoveredGrid.Transform.WorldToLocal(World.MousePosition.ToVector2())) - prototype.Center.Rotated(rotation);
 
             if (leftMouse.Released)
             {
@@ -89,7 +89,7 @@ internal class ConstructionInteractionContext : IInteractionContext
     {
         foreach (var planet in World.Planets)
         {
-            if (planet.Grid.GetCellFromPoint(World.MousePosition, Transform.Default) != null)
+            if (planet.Grid.GetCellFromPoint(World.MousePosition.ToVector2(), Transform.Default) != null)
             {
                 if (planet.Grid != hoveredGrid)
                 {
@@ -126,7 +126,7 @@ internal class ConstructionInteractionContext : IInteractionContext
         }
         else
         {
-            canvas.Translate(World.MousePosition);
+            canvas.Translate(World.MousePosition.ToVector2());
         }
 
         canvas.Rotate(rotation * (MathF.Tau / 6f));

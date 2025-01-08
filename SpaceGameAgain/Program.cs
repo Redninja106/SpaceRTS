@@ -115,7 +115,7 @@ partial class Program : Simulation
         World.Camera.Transform.Position = planet1.Transform.Position;
         World.Camera.SmoothTransform.Position = planet1.Transform.Position;
 
-        planet1.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("particle_accelerator"), new(0, 0), 0, playerTeam);
+        // planet1.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("particle_accelerator"), new(0, 0), 0, playerTeam);
 
         //planet1.Grid.PlaceStructure(World.Structures.ResourceNode, new(0, 0), 0, World.NeutralTeam);
 
@@ -131,6 +131,8 @@ partial class Program : Simulation
         planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(3, 1), 0, enemies);
         planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(0, 5), 0, enemies);
         planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(-1, 2), 0, enemies);
+        
+        planet1.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("rare_metals_deposit"), new(0, 0), 0, null);
 
         World.Ships.First().Transform.Position = planet1.Transform.Position;
 

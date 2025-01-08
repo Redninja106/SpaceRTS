@@ -14,7 +14,7 @@ internal class MouseDragHandler
         if (World.rightMouse.Holding)
         {
             Vector2 mousePos = World.Camera.ScreenToWorld(Program.ViewportMousePosition, false);
-            World.Camera.Transform.Position += World.rightMouse.DragStart - mousePos;
+            World.Camera.Transform.Position += World.rightMouse.DragStart - FixedVector2.FromVector2(mousePos);
         }
     }
 }

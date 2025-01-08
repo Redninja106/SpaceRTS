@@ -205,10 +205,10 @@ internal static class DebugMenu
             return;
         }
 
-        //if (objectViewerObject is StructurePrototype structurePrototype && ImGui.Button("place"))
-        //{
-        //    World.ConstructionInteractionContext.BeginPlacing(structurePrototype);
-        //}
+        // if (objectViewerObject is StructurePrototype structurePrototype && ImGui.Button("place"))
+        // {
+        //     World.ConstructionInteractionContext.BeginPlacing(structurePrototype);
+        // }
 
         if (objectViewerObject is IInspectable inspectable)
         {

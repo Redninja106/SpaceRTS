@@ -1,0 +1,10 @@
+{
+  "prototype": "StructurePrototype",
+  "name": "generator",
+  "title": "Generator",
+  "max_health": 10,
+  "preset_model": "default",
+  "can_be_rotated": true,
+  "power_produced": 1,
+  "power_consumed": 0
+}

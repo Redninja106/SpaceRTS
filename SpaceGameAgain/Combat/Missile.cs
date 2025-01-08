@@ -11,25 +11,25 @@ internal class Missile : WorldActor, IDestructable
     public override MissilePrototype Prototype => (MissilePrototype)base.Prototype;
 
     public ActorReference<Unit> Target { get; }
-    public Vector2 TargetOffset { get; set; }
+    public FixedVector2 TargetOffset { get; set; }
 
-    public Vector2 Velocity { get; set; }
+    public FixedVector2 Velocity { get; set; }
     public bool IsDestroyed => explosionProgress > 1;
 
-    public Vector2 LastAcceleration { get; set; }
-    public Vector2 CurrentAcceleration { get; set; }
+    public FixedVector2 LastAcceleration { get; set; }
+    public FixedVector2 CurrentAcceleration { get; set; }
 
     public bool exploding = false;
     public float explosionProgress;
     public float age;
 
-    public Missile(MissilePrototype prototype, ulong id, Transform transform, ActorReference<Unit> target, Vector2 targetOffset) : base(prototype, id, transform)
+    public Missile(MissilePrototype prototype, ulong id, Transform transform, ActorReference<Unit> target, FixedVector2 targetOffset) : base(prototype, id, transform)
     {
         Target = target;
         TargetOffset = targetOffset;
         Transform = transform;
 
-        Velocity = Angle.ToVector(transform.Rotation) * prototype.MaxSpeed;
+        Velocity = FixedVector2.FromVector2(Angle.ToVector(transform.Rotation) * prototype.MaxSpeed);
     }
 
     public override void Tick()
@@ -51,9 +51,9 @@ internal class Missile : WorldActor, IDestructable
         }
 
         var positionDelta = (Target.Actor!.Transform.Position + TargetOffset - Transform.Position).Normalized() * Prototype.MaxSpeed;
-        if (Vector2.Distance(Target.Actor!.Transform.Position + TargetOffset, Transform.Position) < .05f)
+        if (FixedVector2.Distance(Target.Actor!.Transform.Position + TargetOffset, Transform.Position) < .05f)
         {
-            TargetOffset = Vector2.Zero;
+            TargetOffset = FixedVector2.Zero;
         }
 
         var lastVelocity = Velocity;
@@ -62,7 +62,7 @@ internal class Missile : WorldActor, IDestructable
 
         Transform.Position += Velocity * Program.Timestep;
 
-        if (age > 1 && Target.Actor!.TestPoint(Transform.Position, Transform.Default))
+        if (age > 1 && Target.Actor!.TestPoint(Transform.Position.ToVector2(), Transform.Default))
         {
             Detonate();
             Target.Actor!.Health--;
@@ -73,7 +73,7 @@ internal class Missile : WorldActor, IDestructable
 
     public void Detonate()
     {
-        Velocity = Vector2.Zero;
+        Velocity = FixedVector2.Zero;
         exploding = true;
     }
 

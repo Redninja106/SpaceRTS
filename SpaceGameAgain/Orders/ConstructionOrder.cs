@@ -24,7 +24,7 @@ internal class ConstructionOrder : Order
 
     public override void Tick()
     {
-        if (!MoveTo(Grid.Actor!.Transform.LocalToWorld(Location.ToCartesian())))
+        if (!MoveTo(FixedVector2.FromVector2(Grid.Actor!.Transform.LocalToWorld(Location.ToCartesian()))))
         {
             return;
         }

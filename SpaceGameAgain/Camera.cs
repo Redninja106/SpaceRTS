@@ -28,7 +28,7 @@ internal abstract class Camera
         DisplayWidth = width;
         DisplayHeight = height;
 
-        SmoothTransform.Position = Vector2.Lerp(SmoothTransform.Position, Transform.Position, 1f - MathF.Pow(InterpolationFactor, Time.DeltaTime));
+        SmoothTransform.Position = FixedVector2.Lerp(SmoothTransform.Position, Transform.Position, 1f - MathF.Pow(InterpolationFactor, Time.DeltaTime));
         SmoothVerticalSize = float.Lerp(SmoothVerticalSize, VerticalSize, 1f - MathF.Pow(InterpolationFactor, Time.DeltaTime));
     }
 

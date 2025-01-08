@@ -15,6 +15,17 @@ internal static class BinaryWriterExtensions
         writer.Write(transform.Scale);
     }
 
+    public static void Write(this BinaryWriter writer, Fixed32 value)
+    {
+        writer.Write(value.bits);
+    }
+
+    public static void Write(this BinaryWriter writer, FixedVector2 vec)
+    {
+        writer.Write(vec.X);
+        writer.Write(vec.Y);
+    }
+
     public static void Write(this BinaryWriter writer, Vector2 vec)
     {
         writer.Write(vec.X);

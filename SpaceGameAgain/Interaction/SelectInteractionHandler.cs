@@ -22,7 +22,7 @@ internal class SelectInteractionHandler : IInteractionContext
             if (leftMouse.Dragged)
             {
                 World.SelectionHandler.ClearSelection();
-                foreach (var ship in PickArea(Rectangle.FromPoints(leftMouse.DragStart, World.MousePosition)))
+                foreach (var ship in PickArea(Rectangle.FromPoints(leftMouse.DragStart.ToVector2(), World.MousePosition.ToVector2())))
                 {
                     World.SelectionHandler.Add(ship);
                 }
@@ -173,7 +173,7 @@ internal class SelectInteractionHandler : IInteractionContext
         {
             canvas.Stroke(Color.White);
             canvas.StrokeWidth(0);
-            canvas.DrawRect(Rectangle.FromPoints(leftMouse.DragStart, World.MousePosition));
+            canvas.DrawRect(Rectangle.FromPoints(leftMouse.DragStart.ToVector2(), World.MousePosition.ToVector2()));
         }
     }
 
@@ -181,7 +181,7 @@ internal class SelectInteractionHandler : IInteractionContext
     {
         foreach (var ship in World.Ships)
         {
-            if (ship.TestPoint(World.MousePosition, Transform.Default, 2f))
+            if (ship.TestPoint(World.MousePosition.ToVector2(), Transform.Default, 2f))
             {
                 return ship;
             }
@@ -193,7 +193,7 @@ internal class SelectInteractionHandler : IInteractionContext
     {
         foreach (var planet in World.Planets)
         {
-            var mp = planet.Grid.Transform.WorldToLocal(World.MousePosition);
+            var mp = planet.Grid.Transform.WorldToLocal(World.MousePosition.ToVector2());
             var cell = planet.Grid.GetCell(HexCoordinate.FromCartesian(mp));
             if (cell is not null && !cell.Structure.IsNull)
             {
@@ -207,7 +207,7 @@ internal class SelectInteractionHandler : IInteractionContext
     {
         foreach (var ship in World.Ships)
         {
-            if (area.ContainsPoint(ship.Transform.Position))
+            if (area.ContainsPoint(ship.Transform.Position.ToVector2()))
             {
                 yield return ship;
             }

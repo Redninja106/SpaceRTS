@@ -31,7 +31,7 @@ internal class Bullet : WorldActor, IDestructable
         sphereOfInfluence?.ApplyTo(ref this.Transform);
         Transform.Position += Transform.Forward * Prototype.Speed * Program.Timestep;
         
-        if (Vector2.Distance(Transform.Position, target.Actor!.Transform.Position) < 0.1f)
+        if (Vector2.Distance(Transform.Position.ToVector2(), target.Actor!.Transform.Position.ToVector2()) < 0.1f)
         {
             //DebugDraw.Circle(Vector2.Zero, 0.15f, this.Transform, Color.Orange);
             target.Actor!.Detonate();

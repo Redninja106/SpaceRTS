@@ -22,6 +22,6 @@ internal class Orbit
     public void Update(WorldActor actor, float speed)
     {
         phase += speed / radius;
-        actor.Transform.Position = center.Actor!.Transform.Position + Angle.ToVector(phase) * radius;
+        actor.Transform.Position = center.Actor!.Transform.Position + FixedVector2.FromVector2(Angle.ToVector(phase) * radius);
     }
 }
