@@ -1,0 +1,4 @@
+{
+  "prototype": "CancelOrdersCommandPrototype",
+  "name": "cancel_orders_command"
+}

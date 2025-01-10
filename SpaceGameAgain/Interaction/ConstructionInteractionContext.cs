@@ -109,14 +109,17 @@ internal class ConstructionInteractionContext : IInteractionContext
 
     public void Render(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)
     {
-    //    foreach (var cell in draggedCells)
-    //    {
-    //        canvas.PushState();
-    //        canvas.Translate(hoveredGrid.Transform.LocalToWorld(cell.ToCartesian()));
-    //        canvas.Rotate(rotation * (MathF.Tau / 6f));
-    //        prototype.Model.Render(canvas);
-    //        canvas.PopState();
-    //    }
+        //    foreach (var cell in draggedCells)
+        //    {
+        //        canvas.PushState();
+        //        canvas.Translate(hoveredGrid.Transform.LocalToWorld(cell.ToCartesian()));
+        //        canvas.Rotate(rotation * (MathF.Tau / 6f));
+        //        prototype.Model.Render(canvas);
+        //        canvas.PopState();
+        //    }
+
+        // TODO: draw relative to grid to avoid precision issues!
+        Transform.Default.ApplyTo(canvas, World.Camera);
 
         bool obstructed = false;
         if (hoveredGrid is not null)

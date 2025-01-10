@@ -14,17 +14,14 @@ internal class Team : WorldActor
     public static readonly Color EnemyColor = Color.Red;
 
     private Dictionary<ActorReference<Team>, TeamRelation> relationships = [];
-
-    public int Credits;
-    public int Metals;
-    public int Antimatter;
+    private Dictionary<string, int> resources = [];
 
     public ICommandProcessor CommandProcessor;
 
-    public Team(TeamPrototype prototype, ulong id, Transform transform, int credits = 10000, Dictionary<ActorReference<Team>, TeamRelation>? relationships = null) : base(prototype, id, transform)
-    {
-        this.Credits = credits;
+    public Dictionary<string, int> Resources => resources;
 
+    public Team(TeamPrototype prototype, ulong id, Transform transform, Dictionary<ActorReference<Team>, TeamRelation>? relationships = null, Dictionary<string, int>? resources = null) : base(prototype, id, transform)
+    {
         if (relationships != null)
         {
             this.relationships = relationships;
@@ -34,6 +31,18 @@ internal class Team : WorldActor
             this.relationships = new()
             {
                 [this.AsReference()] = TeamRelation.Self,
+            };
+        }
+
+        if (resources != null)
+        {
+            this.resources = resources;
+        }
+        else
+        {
+            this.resources = new()
+            {
+                ["metals"] = 0,
             };
         }
     }
@@ -64,14 +73,24 @@ internal class Team : WorldActor
     {
         writer.Write(ID);
 
-        writer.Write(Credits);
-
         writer.Write(relationships.Count);
         foreach (var (team, relation) in relationships)
         {
             writer.Write(team);
             writer.Write((int)relation);
         }
+
+        writer.Write(resources.Count);
+        foreach (var resource in resources)
+        {
+            writer.Write(resource.Key);
+            writer.Write(resource.Value);
+        }
+    }
+
+    public int GetResource(string resource)
+    {
+        return resources[resource];
     }
 }
 

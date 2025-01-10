@@ -38,8 +38,6 @@ internal class Planet : WorldActor
         }
         set
         {
-            value?.Update(this, 0);
-            SphereOfInfluence.lastPosition = this.Transform.Position;
             this.orbit = value;
         }
     }
@@ -52,8 +50,15 @@ internal class Planet : WorldActor
     private Orbit? orbit;
     private PlanetShader shader;
 
-    public Planet(PlanetPrototype prototype, ulong id, Transform transform, ActorReference<Grid> grid = default) : base(prototype, id, transform)
+    public Planet(PlanetPrototype prototype, ulong id, Transform transform, Orbit? orbit, ActorReference<Grid> grid = default) : base(prototype, id, transform)
     {
+        this.orbit = orbit;
+
+        if (this.orbit != null)
+        {
+            this.Teleport(this.orbit.GetLocation());
+        }
+
         if (grid.IsNull)
         {
             this.grid = new Grid(Prototypes.Get<GridPrototype>("grid"), World.NewID(), this.AsReference().Cast<WorldActor>()).AsReference();
@@ -75,6 +80,9 @@ internal class Planet : WorldActor
 
     public override void Render(ICanvas canvas)
     {
+        shader.rad = this.Radius;
+        shader.sunDir = this.InterpolatedTransform.Position.ToVector2().Normalized();
+        shader.time = Time.TotalTime;
         canvas.Fill(shader);
         canvas.DrawCircle(0, 0, Radius);
 
@@ -99,7 +107,11 @@ internal class Planet : WorldActor
 
     public void TickOrbit()
     {
-        Orbit?.Update(this, Program.Timestep);
+        if (Orbit != null)
+        {
+            Orbit.Tick(Program.Timestep);
+            this.Transform = Orbit.GetLocation();
+        }
     }
 
     public override void Serialize(BinaryWriter writer)
@@ -135,10 +147,23 @@ internal class Planet : WorldActor
 
 class PlanetShader : CanvasShader
 {
+    public float time;
     public ColorF color;
+    public float rad;
+    public Vector2 sunDir;
 
     public override ColorF GetPixelColor(Vector2 position)
     {
+        Vector2 dir = position / rad;
+        float h = MathF.Sqrt(1f - dir.LengthSquared());
+
+        Vector3 normal = new(dir.X, h * 2f, dir.Y);
+        Vector3 lightDir = new Vector3(sunDir.X, -.5f, sunDir.Y);
+        float brightness = MathF.Min(MathF.Max(-Vector3.Dot(normal.Normalized(), lightDir.Normalized()) * 2, 0), 1);
+        brightness += .01f * (noise(new Vector2(position.X * time, position.Y * time)) * 2 - 1);
+        brightness = .5f + .5f * brightness;
+        //return this.color * brightness;
+
         HexCoordinate hexCoord = HexCoordinate.FromCartesian(position);
 
         float jitter = noise(new(hexCoord.Q, hexCoord.R));
@@ -147,7 +172,7 @@ class PlanetShader : CanvasShader
         color.R += jitter * 0.02f;
         color.G += jitter * 0.02f;
         color.B += jitter * 0.02f;
-        return color;
+        return color * brightness;
     }
 
     float noise(Vector2 uv)

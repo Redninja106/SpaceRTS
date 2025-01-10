@@ -1,4 +1,5 @@
-﻿using Silk.NET.Core.Native;
+﻿using ImGuiNET;
+using Silk.NET.Core.Native;
 using SimulationFramework;
 using SimulationFramework.Drawing;
 using SpaceGame.Interaction;
@@ -45,15 +46,11 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
         for (int i = 0; i < 8; i++)
         {
-            canvas.Rotate(-this.Transform.Rotation);
-            canvas.Translate(0, -.005f);
-            canvas.Rotate(this.Transform.Rotation);
+            //canvas.Rotate(-this.Transform.Rotation);
+            // canvas.Translate(0, -.005f);
+            //canvas.Rotate(this.Transform.Rotation);
             canvas.DrawPolygon(verts);
         }
-
-        canvas.ResetState();
-
-        canvas.PopState();
 
         if (selected)
         {
@@ -71,9 +68,6 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
                 canvas.PopState();
             }
         }
-
-        canvas.PushState();
-
     }
 
     public override void Tick()
@@ -106,7 +100,17 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
         //}
 
         SphereOfInfluence? soi = World.GetSphereOfInfluence(this.Transform.Position);
-        soi?.ApplyTo(this);
+        soi?.ApplyTickTo(this);
+    }
+
+    public override void Update(float tickProgress)
+    {
+        base.Update(tickProgress);
+
+        foreach (var order in orders)
+        {
+            order.Actor!.Update(tickProgress);
+        }
     }
 
     public override bool TestPoint(Vector2 point, Transform transform)
@@ -121,7 +125,12 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
     public void RenderShadow(ICanvas canvas, float floorHeight)
     {
-        canvas.Translate(InterpolatedTransform.Position.ToVector2());
+        Transform unrotatedTransform = InterpolatedTransform with
+        {
+            Rotation = 0
+        };
+        unrotatedTransform.ApplyTo(canvas, World.Camera);
+
         canvas.Translate(InterpolatedTransform.Position.ToVector2().Normalized() * (height - floorHeight));
         canvas.Fill(Color.Black with { A = 100 });
 

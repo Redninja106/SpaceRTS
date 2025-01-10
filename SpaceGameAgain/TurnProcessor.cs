@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace SpaceGame;
 internal class TurnProcessor
 {
-    public const int TicksPerTurn = 5;
+    public const int TicksPerTurn = 3;
     public const long TurnDelay = 2;
 
     public int RemainingTicks = TicksPerTurn;

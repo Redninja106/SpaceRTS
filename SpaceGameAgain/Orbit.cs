@@ -19,9 +19,18 @@ internal class Orbit
         this.phase = phase;
     }
 
-    public void Update(WorldActor actor, float speed)
+    public void Tick(float speed)
     {
         phase += speed / radius;
-        actor.Transform.Position = center.Actor!.Transform.Position + FixedVector2.FromVector2(Angle.ToVector(phase) * radius);
     }
+
+    public Transform GetLocation()
+    {
+        return center.Actor!.Transform.Translated(DoubleVector.FromVector2(Angle.ToVector(phase) * radius));
+    }
+
+    // public void Apply(WorldActor actor)
+    // {
+    //     actor.Transform.Position = center.Actor!.Transform.Position + DoubleVector.FromVector2(Angle.ToVector(phase) * radius);
+    // }
 }

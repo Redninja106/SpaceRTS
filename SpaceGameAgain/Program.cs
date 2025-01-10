@@ -8,6 +8,7 @@ using SpaceGame.Ships.Modules;
 //using SpaceGame.Stations;
 using SpaceGame.Structures;
 using SpaceGame.Teams;
+using SpaceGame.Tiles;
 
 DesktopPlatform.Register();
 Start<Program>();
@@ -26,7 +27,7 @@ partial class Program : Simulation
     public static float GameSpeed = 1f;
     public static bool forceTickThisFrame = false;
 
-    private float timeAccumulated = 0;
+    public static float timeAccumulated = 0;
 
     public static Lobby? Lobby;
     public static NetworkSerializer NetworkSerializer = new();
@@ -68,7 +69,7 @@ partial class Program : Simulation
 
         PlanetPrototype planetProto = Prototypes.Get<PlanetPrototype>("generic_planet");
 
-        var sun = new Planet(planetProto, World.NewID(), Transform.Default)
+        var sun = new Planet(planetProto, World.NewID(), Transform.Default, null)
         {
             Color = Color.Yellow,
             Radius = 50,
@@ -76,36 +77,32 @@ partial class Program : Simulation
 
         World.Add(sun);
         
-        var planet1 = new Planet(planetProto, World.NewID(), Transform.Default)
+        var planet1 = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)sun).AsReference(), 500, 0))
         {
-            Orbit = new(((WorldActor)sun).AsReference(), 500, 0),
             Color = Color.DarkGreen,
             Radius = 26,
         }; 
         Grid.FillRadius(planet1.Grid, planet1.Radius);
         World.Add(planet1);
 
-        var moon = new Planet(planetProto, World.NewID(), Transform.Default)
+        var moon = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)planet1).AsReference(), 100, MathF.PI * 1.25f))
         {
-            Orbit = new(((WorldActor)planet1).AsReference(), 100, MathF.PI * 1.25f),
             Color = Color.DarkGray,
             Radius = 9,
         };
         Grid.FillRadius(moon.Grid, moon.Radius);
         World.Add(moon);
 
-        var planet2 = new Planet(planetProto, World.NewID(), Transform.Default)
+        var planet2 = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)sun).AsReference(), 400, MathF.PI * .75f))
         {
-            Orbit = new(((WorldActor)sun).AsReference(), 400, MathF.PI * .75f),
             Color = Color.DarkOliveGreen,
             Radius = 17,
         };
         Grid.FillRadius(planet2.Grid, planet2.Radius);
         World.Add(planet2);
 
-        var planet3 = new Planet(planetProto, World.NewID(), Transform.Default)
+        var planet3 = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)sun).AsReference(), 800, MathF.PI * 1.75f))
         {
-            Orbit = new(((WorldActor)sun).AsReference(), 800, MathF.PI * 1.75f),
             Color = Color.Lerp(Color.OrangeRed, Color.Black, 0.25f),
             Radius = 13,
         };
@@ -114,6 +111,8 @@ partial class Program : Simulation
 
         World.Camera.Transform.Position = planet1.Transform.Position;
         World.Camera.SmoothTransform.Position = planet1.Transform.Position;
+
+        planet1.Grid.GetCell(HexCoordinate.Zero)!.Tile = new ResourceDepositTile(Prototypes.Get<TilePrototype>("rare_metals_deposit"), World.NewID(), Transform.Default, 100);
 
         // planet1.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("particle_accelerator"), new(0, 0), 0, playerTeam);
 
@@ -132,7 +131,7 @@ partial class Program : Simulation
         planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(0, 5), 0, enemies);
         planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(-1, 2), 0, enemies);
         
-        planet1.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("rare_metals_deposit"), new(0, 0), 0, null);
+        // planet1.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("rare_metals_deposit"), new(0, 0), 0, null);
 
         World.Ships.First().Transform.Position = planet1.Transform.Position;
 
@@ -228,7 +227,14 @@ partial class Program : Simulation
     {
         Lobby?.Update();
 
-        World.Camera.Update(view.Width, view.Height);
+        timeAccumulated += Time.DeltaTime;
+        float tickProgress = MathF.Min(timeAccumulated * GameSpeed / Timestep, 1);
+        if (GameSpeed == 0)
+        {
+            tickProgress = 1;
+        }
+
+        World.Camera.Update(view.Width, view.Height, tickProgress);
         Rectangle vp = new(0, 0, view.Width, view.Height);
 
         actualGUIScale = uiscale * Math.Clamp(canvas.Width * uiscaleResolutionFactor, 1 / uiscale, 1);
@@ -241,7 +247,6 @@ partial class Program : Simulation
             !infoBounds.ContainsPoint(Mouse.Position / actualGUIScale) &&
             !mapBounds.ContainsPoint(Mouse.Position / actualGUIScale);
 
-        timeAccumulated += Time.DeltaTime;
         if (forceTickThisFrame || GameSpeed >= 0 && timeAccumulated >= Timestep / GameSpeed)
         {
             forceTickThisFrame = false;
@@ -249,13 +254,6 @@ partial class Program : Simulation
 
             World.Tick(ViewportMousePosition, worldFocused);
             timeAccumulated = 0;
-        }
-        
-        float tickProgress = MathF.Min(timeAccumulated * GameSpeed / Timestep, 1);
-
-        if (GameSpeed == 0)
-        {
-            tickProgress = 1;
         }
 
         World.Update(ViewportMousePosition, worldFocused, tickProgress);
@@ -272,7 +270,7 @@ partial class Program : Simulation
         canvas.Antialias(true);
         World.Camera.RenderSetup(canvas);
         World.Render(canvas);
-        DebugDraw.Draw(canvas);
+        DebugDraw.Draw(canvas, World.Camera);
 
         // canvas.ResetState();
         // canvas.Font(font);

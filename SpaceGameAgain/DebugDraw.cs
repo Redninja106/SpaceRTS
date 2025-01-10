@@ -28,15 +28,16 @@ public static class DebugDraw
         circles.Clear();
     }
 
-    public static void Draw(ICanvas canvas)
+    public static void Draw(ICanvas canvas, Camera camera)
     {
+        canvas.ResetState();
         canvas.PushState();
         canvas.StrokeWidth(0);
 
         foreach (var (poly, color, t) in polygons)
         {
             canvas.PushState();
-            canvas.Transform(t.CreateLocalToWorldMatrix());
+            t.ApplyTo(canvas, camera);
 
             canvas.Stroke(color);
             canvas.DrawPolygon(poly);
@@ -47,7 +48,7 @@ public static class DebugDraw
         foreach (var ((from, to), color, t) in lines)
         {
             canvas.PushState();
-            canvas.Transform(t.CreateLocalToWorldMatrix());
+            t.ApplyTo(canvas, camera);
 
             canvas.Stroke(color);
             canvas.DrawLine(from, to);
@@ -58,7 +59,7 @@ public static class DebugDraw
         foreach (var (circle, color, t) in circles)
         {
             canvas.PushState();
-            canvas.Transform(t.CreateLocalToWorldMatrix());
+            t.ApplyTo(canvas, camera);
 
             canvas.Stroke(color);
             canvas.DrawCircle(circle);

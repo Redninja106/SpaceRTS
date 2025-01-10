@@ -10,9 +10,9 @@ namespace SpaceGame.Commands;
 internal class MoveCommand : Command
 {
     public Ship ship;
-    public FixedVector2 target;
+    public DoubleVector target;
 
-    public MoveCommand(MoveCommandPrototype prototype, Ship ship, FixedVector2 target) : base(prototype)
+    public MoveCommand(MoveCommandPrototype prototype, Ship ship, DoubleVector target) : base(prototype)
     {
         this.ship = ship;
         this.target = target;
@@ -36,7 +36,7 @@ class MoveCommandPrototype : CommandPrototype
     public override Actor Deserialize(BinaryReader reader)
     {
         ActorReference<Ship> s = reader.ReadActorReference<Ship>();
-        FixedVector2 v = reader.ReadFixedVector2();
+        DoubleVector v = reader.ReadDoubleVector();
 
         return new MoveCommand(this, s.Actor!, v);
     }

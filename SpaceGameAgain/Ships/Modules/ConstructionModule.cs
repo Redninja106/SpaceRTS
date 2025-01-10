@@ -28,7 +28,7 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, ulong i
             new ElementStack(
                 Prototypes.RegisteredPrototypes.OfType<StructurePrototype>().Select(proto => {
                     return new TextButton(proto.Title, () => {
-                        if (Ship.Actor!.Team.Actor!.Credits >= proto.Price)
+                        if (Ship.Actor!.Team.Actor!.Resources["metals"] >= proto.Price)
                         {
                             World.ConstructionInteractionContext.BeginPlacing(proto, this.Ship.Actor!);
                         }
@@ -41,7 +41,7 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, ulong i
         {
             return new ImageButton(texture, 16, 16, () =>
             {
-                if (Ship.Actor!.Team.Actor!.Credits >= structure.Price)
+                if (Ship.Actor!.Team.Actor!.Resources["metals"] >= structure.Price)
                 {
                     World.ConstructionInteractionContext.BeginPlacing(structure, this.Ship.Actor!);
                 }

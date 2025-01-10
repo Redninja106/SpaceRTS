@@ -1,0 +1,6 @@
+{
+  "prototype": "TilePrototype",
+  "name": "ground_tile",
+  "blocks_structures": false,
+
+}

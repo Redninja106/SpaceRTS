@@ -7,7 +7,7 @@ internal class MouseState(MouseButton button)
     public bool Pressed;
     public bool Released;
     public bool Dragged;
-    public FixedVector2 DragStart;
+    public DoubleVector DragStart;
 
     public void Update()
     {
@@ -29,7 +29,7 @@ internal class MouseState(MouseButton button)
             }
             Dragging = false;
         }
-        if (Holding && FixedVector2.Distance(DragStart, World.MousePosition) > World.Camera.ScreenDistanceToWorldDistance(25f))
+        if (Holding && DoubleVector.Distance(DragStart, World.MousePosition) > World.Camera.ScreenDistanceToWorldDistance(25f))
         {
             Dragging = true;
         }
@@ -40,7 +40,7 @@ internal class MouseState(MouseButton button)
         var soi = World.GetSphereOfInfluence(DragStart);
         if (soi != null)
         {
-            DragStart = soi.ApplyTo(DragStart);
+            DragStart = soi.ApplyTickTo(DragStart);
         }
     }
 }

@@ -11,8 +11,6 @@ internal class TeamPrototype : WorldActorPrototype
     {
         ulong id = reader.ReadUInt64();
 
-        int credits = reader.ReadInt32();
-
         int relationshipCount = reader.ReadInt32();
 
         Dictionary<ActorReference<Team>, TeamRelation> relationships = [];
@@ -24,6 +22,17 @@ internal class TeamPrototype : WorldActorPrototype
             relationships.Add(team, relation);
         }
 
-        return new Team(this, id, Transform.Default, credits, relationships);
+        int resourceCount = reader.ReadInt32();
+        Dictionary<string, int> resources = [];
+
+        for (int i = 0; i < resourceCount; i++)
+        {
+            string name = reader.ReadString();
+            int count = reader.ReadInt32();
+            resources.Add(name, count);
+        }
+
+
+        return new Team(this, id, Transform.Default, relationships, resources);
     }
 }

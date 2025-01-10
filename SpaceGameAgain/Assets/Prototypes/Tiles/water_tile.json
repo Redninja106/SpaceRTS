@@ -1,0 +1,5 @@
+{
+  "prototype": "TilePrototype",
+  "name": "water_tile",
+  "blocks_structures": true
+}

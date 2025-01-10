@@ -53,13 +53,19 @@ internal class SelectInteractionHandler : IInteractionContext
         if (rightMouse.Released && !rightMouse.Dragged)
         {
             var target = PickUnit();
-            if (target is not null && target.Team.Actor!.GetRelation(World.PlayerTeam!.Actor) is TeamRelation.Enemies)
+            if (target is not null && target.Team.Actor?.GetRelation(World.PlayerTeam!.Actor) is TeamRelation.Enemies)
             {
                 foreach (var selectedObject in World.SelectionHandler.GetSelectedObjects())
                 {
                     if (selectedObject is Ship ship && ship.Team == World.PlayerTeam)
                     {
                         // IssueOrder(target, order.AsReference().Cast<Order>(), ship.orders.ToList());
+                        var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+                        
+                        if (!Keyboard.IsKeyDown(Key.LeftShift))
+                        {
+                            commandProcessor.AddCommand(new CancelOrdersCommand(Prototypes.Get<CommandPrototype>("cancel_orders_command"), ship));
+                        }
 
                         var command = new AttackCommand(
                             Prototypes.Get<AttackCommandPrototype>("attack_command"),
@@ -67,7 +73,6 @@ internal class SelectInteractionHandler : IInteractionContext
                             target.AsReference()
                             );
 
-                        var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
                         commandProcessor.AddCommand(command);
                     }
                     else
@@ -103,6 +108,11 @@ internal class SelectInteractionHandler : IInteractionContext
                     {
                         var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
                         // MoveOrder moveOrder = new MoveOrder(Prototypes.Get<MoveOrderPrototype>("move_order"), World.NewID(), ships[i].AsReference().Cast<Unit>(), World.MousePosition + positions[i]);
+
+                        if (!Keyboard.IsKeyDown(Key.LeftShift))
+                        {
+                            commandProcessor.AddCommand(new CancelOrdersCommand(Prototypes.Get<CommandPrototype>("cancel_orders_command"), ships[i]));
+                        }
 
                         commandProcessor.AddCommand(new MoveCommand(Prototypes.Get<MoveCommandPrototype>("move_command"), ships[i], World.MousePosition + positions[i]));
                         // ships[i].Team.SubmitCommand(new UpdateOrdersCommand());
@@ -171,6 +181,7 @@ internal class SelectInteractionHandler : IInteractionContext
     {
         if (leftMouse.Dragging)
         {
+            canvas.Transform(World.Camera.CreateRelativeMatrix(Transform.Default));
             canvas.Stroke(Color.White);
             canvas.StrokeWidth(0);
             canvas.DrawRect(Rectangle.FromPoints(leftMouse.DragStart.ToVector2(), World.MousePosition.ToVector2()));

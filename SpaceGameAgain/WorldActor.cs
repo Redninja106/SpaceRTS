@@ -17,6 +17,8 @@ internal abstract class WorldActor(WorldActorPrototype prototype, ulong id, Tran
 
     public virtual Transform InterpolatedTransform => interpolatedTransform;
     public virtual ref Transform Transform => ref transform;
+    public virtual ref Transform PreviousTransform => ref previousTransform;
+
     public ulong ID => id;
 
     public virtual void Update(float tickProgress)
@@ -33,6 +35,16 @@ internal abstract class WorldActor(WorldActorPrototype prototype, ulong id, Tran
     {
     }
 
+    /// <summary>
+    /// Moves the actor without interpolation.
+    /// </summary>
+    public void Teleport(Transform destination)
+    {
+        this.transform = destination;
+        this.previousTransform = destination;
+        this.interpolatedTransform = destination;
+    }
+
     public override void Layout()
     {
         if (ImGui.CollapsingHeader("WorldActor"))
@@ -40,13 +52,7 @@ internal abstract class WorldActor(WorldActorPrototype prototype, ulong id, Tran
             ImGui.Text("ID: " + ID);
             if (ImGui.TreeNode("Transform"))
             {
-                Vector2 pos = this.transform.Position.ToVector2();
-                if (ImGui.DragFloat2("Position", ref pos)) 
-                {
-                    this.transform.Position = FixedVector2.FromVector2(pos);
-                }
-                ImGui.SliderAngle("Rotation", ref this.transform.Rotation);
-                ImGui.DragFloat2("Scale", ref this.transform.Scale);
+                Transform.Layout();
                 ImGui.TreePop();
             }
         }

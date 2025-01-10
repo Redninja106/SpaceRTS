@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships.Formations;
 internal class ClusterFormation : Formation
 {
-    public static FixedVector2[] PlaceShips(Ship[] ships)
+    public static DoubleVector[] PlaceShips(Ship[] ships)
     {
-        FixedVector2[] result = new FixedVector2[ships.Length];
+        DoubleVector[] result = new DoubleVector[ships.Length];
         float spacing = .8f;
 
         int radius = 0;
@@ -24,7 +24,7 @@ internal class ClusterFormation : Formation
                 currentRing = Ring(radius).GetEnumerator();
                 Debug.Assert(currentRing.MoveNext());
             }
-            result[i] = FixedVector2.FromVector2(currentRing.Current.ToCartesian() * spacing + Random.Shared.NextUnitVector2() * Random.Shared.NextSingle() * .25f);
+            result[i] = DoubleVector.FromVector2(currentRing.Current.ToCartesian() * spacing + Random.Shared.NextUnitVector2() * Random.Shared.NextSingle() * .25f);
         }
 
         return result;

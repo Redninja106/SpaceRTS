@@ -26,7 +26,7 @@ internal static class Util
         }
         return point + delta.Normalized() * distance;
     }
-    public static FixedVector2 Step(FixedVector2 point, FixedVector2 towards, float distance)
+    public static DoubleVector Step(DoubleVector point, DoubleVector towards, float distance)
     {
         var delta = towards - point;
         if (delta.LengthSquared() < distance * distance)

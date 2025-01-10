@@ -12,33 +12,52 @@ internal class SphereOfInfluence
     public float Radius => planet.Radius * 4;
 
     public Planet planet;
-    public FixedVector2 lastPosition;
+    public DoubleVector lastUpdatePosition;
+    public DoubleVector lastTickPosition;
 
     public SphereOfInfluence(Planet planet)
     {
         this.planet = planet;
-        this.lastPosition = planet.Transform.Position;
+        this.lastUpdatePosition = planet.InterpolatedTransform.Position;
+        this.lastTickPosition = planet.Transform.Position;
     }
 
     public void Update()
     {
-        lastPosition = planet.Transform.Position;
+        lastUpdatePosition = planet.InterpolatedTransform.Position;
     }
 
-    public void ApplyTo(WorldActor actor)
+    public void Tick()
     {
-        ApplyTo(ref actor.Transform);
+        lastTickPosition = planet.Transform.Position;
     }
 
-    public void ApplyTo(ref Transform transform)
+    public void ApplyTickTo(WorldActor actor)
     {
-        var delta = planet.Transform.Position - lastPosition;
+        ApplyTickTo(ref actor.Transform);
+    }
+
+    public void ApplyTickTo(ref Transform transform)
+    {
+        var delta = planet.Transform.Position - lastTickPosition;
         transform.Position += delta;
     }
 
-    public FixedVector2 ApplyTo(FixedVector2 position)
+    public DoubleVector ApplyTickTo(DoubleVector position)
     {
-        var delta = planet.Transform.Position - lastPosition;
+        var delta = planet.Transform.Position - lastTickPosition;
+        return position + delta;
+    }
+
+    public void ApplyUpdateTo(ref Transform transform)
+    {
+        var delta = planet.InterpolatedTransform.Position - lastUpdatePosition;
+        transform.Position += delta;
+    }
+
+    public DoubleVector ApplyUpdateTo(DoubleVector position)
+    {
+        var delta = planet.InterpolatedTransform.Position - lastUpdatePosition;
         return position + delta;
     }
 
@@ -49,7 +68,7 @@ internal class SphereOfInfluence
         canvas.DrawCircle(0, 0, Radius);
     }
 
-    internal bool ContainsPoint(FixedVector2 point)
+    internal bool ContainsPoint(DoubleVector point)
     {
         return Vector2.Distance(planet.Transform.Position.ToVector2(), point.ToVector2()) <= Radius;
     }

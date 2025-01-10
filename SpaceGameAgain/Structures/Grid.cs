@@ -1,5 +1,6 @@
 ﻿using SpaceGame.Planets;
 using SpaceGame.Teams;
+using SpaceGame.Tiles;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,7 +36,7 @@ internal class Grid : WorldActor
 
     public void AddCell(HexCoordinate location)
     {
-        cells.Add(location, new());
+        cells.Add(location, new(new Tile(Prototypes.Get<TilePrototype>("ground_tile"), World.NewID(), Transform.Default)));
     }
 
     public void RemoveCell(HexCoordinate location)
@@ -64,12 +65,15 @@ internal class Grid : WorldActor
     public override void Render(ICanvas canvas)
     {
         canvas.Stroke(Color.LightGray with { A = 50 });
+
         foreach (var (coord, cell) in cells)
         {
+            canvas.PushState();
+            canvas.Translate(coord.ToCartesian());
+            cell.Tile.RenderTile(canvas, this, coord);
+
             if (cell?.Structure.IsNull ?? false)
             {
-                canvas.PushState();
-                canvas.Translate(coord.ToCartesian());
                 canvas.DrawLine(hexagon[0], hexagon[1]);
                 canvas.DrawLine(hexagon[1], hexagon[2]);
                 canvas.DrawLine(hexagon[2], hexagon[3]);
@@ -91,9 +95,8 @@ internal class Grid : WorldActor
                 {
                     canvas.DrawLine(hexagon[5], hexagon[0]);
                 }
-
-                canvas.PopState();
             }
+            canvas.PopState();
         }
     }
 
@@ -127,6 +130,7 @@ internal class Grid : WorldActor
         {
             var cellLocation = location + footprintPart.Rotated(rotation);
             GetCell(cellLocation)!.Structure = structure.AsReference();
+            // GetCell(cellLocation)!.Tile = new Tile(Prototypes.Get<TilePrototype>("foundation_tile"), World.NewID(), Transform.Default);
         }
 
         foreach (var cell in structure.GetAdjacentCells())
@@ -218,7 +222,7 @@ class GridPrototype : WorldActorPrototype
         {
             HexCoordinate coordinate = reader.ReadHexCoordinate();
             ActorReference<Structure> cell = reader.ReadActorReference<Structure>();
-            cells.Add(coordinate, new() { Structure = cell });
+            cells.Add(coordinate, new(new Tile(Prototypes.Get<TilePrototype>("ground_tile"), World.NewID(), Transform.Default)) { Structure = cell });
         }
 
         return new Grid(this, id, parent)

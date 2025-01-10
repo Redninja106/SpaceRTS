@@ -29,12 +29,12 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
         float minDistance = float.PositiveInfinity;
         foreach (var missile in World.Missiles)
         {
-            if (FixedVector2.Distance(missile.Transform.Position, unit.Actor!.Transform.Position) <= range && missile.Target.Actor!.Team.Actor!.GetRelation(unit.Actor!.Team.Actor!) is TeamRelation.Allies or TeamRelation.Self)
+            if (DoubleVector.Distance(missile.Transform.Position, unit.Actor!.Transform.Position) <= range && missile.Target.Actor!.Team.Actor!.GetRelation(unit.Actor!.Team.Actor!) is TeamRelation.Allies or TeamRelation.Self)
             {
                 if (missile.exploding)
                     continue;
 
-                float dist = FixedVector2.Distance(missile.Transform.Position, unit.Actor!.Transform.Position);
+                float dist = DoubleVector.Distance(missile.Transform.Position, unit.Actor!.Transform.Position);
                 if (dist < minDistance)
                 {
                     target = missile;
@@ -48,11 +48,11 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
             if (timeSinceShot > 1 / fireRate && ammo > 0)
             {
                 var bulletProto = Prototypes.Get<BulletPrototype>("bullet");
-                FixedVector2 targetPos = target.Transform.Position;
-                FixedVector2 position = target.Transform.Position;
-                FixedVector2 velocity = target.Velocity;
-                FixedVector2 acceleration = target.CurrentAcceleration;
-                FixedVector2 jerk = (target.CurrentAcceleration - target.LastAcceleration) / Program.Timestep;
+                DoubleVector targetPos = target.Transform.Position;
+                DoubleVector position = target.Transform.Position;
+                DoubleVector velocity = target.Velocity;
+                DoubleVector acceleration = target.CurrentAcceleration;
+                DoubleVector jerk = (target.CurrentAcceleration - target.LastAcceleration) / Program.Timestep;
 
                 for (int i = 0; i < 8; i++)
                 {
@@ -99,16 +99,16 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
         // canvas.DrawLine(Vector2.Zero, Vector2.UnitX);
     }
 
-    private FixedVector2 PredictBullet(FixedVector2 turretPos, FixedVector2 targetPos, float bulletSpeed, FixedVector2 position, FixedVector2 velocity, FixedVector2 acceleration, FixedVector2 jerk, float minTimeToHit)
+    private DoubleVector PredictBullet(DoubleVector turretPos, DoubleVector targetPos, float bulletSpeed, DoubleVector position, DoubleVector velocity, DoubleVector acceleration, DoubleVector jerk, float minTimeToHit)
     {
-        FixedVector2 delta = targetPos - turretPos;
-        float angle = Angle.Distance(Angle.FromVector(delta.ToVector2()), this.angle);
-        float distance = delta.Length();
-        float t = MathF.Min((distance / bulletSpeed + 0 * angle / turnSpeed), 1);
+        DoubleVector delta = targetPos - turretPos;
+        double angle = (float)Angle.Distance(Angle.FromVector(delta.ToVector2()), this.angle);
+        double distance = delta.Length();
+        double t = Math.Min((distance / bulletSpeed + 0 * angle / turnSpeed), 1);
         return Forecast(position, velocity, acceleration, jerk, t);
     }
 
-    public FixedVector2 Forecast(FixedVector2 p, FixedVector2 v, FixedVector2 a, FixedVector2 j, float t)
+    public DoubleVector Forecast(DoubleVector p, DoubleVector v, DoubleVector a, DoubleVector j, double t)
     {
         return p + v * t + (1 / 2f) * a * t * t + (1 / 6f) * j * t * t * t;
     }

@@ -1,0 +1,6 @@
+{
+  "prototype": "TilePrototype",
+  "name": "foundation_tile",
+  "blocks_structures": false,
+  "color": "#888888"
+}

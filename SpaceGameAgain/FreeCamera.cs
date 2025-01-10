@@ -13,31 +13,33 @@ internal class FreeCamera : Camera
 {
     public float zoom;
 
-    public override void Update(int width, int height)
+    public override void Update(int width, int height, float tickProgress)
     {
-        base.Update(width, height);
+        base.Update(width, height, tickProgress);
 
         zoom -= Mouse.ScrollWheelDelta;
+        if (Keyboard.IsKeyDown(Key.Plus))
+            zoom -= Time.DeltaTime;
+        if (Keyboard.IsKeyDown(Key.Minus))
+            zoom += Time.DeltaTime;
 
-        FixedVector2 delta = FixedVector2.Zero;
-
-        FixedVector2 zoomTarget = FixedVector2.FromVector2(this.ScreenToWorld(Program.ViewportMousePosition, false));
+        DoubleVector delta = DoubleVector.Zero;
+        DoubleVector zoomTarget = DoubleVector.FromVector2(this.ScreenToWorld(Program.ViewportMousePosition, false));
 
         float zoomFac = MathF.Pow(1.1f, zoom);
         VerticalSize = zoomFac;
-
-        FixedVector2 newZoomTarget = FixedVector2.FromVector2(this.ScreenToWorld(Program.ViewportMousePosition, false));
-        
-        this.Transform.Position += zoomTarget - newZoomTarget;
+            
+        DoubleVector newZoomTarget = DoubleVector.FromVector2(this.ScreenToWorld(Program.ViewportMousePosition, false));
+        this.Transform.Position -= newZoomTarget - zoomTarget;
 
         if (Keyboard.IsKeyDown(Key.W))
-            delta -= FixedVector2.FromVector2(0, 1);
+            delta -= DoubleVector.FromVector2(0, 1);
         if (Keyboard.IsKeyDown(Key.A))
-            delta -= FixedVector2.FromVector2(1, 0);
+            delta -= DoubleVector.FromVector2(1, 0);
         if (Keyboard.IsKeyDown(Key.S))
-            delta += FixedVector2.FromVector2(0, 1);
+            delta += DoubleVector.FromVector2(0, 1);
         if (Keyboard.IsKeyDown(Key.D))
-            delta += FixedVector2.FromVector2(1, 0);
+            delta += DoubleVector.FromVector2(1, 0);
 
         Transform.Position += zoomFac * delta * Time.DeltaTime;
     }

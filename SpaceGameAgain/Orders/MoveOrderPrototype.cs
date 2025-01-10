@@ -10,7 +10,7 @@ internal class MoveOrderPrototype : OrderPrototype
     public override WorldActor Deserialize(BinaryReader reader)
     {
         DeserializeArgs(reader, out var id, unit: out var unit);
-        FixedVector2 target = reader.ReadFixedVector2();
+        DoubleVector target = reader.ReadDoubleVector();
         return new MoveOrder(this, id, unit, target);
     }
 }

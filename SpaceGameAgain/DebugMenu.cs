@@ -1,4 +1,5 @@
 ﻿using ImGuiNET;
+using Silk.NET.Core.Native;
 using SpaceGame.Commands;
 using SpaceGame.Networking;
 using SpaceGame.Structures;
@@ -256,10 +257,25 @@ internal static class DebugMenu
     {
         ImGui.Text($"turn: {World.TurnProcessor.turn}");
         ImGui.Text($"remaining ticks: {World.TurnProcessor.RemainingTicks}");
+        
+        float tickProgress = MathF.Min(Program.timeAccumulated * Program.GameSpeed / Program.Timestep, 1);
+        if (Program.GameSpeed == 0)
+        {
+            tickProgress = 1;
+        }
+        ImGui.Text($"tick progress: {tickProgress}");
 
         ImGui.Separator();
 
         ImGui.Text("next id:" + World.NextID);
+        
+        ImGui.Separator();
+
+        if (ImGui.TreeNode("camera"))
+        {
+            World.Camera.Layout();
+            ImGui.TreePop();
+        }
 
         ImGui.SeparatorText("actors");
 

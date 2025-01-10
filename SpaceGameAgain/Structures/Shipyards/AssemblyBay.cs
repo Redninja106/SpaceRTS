@@ -36,9 +36,9 @@ internal class AssemblyBay : Structure
 
     public void BuildShip()
     {
-        if (Team.Actor!.Credits >= 100)
+        if (Enabled && Team.Actor!.GetResource("") >= 100)
         {
-            Team.Actor!.Credits -= 100;
+            Team.Actor!.Resources["metals"] -= 100;
             isBuildingShip = true;
             SelectionGUI = new ProgressBar(() => this.progress);
         }

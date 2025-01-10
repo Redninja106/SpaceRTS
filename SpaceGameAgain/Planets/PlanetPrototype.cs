@@ -18,21 +18,22 @@ internal class PlanetPrototype : WorldActorPrototype
 
         ActorReference<Grid> grid = reader.ReadActorReference<Grid>();
 
-        Planet planet = new Planet(this, id, transform, grid)
-        {
-            Radius = radius,
-            Color = color,
-        };
-
         bool hasOrbit = reader.ReadBoolean();
+        Orbit? orbit = null;
         if (hasOrbit)
         {
             ActorReference<WorldActor> center = reader.ReadActorReference<WorldActor>();
             float phase = reader.ReadSingle();
             float orbitRadius = reader.ReadSingle();
 
-            planet.Orbit = new Orbit(center, orbitRadius, phase);
+            orbit = new Orbit(center, orbitRadius, phase);
         }
+
+        Planet planet = new Planet(this, id, transform, orbit, grid)
+        {
+            Radius = radius,
+            Color = color,
+        };
 
         return planet;
     }

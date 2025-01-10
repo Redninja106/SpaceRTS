@@ -1,20 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using SpaceGame.Interaction;
+﻿using SpaceGame.Interaction;
 using SpaceGame.Ships;
 using SpaceGame.Planets;
 using SpaceGame.Structures;
 using SpaceGame.Teams;
 using SpaceGame.Combat;
 using SpaceGame.GUI;
-using System.Threading.Channels;
-using Silk.NET.OpenGL;
-using SimulationFramework.Desktop;
 
 namespace SpaceGame;
 internal class GameWorld
@@ -46,7 +36,7 @@ internal class GameWorld
     // public Sidebar LeftSidebar;
     // public Sidebar RightSidebar;
 
-    public FixedVector2 MousePosition;
+    public DoubleVector MousePosition;
     public bool HasFocus;
 
     public ulong tick;
@@ -84,16 +74,21 @@ internal class GameWorld
     };
 
     // public FogOfWarHandler FogOfWar { get; set; } = new();
-
+    
     public GameWorld()
     {
+
     }
 
     public void Update(Vector2 viewportMousePosition, bool hasFocus, float tickProgress)
     {
-        MousePosition = FixedVector2.FromVector2(Camera.ScreenToWorld(viewportMousePosition));
+        MousePosition = DoubleVector.FromVector2(Camera.ScreenToWorld(viewportMousePosition));
 
         UpdateActorList(Planets, tickProgress);
+
+        var soi = World.GetSphereOfInfluence(Camera.Transform.Position);
+        soi?.ApplyUpdateTo(ref Camera.Transform);
+        soi?.ApplyUpdateTo(ref Camera.SmoothTransform);
 
         leftMouse.Update();
         rightMouse.Update();
@@ -110,6 +105,11 @@ internal class GameWorld
         UpdateActorList(Ships, tickProgress);
         UpdateActorList(Bullets, tickProgress);
         UpdateActorList(Missiles, tickProgress);
+
+        foreach (var planet in Planets)
+        {
+            planet.SphereOfInfluence.Update();
+        }
     }
 
     public void Tick(Vector2 viewportMousePosition, bool hasFocus)
@@ -145,10 +145,6 @@ internal class GameWorld
         leftMouse.Tick();
         rightMouse.Tick();
 
-        var soi = World.GetSphereOfInfluence(Camera.Transform.Position);
-        soi?.ApplyTo(ref Camera.Transform);
-        soi?.ApplyTo(ref Camera.SmoothTransform);
-
         TickActorList(Structures);
         TickActorList(Grids);
         //UpdateActorList(Stations);
@@ -160,11 +156,14 @@ internal class GameWorld
 
         foreach (var planet in Planets)
         {
-            planet.SphereOfInfluence.Update();
+            planet.SphereOfInfluence.Tick();
         }
 
         MapWindow.Stack.Clear();
-        MapWindow.Stack.Add(new Label("Credits: " + PlayerTeam.Actor!.Credits));
+        foreach (var (name, count) in PlayerTeam.Actor!.Resources)
+        {
+            MapWindow.Stack.Add(new Label($"{name}: {count}"));
+        }
 
         tick++;
     }
@@ -187,7 +186,7 @@ internal class GameWorld
         foreach (var structure in Structures)
         {
             canvas.PushState();
-            structure.InterpolatedTransform.ApplyTo(canvas);
+            structure.InterpolatedTransform.ApplyTo(canvas, Camera);
             canvas.Mask(World.WorldShadowMask);
             canvas.WriteMask(World.WorldShadowMask, false);
             structure.RenderShadow(
@@ -216,6 +215,20 @@ internal class GameWorld
         //RenderActorList(Asteroids, canvas);
         CurrentInteractionContext ??= SelectInteractionContext;
         CurrentInteractionContext.Render(canvas, leftMouse, rightMouse);
+
+
+        // render objects - true->mask
+        // render shadows - false->mask
+        // render lights - 
+        // composite
+
+        // background buffer
+        // foreground buffer
+        // fog buffer
+
+        // render background
+        // render foreground
+        // blend based on fog buffer
     }
 
     private void UpdateActorList<TActor>(List<TActor> actors, float tickProgress)
@@ -249,13 +262,13 @@ internal class GameWorld
         foreach (var actor in actors)
         {
             canvas.PushState();
-            actor.InterpolatedTransform.ApplyTo(canvas);
+            actor.InterpolatedTransform.ApplyTo(canvas, Camera);
             actor.Render(canvas);
             canvas.PopState();
         }
     }
 
-    public SphereOfInfluence? GetSphereOfInfluence(FixedVector2 point)
+    public SphereOfInfluence? GetSphereOfInfluence(DoubleVector point)
     {
         SphereOfInfluence? smallest = null;
         foreach (var planet in Planets)

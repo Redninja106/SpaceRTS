@@ -28,7 +28,7 @@ internal class Bullet : WorldActor, IDestructable
     {
         base.Tick();
 
-        sphereOfInfluence?.ApplyTo(ref this.Transform);
+        sphereOfInfluence?.ApplyTickTo(ref this.Transform);
         Transform.Position += Transform.Forward * Prototype.Speed * Program.Timestep;
         
         if (Vector2.Distance(Transform.Position.ToVector2(), target.Actor!.Transform.Position.ToVector2()) < 0.1f)

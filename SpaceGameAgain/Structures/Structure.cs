@@ -25,7 +25,9 @@ internal class Structure : Unit
 
     public HashSet<Structure> neighbors = [];
 
-    public Structure(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid.Actor!.Transform.Translated(FixedVector2.FromVector2(location.ToCartesian())).Rotated(rotation * (MathF.Tau / 6f)), team)
+    public bool Enabled { get; set; }
+
+    public Structure(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid.Actor!.Transform.Translated(DoubleVector.FromVector2(location.ToCartesian())).Rotated(rotation * (MathF.Tau / 6f)), team)
     {
         Location = location;
         Rotation = rotation;
@@ -36,14 +38,15 @@ internal class Structure : Unit
         planet.PowerConsumed += Prototype.PowerConsumed;
     }
 
-    public override ref Transform Transform 
-    {
-        get 
-        { 
-            base.Transform = Grid.Transform.Translated(FixedVector2.FromVector2(Location.ToCartesian())).Rotated(Rotation * (MathF.Tau / 6f));
-            return ref base.Transform;
-        }
-    }
+    //public override ref Transform Transform 
+    //{
+    //    get 
+    //    { 
+    //        base.Transform = Grid.Transform.Translated(DoubleVector.FromVector2(Location.ToCartesian())).Rotated(Rotation * (MathF.Tau / 6f));
+    //        return ref base.Transform;
+    //    }
+    //}
+    //public override Transform InterpolatedTransform => base.InterpolatedTransform;
 
     //public Structure(HexCoordinate location, int rotation, Grid grid, StructurePrototype structure, Team team, Type? behaviorType, List<HexCoordinate>? footprint)
     //{
@@ -104,7 +107,7 @@ internal class Structure : Unit
 
             for (int i = 0; i < outline.Length; i += 2)
             {
-                canvas.Stroke(Team.Actor!.GetRelationColor(World.PlayerTeam.Actor!));
+                canvas.Stroke(Team.Actor?.GetRelationColor(World.PlayerTeam.Actor!) ?? Teams.Team.NeutralColor);
                 canvas.StrokeWidth(0);
                 canvas.DrawLine(outline[i], outline[i + 1]);
             }
@@ -196,6 +199,9 @@ internal class Structure : Unit
     public override void Tick()
     {
         base.Tick();
+        this.Transform = Grid.Transform.Translated(DoubleVector.FromVector2(Location.ToCartesian())).Rotated(Rotation * (MathF.Tau / 6f));
+
+        Enabled = ((Planet)Grid.Parent).NetPower >= 0;
         // Behavior?.Update();
     }
 

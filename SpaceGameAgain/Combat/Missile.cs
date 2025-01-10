@@ -11,32 +11,32 @@ internal class Missile : WorldActor, IDestructable
     public override MissilePrototype Prototype => (MissilePrototype)base.Prototype;
 
     public ActorReference<Unit> Target { get; }
-    public FixedVector2 TargetOffset { get; set; }
+    public DoubleVector TargetOffset { get; set; }
 
-    public FixedVector2 Velocity { get; set; }
+    public DoubleVector Velocity { get; set; }
     public bool IsDestroyed => explosionProgress > 1;
 
-    public FixedVector2 LastAcceleration { get; set; }
-    public FixedVector2 CurrentAcceleration { get; set; }
+    public DoubleVector LastAcceleration { get; set; }
+    public DoubleVector CurrentAcceleration { get; set; }
 
     public bool exploding = false;
     public float explosionProgress;
     public float age;
 
-    public Missile(MissilePrototype prototype, ulong id, Transform transform, ActorReference<Unit> target, FixedVector2 targetOffset) : base(prototype, id, transform)
+    public Missile(MissilePrototype prototype, ulong id, Transform transform, ActorReference<Unit> target, DoubleVector targetOffset) : base(prototype, id, transform)
     {
         Target = target;
         TargetOffset = targetOffset;
         Transform = transform;
 
-        Velocity = FixedVector2.FromVector2(Angle.ToVector(transform.Rotation) * prototype.MaxSpeed);
+        Velocity = DoubleVector.FromVector2(Angle.ToVector(transform.Rotation) * prototype.MaxSpeed);
     }
 
     public override void Tick()
     {
         base.Tick();
 
-        World.GetSphereOfInfluence(Transform.Position)?.ApplyTo(this);
+        World.GetSphereOfInfluence(Transform.Position)?.ApplyTickTo(this);
 
         if (exploding)
         {
@@ -51,9 +51,9 @@ internal class Missile : WorldActor, IDestructable
         }
 
         var positionDelta = (Target.Actor!.Transform.Position + TargetOffset - Transform.Position).Normalized() * Prototype.MaxSpeed;
-        if (FixedVector2.Distance(Target.Actor!.Transform.Position + TargetOffset, Transform.Position) < .05f)
+        if (DoubleVector.Distance(Target.Actor!.Transform.Position + TargetOffset, Transform.Position) < .05f)
         {
-            TargetOffset = FixedVector2.Zero;
+            TargetOffset = DoubleVector.Zero;
         }
 
         var lastVelocity = Velocity;
@@ -73,7 +73,7 @@ internal class Missile : WorldActor, IDestructable
 
     public void Detonate()
     {
-        Velocity = FixedVector2.Zero;
+        Velocity = DoubleVector.Zero;
         exploding = true;
     }
 

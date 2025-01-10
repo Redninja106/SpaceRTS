@@ -14,7 +14,7 @@ internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference
 
     public bool IsCompleted { get; private set; } = false;
 
-    public bool MoveTo(FixedVector2 targetPosition, float? targetRotation = null)
+    public bool MoveTo(DoubleVector targetPosition, float? targetRotation = null)
     {
         ref Transform transform = ref Unit.Actor!.Transform;
 

@@ -9,40 +9,49 @@ using System.Threading.Tasks;
 namespace SpaceGame.Orders;
 internal class MoveOrder : Order
 {
-    public FixedVector2 target;
-
-    public MoveOrder(MoveOrderPrototype prototype, ulong id, ActorReference<Unit> unit, FixedVector2 target) : base(prototype, id, unit)
+    public MoveOrder(MoveOrderPrototype prototype, ulong id, ActorReference<Unit> unit, DoubleVector target) : base(prototype, id, unit)
     {
-        this.target = target;
+        this.Transform.Position = target;
     }
 
     public override void Tick()
     {
-        var soi = World.GetSphereOfInfluence(target);
+        base.Tick();
+        var soi = World.GetSphereOfInfluence(Transform.Position);
         if (soi != null)
         {
-            target = soi.ApplyTo(target);
+            Transform.Position = soi.ApplyTickTo(Transform.Position);
         }
-
-        if (MoveTo(target))
+        if (MoveTo(Transform.Position))
         {
             Complete();
         }
     }
 
+    public override void Update(float tickProgress)
+    {
+        base.Update(tickProgress);
+    }
 
     public override void Render(ICanvas canvas)
     {
-        canvas.PopState();
+        canvas.PushState();
+        canvas.ResetState();
+
+        Transform t = Transform.Default with
+        {
+            Position = this.InterpolatedTransform.Position,
+        };
+        t.ApplyTo(canvas, World.Camera);
+
         canvas.Stroke(Color.White with { A = 200 });
-        Vector2 shipPos = Unit.Actor!.Transform.Position.ToVector2();
-        canvas.DrawLine(shipPos, target.ToVector2());
+        canvas.DrawLine(Vector2.Zero, (Unit.Actor!.InterpolatedTransform.Position - t.Position).ToVector2());
         canvas.PushState();
     }
 
     public override void Serialize(BinaryWriter writer)
     {
         base.Serialize(writer);
-        writer.Write(target);
+        writer.Write(this.Transform.Position);
     }
 }

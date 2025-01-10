@@ -76,7 +76,7 @@ internal class MissileSystem(MissileSystemPrototype prototype, ulong id, ActorRe
             World.NewID(),
             unit.Actor!.Transform.Rotated((World.TickRandom.NextSingle() - .5f) * MathF.PI / 10f),
             ActorReference<Unit>.Create(target),
-            FixedVector2.FromVector2(World.TickRandom.NextUnitVector2() * World.TickRandom.NextSingle() * 1.5f)
+            DoubleVector.FromVector2(World.TickRandom.NextUnitVector2() * World.TickRandom.NextSingle() * 1.5f)
             ));
 
         MissilesRemaining--;
