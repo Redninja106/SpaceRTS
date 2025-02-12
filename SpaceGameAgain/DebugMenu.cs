@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Numerics;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -217,7 +218,90 @@ internal static class DebugMenu
         }
         else
         {
-            ImGui.Text(objectViewerObject.ToString());
+            ReflectionLayoutObjectFields(objectViewerObject);
+        }
+    }
+
+    public static object? ReflectionLayoutObject(string label, object? obj, bool isReadonly = false)
+    {
+        switch (obj)
+        {
+            case float f when isReadonly:
+                ImGui.Text($"{label}: {f}");
+                return f;
+            case float f:
+                ImGui.DragFloat(label, ref f);
+                return f;
+            case Vector2 v2:
+                ImGui.DragFloat2(label, ref v2);
+                return v2;
+            case DoubleVector d2:
+                Vector2 vec = d2.ToVector2();
+                ImGui.DragFloat2(label, ref vec);
+                return DoubleVector.FromVector2(vec);
+            case int i:
+                ImGui.DragInt(label, ref i);
+                return i;
+            case bool b:
+                ImGui.Checkbox(label, ref b);
+                return b;
+            case string s:
+                ImGui.InputText(label, ref s, 256);
+                return s;
+            case IInspectable inspectable:
+                if (ImGui.TreeNode(label))
+                {
+                    inspectable.Layout();
+                    ImGui.TreePop();
+                }
+                return inspectable;
+            case null:
+            case object when obj.GetType().IsPrimitive:
+                ImGui.Text($"{label}: {obj ?? "null"}");
+                return obj;
+            case object:
+                if (ImGui.TreeNode(label))
+                {
+                    ReflectionLayoutObjectFields(obj);
+                    ImGui.TreePop();
+                }
+                return obj;
+        }
+    }
+
+    public static void ReflectionLayoutObjectFields(object obj)
+    {
+        foreach (var member in obj.GetType().GetMembers(BindingFlags.Public | BindingFlags.Instance))
+        {
+            object? value;
+            switch (member)
+            {
+                case FieldInfo field:
+                    value = field.GetValue(obj);
+                    value = ReflectionLayoutObject(field.Name, value);
+                    if (!field.Attributes.HasFlag(FieldAttributes.InitOnly))
+                    {
+                        field.SetValue(obj, value);
+                    }
+                    break;
+                case PropertyInfo prop:
+                    if (prop.CanRead && prop.GetIndexParameters().Length == 0)
+                    {
+                        value = prop.GetValue(obj);
+                        value = ReflectionLayoutObject(prop.Name, value, !prop.CanWrite);
+                        if (prop.CanWrite)
+                        {
+                            prop.SetValue(obj, value);
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        foreach (var field in obj.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance))
+        {
         }
     }
 

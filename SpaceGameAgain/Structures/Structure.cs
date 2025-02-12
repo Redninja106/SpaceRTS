@@ -118,7 +118,7 @@ internal class Structure : Unit
             Prototype.Model.Render(canvas);
             Prototype.Model.Render(canvas, new RenderParameters() { colorOverride = Color.Black with { A = 100 } });
             canvas.Fill(Color.Red);
-            canvas.DrawAlignedText("no power", .25f, Prototype.Center.ToCartesian(), Alignment.Center);
+            canvas.DrawAlignedText("no power", .25f, Prototype.Center, Alignment.Center);
             return;
         }
 

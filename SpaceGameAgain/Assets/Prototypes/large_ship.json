@@ -1,0 +1,10 @@
+{
+  "prototype": "ShipPrototype",
+  "name": "large_ship",
+  "title": "Large Ship",
+  "max_health": 50,
+  "rise_speed": 0.05,
+  "scale": 10,
+  "fly_speed": 1.5,
+  "turn_speed": 0.1
+}

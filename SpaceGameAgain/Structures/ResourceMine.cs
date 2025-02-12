@@ -35,9 +35,6 @@ class ResourceMinePrototype : StructurePrototype
     public int MiningFrequency { get; set; }
     public int MiningCount { get; set; }
 
-    public ResourceMinePrototype(string title, int price, Model model, string? presetModel, HexCoordinate[] footprint) : base(title, price, model, presetModel, footprint)
-    {
-    }
 
     public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
     {

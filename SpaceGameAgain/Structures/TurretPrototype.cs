@@ -20,10 +20,6 @@ internal class TurretPrototype : StructurePrototype
         return turret;
     }
 
-    public TurretPrototype(string title, int price, Model model, string? presetModel, HexCoordinate[] footprint) : base(title, price, model, presetModel, footprint)
-    {
-    }
-
     public override WorldActor Deserialize(BinaryReader reader)
     {
         base.DeserializeArgs(reader, out var id, out var team, out var grid, out var location, out var rotation);

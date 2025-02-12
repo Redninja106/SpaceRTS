@@ -10,6 +10,8 @@ using SpaceGame.Structures;
 using SpaceGame.Teams;
 using SpaceGame.Tiles;
 
+Console.WriteLine("hello world");
+
 DesktopPlatform.Register();
 Start<Program>();
 
@@ -57,12 +59,12 @@ partial class Program : Simulation
 
         World.PlayerTeam = playerTeam.AsReference();
 
-        World.Add(new Ship((ShipPrototype)Prototypes.Get("ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(playerTeam)));
+        World.Add(new Ship((ShipPrototype)Prototypes.Get("small_ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(playerTeam)));
         var constMod = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), World.Ships[0].AsReference());
         World.Ships[0].modules.Add(((Module)constMod).AsReference());
         World.Add(constMod);
 
-        World.Add(new Ship((ShipPrototype)Prototypes.Get("ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(enemies)));
+        World.Add(new Ship((ShipPrototype)Prototypes.Get("small_ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(enemies)));
         var constMod2 = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), World.Ships[1].AsReference());
         World.Ships[1].modules.Add(((Module)constMod2).AsReference());
         World.Add(constMod2);
@@ -74,6 +76,7 @@ partial class Program : Simulation
             Color = Color.Yellow,
             Radius = 50,
         };
+        sun.SphereOfInfluence.Radius = 1000;
 
         World.Add(sun);
         
@@ -81,7 +84,8 @@ partial class Program : Simulation
         {
             Color = Color.DarkGreen,
             Radius = 26,
-        }; 
+        };
+        planet1.SphereOfInfluence.Radius = 80;
         Grid.FillRadius(planet1.Grid, planet1.Radius);
         World.Add(planet1);
 
@@ -254,6 +258,7 @@ partial class Program : Simulation
 
             World.Tick(ViewportMousePosition, worldFocused);
             timeAccumulated = 0;
+            tickProgress = 0;
         }
 
         World.Update(ViewportMousePosition, worldFocused, tickProgress);

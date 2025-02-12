@@ -15,8 +15,4 @@ internal class ZoneStructure : Structure
 
 class ZoneStructurePrototype : StructurePrototype
 {
-    public ZoneStructurePrototype(string title, int price, Model model, string? presetModel) : base(title, price, model, presetModel, [new(0, 0)])
-    {
-
-    }
 }

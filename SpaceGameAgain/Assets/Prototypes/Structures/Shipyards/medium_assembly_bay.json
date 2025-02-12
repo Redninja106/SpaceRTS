@@ -1,0 +1,25 @@
+{
+  "prototype": "AssemblyBayPrototype",
+  "name": "medium_assembly_bay",
+  "title": "Medium Assembly Bay",
+  "price": 1000,
+  "preset_model": "default",
+  "can_be_rotated": true,
+  "footprint": [
+    [ 0, -1 ],
+    [ 0, 0 ],
+    [ 0, 1 ],
+    [ 0, 2 ],
+
+    [ -1, 0 ],
+    [ -1, 1 ],
+    [ -1, 2 ],
+
+    [ 1, -1 ],
+    [ 1, 0 ],
+    [ 1, 1 ]
+  ],
+  "max_health": 10,
+  "ship_prototype": "medium_ship",
+  "power_consumed": 5
+}

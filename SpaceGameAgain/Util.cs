@@ -1,8 +1,10 @@
-﻿using System;
+﻿using SimulationFramework.Drawing.Shaders;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static SimulationFramework.Drawing.Shaders.ShaderIntrinsics;
 
 namespace SpaceGame;
 internal static class Util
@@ -53,6 +55,17 @@ internal static class Util
             return t1;
 
         return null;
+    }
+    public static float ShaderNoise(float u, float v) => ShaderNoise(new(u, v));
+    public static float ShaderNoise(Vector2 uv)
+    {
+        return Fract(Sin(Vector2.Dot(uv, new Vector2(12.9898f, 78.233f) * 2.0f)) * 43758.5453f);
+    }
+
+    public static float ShaderNoise2(Vector2 uv, float s)
+    {
+        const float PHI = 1.61803398874989484820459f;
+        return Fract(Tan(Distance(uv * PHI, uv)*s)*uv.X);
     }
 
     private static float Cross(Vector2 a, Vector2 b)

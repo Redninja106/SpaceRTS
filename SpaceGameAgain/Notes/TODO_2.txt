@@ -1,7 +1,20 @@
 money/resources
 power
-trade routes
 
-fog of war
 
-star systems <- fixed point transforms
+fog of war -> lighting
+procedural system generation -> star systems
+trade routes -> pirates -> traders
+ui updates
+
+Asteroids
+- resource asteroids high value nodes
+- normals asteroids which block missiles?
+
+AI pirates
+- attack trade routes
+- provide early-game combat
+
+AI traders
+ - take up space and start on resource asteroids
+ - start neutral to player (for trading?)

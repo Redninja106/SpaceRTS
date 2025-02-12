@@ -19,9 +19,6 @@ class ModuleFactoryPrototype : StructurePrototype
 {
     public string ProvidedModule { get; set; }
 
-    public ModuleFactoryPrototype(string title, int price, Model model, string? presetModel, HexCoordinate[] footprint) : base(title, price, model, presetModel, footprint)
-    {
-    }
 
     public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
     {

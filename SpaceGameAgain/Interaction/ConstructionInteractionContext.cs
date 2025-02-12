@@ -46,7 +46,8 @@ internal class ConstructionInteractionContext : IInteractionContext
         UpdateHoveredGrid();
         if (hoveredGrid != null)
         {
-            hoveredLocation = HexCoordinate.FromCartesian(hoveredGrid.Transform.WorldToLocal(World.MousePosition.ToVector2())) - prototype.Center.Rotated(rotation);
+            Vector2 hoveredPosition = hoveredGrid.Transform.WorldToLocal(World.MousePosition.ToVector2()) - prototype.Center.Rotated(rotation);
+            hoveredLocation = HexCoordinate.FromCartesian(hoveredPosition);
 
             if (leftMouse.Released)
             {
@@ -119,20 +120,23 @@ internal class ConstructionInteractionContext : IInteractionContext
         //    }
 
         // TODO: draw relative to grid to avoid precision issues!
-        Transform.Default.ApplyTo(canvas, World.Camera);
 
         bool obstructed = false;
         if (hoveredGrid is not null)
         {
+            hoveredGrid.InterpolatedTransform.ApplyTo(canvas, World.Camera);
             obstructed = hoveredGrid.IsStructureObstructed(prototype, hoveredLocation, rotation);
-            canvas.Translate(hoveredGrid.Transform.LocalToWorld(hoveredLocation.ToCartesian()));
+            canvas.Translate(hoveredLocation.ToCartesian());
+            canvas.Rotate(rotation * (MathF.Tau / 6f));
         }
         else
         {
+            Transform.Default.ApplyTo(canvas, World.Camera);
             canvas.Translate(World.MousePosition.ToVector2());
+            canvas.Rotate(rotation * (MathF.Tau / 6f));
+            canvas.Translate(-prototype.Center);
         }
 
-        canvas.Rotate(rotation * (MathF.Tau / 6f));
         canvas.Stroke(Color.Gray);
         canvas.StrokeWidth(0);
         for (int i = 0; i < prototype.Outline.Length; i += 2)

@@ -1,0 +1,10 @@
+{
+  "prototype": "ShipPrototype",
+  "name": "small_ship",
+  "title": "Small Ship",
+  "max_health": 3,
+  "rise_speed": 0.5,
+  "scale": 1,
+  "turn_speed": 1,
+  "fly_speed": 10
+}

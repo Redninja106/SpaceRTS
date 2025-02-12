@@ -11,7 +11,7 @@ internal class MoveOrder : Order
 {
     public MoveOrder(MoveOrderPrototype prototype, ulong id, ActorReference<Unit> unit, DoubleVector target) : base(prototype, id, unit)
     {
-        this.Transform.Position = target;
+        Teleport(Transform.Default with { Position = target });
     }
 
     public override void Tick()
@@ -46,7 +46,7 @@ internal class MoveOrder : Order
 
         canvas.Stroke(Color.White with { A = 200 });
         canvas.DrawLine(Vector2.Zero, (Unit.Actor!.InterpolatedTransform.Position - t.Position).ToVector2());
-        canvas.PushState();
+        canvas.PopState();
     }
 
     public override void Serialize(BinaryWriter writer)

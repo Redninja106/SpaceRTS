@@ -15,7 +15,4 @@ internal class ResourceDeposit : Structure
 
 class ResourceDepositPrototype : StructurePrototype
 {
-    public ResourceDepositPrototype(string title, int price, Model model, string? presetModel, HexCoordinate[] footprint) : base(title, price, model, presetModel, footprint)
-    {
-    }
 }

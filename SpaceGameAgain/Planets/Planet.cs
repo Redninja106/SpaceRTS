@@ -140,7 +140,6 @@ internal class Planet : WorldActor
 
         if (ImGui.CollapsingHeader("Planet"))
         {
-            ImGui.Text(Grid.Parent.ToString());
         }
     }
 }
@@ -157,27 +156,24 @@ class PlanetShader : CanvasShader
         Vector2 dir = position / rad;
         float h = MathF.Sqrt(1f - dir.LengthSquared());
 
-        Vector3 normal = new(dir.X, h * 2f, dir.Y);
-        Vector3 lightDir = new Vector3(sunDir.X, -.5f, sunDir.Y);
+        Vector3 normal = new(dir.X, h , dir.Y);
+        Vector3 lightDir = new Vector3(sunDir.X, -.2f, sunDir.Y);
         float brightness = MathF.Min(MathF.Max(-Vector3.Dot(normal.Normalized(), lightDir.Normalized()) * 2, 0), 1);
-        brightness += .01f * (noise(new Vector2(position.X * time, position.Y * time)) * 2 - 1);
+        brightness += .01f * (Util.ShaderNoise(new Vector2(position.X * time, position.Y * time)) * 2 - 1);
         brightness = .5f + .5f * brightness;
         //return this.color * brightness;
 
         HexCoordinate hexCoord = HexCoordinate.FromCartesian(position);
 
-        float jitter = noise(new(hexCoord.Q, hexCoord.R));
+        float jitter = Util.ShaderNoise(new(hexCoord.Q, hexCoord.R));
 
         ColorF color = this.color;
         color.R += jitter * 0.02f;
         color.G += jitter * 0.02f;
         color.B += jitter * 0.02f;
-        return color * brightness;
+        color *= brightness;
+        color.A = 1;
+        return color;
     }
 
-    float noise(Vector2 uv)
-    {
-        Vector2 noise = new(ShaderIntrinsics.Fract(ShaderIntrinsics.Sin(Vector2.Dot(uv, new Vector2(12.9898f, 78.233f) * 2.0f)) * 43758.5453f));
-        return MathF.Abs(noise.X + noise.Y) * 0.5f;
-    }
 }

@@ -192,7 +192,7 @@ internal class SelectInteractionHandler : IInteractionContext
     {
         foreach (var ship in World.Ships)
         {
-            if (ship.TestPoint(World.MousePosition.ToVector2(), Transform.Default, 2f))
+            if (ship.TestPoint(World.MousePosition.ToVector2(), Transform.Default))
             {
                 return ship;
             }

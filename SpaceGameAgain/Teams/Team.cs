@@ -42,7 +42,7 @@ internal class Team : WorldActor
         {
             this.resources = new()
             {
-                ["metals"] = 0,
+                ["metals"] = 100000,
             };
         }
     }

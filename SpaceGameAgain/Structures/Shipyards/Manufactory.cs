@@ -16,9 +16,6 @@ internal class Manufactory : Structure
 
 class ManufactoryPrototype : StructurePrototype
 {
-    public ManufactoryPrototype(string title, int price, Model model, string? presetModel, HexCoordinate[] footprint) : base(title, price, model, presetModel, footprint)
-    {
-    }
 
     public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
     {

@@ -57,6 +57,8 @@ internal class GameWorld
     public MouseState leftMouse = new(MouseButton.Left);
     public MouseState rightMouse = new(MouseButton.Right);
 
+    private StarShader backgroundShader = new();
+
     // public StructureList Structures { get; } = new();
 
     public IMask WorldShadowMask { get; private set; }
@@ -178,6 +180,8 @@ internal class GameWorld
 
         WorldShadowMask.Clear(true);
 
+        backgroundShader.Render(canvas, Camera);
+
         RenderActorList(Planets, canvas);
         //RenderActorList(Stations, canvas);
 
@@ -220,7 +224,6 @@ internal class GameWorld
         // render objects - true->mask
         // render shadows - false->mask
         // render lights - 
-        // composite
 
         // background buffer
         // foreground buffer
@@ -228,6 +231,7 @@ internal class GameWorld
 
         // render background
         // render foreground
+        // render fog
         // blend based on fog buffer
     }
 

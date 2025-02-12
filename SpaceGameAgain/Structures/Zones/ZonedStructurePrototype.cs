@@ -10,8 +10,4 @@ internal class ZonedStructurePrototype : StructurePrototype
 {
     public ColorF Color { get; }
 
-    public ZonedStructurePrototype(string name, int price, Model model, HexCoordinate[] footprint, ColorF color) : base(name, price, model, null, footprint)
-    {
-        Color = color;
-    }
 }

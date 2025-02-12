@@ -9,26 +9,40 @@ using System.Threading.Tasks;
 namespace SpaceGame.Structures;
 internal class StructurePrototype : UnitPrototype
 {
-    public string Title { get; }
-    public Model Model { get; } = null!;
-    public HexCoordinate[] Footprint { get; }
-    public Vector2[] Outline { get; }
-    public int Price { get; }
-    public string? PresetModel { get; }
-    public HexCoordinate Center { get; set; } = HexCoordinate.Zero;
+    public HexCoordinate[] Footprint { get; set; } = [HexCoordinate.Zero];
+    public int Price { get; set; }
+    public string? PresetModel { get; set; } = "default";
+    public Vector2 Center { get; set; }
     public bool CanBeRotated { get; set; } = true;
     public int PowerProduced { get; set; } = 0;
     public int PowerConsumed { get; set; } = 0;
+    public Model Model { get; private set; } = null!;
+    public Vector2[] Outline { get; private set; }
 
-    public StructurePrototype(string title, int price, Model model, string? presetModel, HexCoordinate[] footprint)
+    public StructurePrototype(int price, Model model, string? presetModel, HexCoordinate[] footprint)
     {
-        this.Title = title;
         this.Price = price;
         this.PresetModel = presetModel ?? "default";
-        this.Model = model ?? PresetModels.presetModels[presetModel!];
-        this.Footprint = footprint ?? [HexCoordinate.Zero];
+        this.Model = model ;
+    }
 
+    public StructurePrototype()
+    {
+    }
+
+    public override void InitializePrototype()
+    {
+        base.InitializePrototype();
+        this.Center = ComputeCenter(this.Footprint);
         this.Outline = CreateOutline(this.Footprint);
+
+        this.Model ??= PresetModels.presetModels[this.PresetModel!];
+    }
+
+    private Vector2 ComputeCenter(HexCoordinate[] footprint)
+    {
+        return footprint.Select(h => h.ToCartesian()).Aggregate((a, b) => a + b) * (1f / footprint.Length);
+
     }
 
     public static Vector2[] CreateOutline(HexCoordinate[] footprint)

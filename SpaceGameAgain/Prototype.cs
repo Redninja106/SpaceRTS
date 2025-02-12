@@ -10,4 +10,8 @@ internal abstract class Prototype
     public string Name { get; set; }
 
     public abstract Actor Deserialize(BinaryReader reader);
+
+    public virtual void InitializePrototype()
+    {
+    }
 }

@@ -16,6 +16,8 @@ internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference
 
     public bool MoveTo(DoubleVector targetPosition, float? targetRotation = null)
     {
+        ShipPrototype prototype = (ShipPrototype)Unit.Actor!.Prototype;
+
         ref Transform transform = ref Unit.Actor!.Transform;
 
         var delta = targetPosition - transform.Position;
@@ -24,20 +26,20 @@ internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference
         {
             if (Angle.Distance(transform.Rotation, Angle.FromVector(delta.ToVector2())) > 0f)
             {
-                transform.Rotation = Angle.Step(transform.Rotation, Angle.FromVector(delta.ToVector2()), MathF.Tau * Program.Timestep);
+                transform.Rotation = Angle.Step(transform.Rotation, Angle.FromVector(delta.ToVector2()), prototype.TurnSpeed * MathF.Tau * Program.Timestep);
                 if (Angle.Distance(transform.Rotation, Angle.FromVector(delta.ToVector2())) > .01f)
                 {
                     return false;
                 }
             }
 
-            transform.Position = Util.Step(transform.Position, targetPosition, 100 * Program.Timestep);
+            transform.Position = Util.Step(transform.Position, targetPosition, prototype.FlySpeed * Program.Timestep);
             return false;
         }
 
         if (targetRotation != null && Angle.Distance(transform.Rotation, targetRotation.Value) > 0f)
         {
-            transform.Rotation = Angle.Step(transform.Rotation, targetRotation.Value, MathF.Tau * Program.Timestep);
+            transform.Rotation = Angle.Step(transform.Rotation, targetRotation.Value, prototype.TurnSpeed * MathF.Tau * Program.Timestep);
             return false;
         }
 

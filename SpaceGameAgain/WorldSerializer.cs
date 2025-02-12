@@ -1,4 +1,5 @@
-﻿using SpaceGame.Teams;
+﻿using SpaceGame.Commands;
+using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,6 +47,11 @@ internal class WorldSerializer
         foreach (var (id, actor) in world.Actors)
         {
             actor.FinalizeDeserialization();
+        }
+
+        foreach (var team in world.Teams)
+        {
+            team.CommandProcessor = new PlayerCommandProcessor();
         }
 
         return world;

@@ -9,6 +9,12 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships;
 internal class ShipPrototype : UnitPrototype
 {
+    public float RiseSpeed { get; set; } = .5f;
+    public float Scale { get; set; } = 1f;
+
+    public float FlySpeed { get; set; } = 10;
+    public float TurnSpeed { get; set; } = 1f;
+
     public override WorldActor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();

@@ -36,7 +36,7 @@ internal class AssemblyBay : Structure
 
     public void BuildShip()
     {
-        if (Enabled && Team.Actor!.GetResource("") >= 100)
+        if (Enabled && Team.Actor!.GetResource("metals") >= 100)
         {
             Team.Actor!.Resources["metals"] -= 100;
             isBuildingShip = true;
@@ -113,9 +113,6 @@ class AssemblyBayPrototype : StructurePrototype
 {
     public string ShipPrototype { get; set; }
 
-    public AssemblyBayPrototype(string title, int price, Model model, string? presetModel, HexCoordinate[] footprint) : base(title, price, model, presetModel, footprint)
-    {
-    }
 
     public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
     {

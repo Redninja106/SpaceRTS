@@ -47,6 +47,7 @@ internal abstract class WorldActor(WorldActorPrototype prototype, ulong id, Tran
 
     public override void Layout()
     {
+        base.Layout();
         if (ImGui.CollapsingHeader("WorldActor"))
         {
             ImGui.Text("ID: " + ID);

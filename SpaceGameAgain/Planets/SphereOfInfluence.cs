@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Planets;
 internal class SphereOfInfluence
 {
-    public float Radius => planet.Radius * 4;
+    public float Radius { get; set; }
 
     public Planet planet;
     public DoubleVector lastUpdatePosition;

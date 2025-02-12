@@ -27,7 +27,7 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, ulong i
         return [
             new ElementStack(
                 Prototypes.RegisteredPrototypes.OfType<StructurePrototype>().Select(proto => {
-                    return new TextButton(proto.Title, () => {
+                    return new TextButton($"{proto.Title} ({proto.Price})", () => {
                         if (Ship.Actor!.Team.Actor!.Resources["metals"] >= proto.Price)
                         {
                             World.ConstructionInteractionContext.BeginPlacing(proto, this.Ship.Actor!);

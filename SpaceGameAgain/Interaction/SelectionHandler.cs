@@ -54,11 +54,14 @@ internal class SelectionHandler
                     new Label("SHIP", 16, Alignment.CenterLeft),
                     new Label("status: operational", 12, Alignment.CenterLeft),
                     new Separator(),
-                ]); 
-                
-                foreach (var module in ship.modules)
+                ]);
+
+                if (ship.Team == World.PlayerTeam)
                 {
-                    stack.AddRange(module.Actor!.BuildGUI());
+                    foreach (var module in ship.modules)
+                    {
+                        stack.AddRange(module.Actor!.BuildGUI());
+                    }
                 }
             }
             else if (singleSelected is Structure structure)

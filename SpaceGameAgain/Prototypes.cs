@@ -84,6 +84,8 @@ static class Prototypes
                 {
                     throw new($"could not deserialize");
                 }
+                prototype.InitializePrototype();
+
                 prototypes.Add(prototypeName, prototype);
             }
             catch (Exception ex)

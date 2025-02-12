@@ -19,6 +19,8 @@ namespace SpaceGame.Ships;
 
 internal class Ship(ShipPrototype prototype, ulong id, Transform transform, ActorReference<Team> team, float height = 0) : Unit(prototype, id, transform, team)
 {
+    public override ShipPrototype Prototype => (ShipPrototype)base.Prototype;
+
     public static Vector2[] verts = [
         new(.5f / 2f, 0),
         new(-.5f / 2f, .2f / 2f),
@@ -30,10 +32,14 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
     public Order? potentialOrder = null;
 
     public float height = height;
-    
+
     public override void Render(ICanvas canvas)
     {
         bool selected = World.SelectionHandler.IsSelected(this);
+
+        canvas.PushState();
+        canvas.Scale(Prototype.Scale);
+
         if (selected)
         {
             Team playerTeam = World.PlayerTeam.Actor!;
@@ -46,11 +52,13 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
         for (int i = 0; i < 8; i++)
         {
-            //canvas.Rotate(-this.Transform.Rotation);
-            // canvas.Translate(0, -.005f);
-            //canvas.Rotate(this.Transform.Rotation);
+            canvas.Rotate(-this.Transform.Rotation);
+            canvas.Translate(0, -.005f);
+            canvas.Rotate(this.Transform.Rotation);
             canvas.DrawPolygon(verts);
         }
+
+        canvas.PopState();
 
         if (selected)
         {
@@ -67,15 +75,17 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
                 order.Actor!.Render(canvas);
                 canvas.PopState();
             }
+            //canvas.Flush();
         }
     }
 
     public override void Tick()
     {
         base.Tick();
-
         if (height < .4f)
-            height += Program.Timestep * .5f;
+        {
+            height = height + Program.Timestep * Prototype.RiseSpeed;
+        }
 
         foreach (var module in modules)
         {
@@ -115,19 +125,16 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
     public override bool TestPoint(Vector2 point, Transform transform)
     {
-        return TestPoint(point, transform, 1f);
-    }
-
-    public bool TestPoint(Vector2 point, Transform transform, float scale)
-    {
-        return Util.TestPoint(verts, this.Transform, point, transform);
+        return Util.TestPoint(verts.Select(v => v *= Prototype.Scale).ToArray(), this.Transform, point, transform);
     }
 
     public void RenderShadow(ICanvas canvas, float floorHeight)
     {
+        canvas.PushState();
         Transform unrotatedTransform = InterpolatedTransform with
         {
-            Rotation = 0
+            Rotation = 0,
+            Scale = new(Prototype.Scale),
         };
         unrotatedTransform.ApplyTo(canvas, World.Camera);
 
@@ -141,6 +148,7 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
             canvas.DrawPolygon(verts);
             canvas.Rotate(-InterpolatedTransform.Rotation);
         }
+        canvas.PopState();
     }
 
     public override void Serialize(BinaryWriter writer)
