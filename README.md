@@ -35,3 +35,13 @@ The game uses a deterministic lockstep network model to support multiplayer. The
 ## Large worlds
 
 Every actor uses 64-bit floats for its position, allowing for huge worlds spanning multiple star systems. 
+
+## Screenshots
+
+![image](https://github.com/user-attachments/assets/d7ef8cb4-52d5-4194-bfd7-2e0891d551d2)
+![image](https://github.com/user-attachments/assets/a5a6620b-5b02-4d7e-a33d-8375cf174305)
+![image](https://github.com/user-attachments/assets/b16c02de-c013-43c0-84cc-be6eaa5cfe7d)
+![image](https://github.com/user-attachments/assets/17784b81-7164-4d93-bdcd-d612b101d4f6)
+![image](https://github.com/user-attachments/assets/9e441ff4-2099-4b67-a430-e1b400abb4b0)
+
+
