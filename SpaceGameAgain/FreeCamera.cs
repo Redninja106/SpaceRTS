@@ -11,7 +11,12 @@ using System.Threading.Tasks;
 namespace SpaceGame;
 internal class FreeCamera : Camera
 {
-    public float zoom;
+    public float zoom = 10;
+
+    public FreeCamera()
+    {
+        SmoothVerticalSize = VerticalSize = MathF.Pow(1.1f, zoom);
+    }
 
     public override void Update(int width, int height, float tickProgress)
     {

@@ -6,4 +6,7 @@
   "preset_model": "default",
   "title": "Resource Mine",
   "max_health": 3,
+  "cost": {
+    "aluminum": 1
+  }
 }

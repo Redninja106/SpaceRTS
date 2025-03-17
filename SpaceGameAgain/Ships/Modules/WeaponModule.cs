@@ -45,7 +45,7 @@ internal class WeaponModule : Module
 
 class WeaponModulePrototype : ModulePrototype
 {
-    public string WeaponSystemPrototype { get; set; }
+    public WeaponSystemPrototype WeaponSystemPrototype { get; set; }
 
     public override WorldActor Deserialize(BinaryReader reader)
     {
@@ -58,7 +58,7 @@ class WeaponModulePrototype : ModulePrototype
 
     public override Module CreateModule(ulong id, ActorReference<Ship> ship)
     {
-        WeaponSystem weaponSystem = Prototypes.Get<WeaponSystemPrototype>(WeaponSystemPrototype).CreateWeapon(World.NewID(), ship.Cast<Unit>());
+        WeaponSystem weaponSystem = WeaponSystemPrototype.CreateWeapon(World.NewID(), ship.Cast<Unit>());
         World.Add(weaponSystem);
         return new WeaponModule(this, id, ship, weaponSystem.AsReference());
     }

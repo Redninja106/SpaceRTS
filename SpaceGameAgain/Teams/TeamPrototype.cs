@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SpaceGame.Economy;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,17 +23,6 @@ internal class TeamPrototype : WorldActorPrototype
             relationships.Add(team, relation);
         }
 
-        int resourceCount = reader.ReadInt32();
-        Dictionary<string, int> resources = [];
-
-        for (int i = 0; i < resourceCount; i++)
-        {
-            string name = reader.ReadString();
-            int count = reader.ReadInt32();
-            resources.Add(name, count);
-        }
-
-
-        return new Team(this, id, Transform.Default, relationships, resources);
+        return new Team(this, id, Transform.Default, relationships);
     }
 }

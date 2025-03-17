@@ -1,7 +1,7 @@
 {
   "prototype": "ResourceDepositTilePrototype",
-  "name": "rare_metals_deposit",
+  "name": "titanium_deposit",
   "blocks_structures": false,
   "color": "#c4a43b",
-  "resource": "metals"
+  "resource": "titanium"
 }

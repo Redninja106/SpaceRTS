@@ -1,5 +1,0 @@
-{
-  "prototype": "WeaponModulePrototype",
-  "name": "missile_module",
-  "weapon_system_prototype": "missile_system"
-}

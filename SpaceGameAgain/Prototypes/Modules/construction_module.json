@@ -1,0 +1,7 @@
+{
+  "prototype": "ConstructionModulePrototype",
+  "name": "construction_module",
+  "commands": [
+    "build_command"
+  ]
+}

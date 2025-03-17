@@ -36,12 +36,12 @@ internal class AssemblyBay : Structure
 
     public void BuildShip()
     {
-        if (Enabled && Team.Actor!.GetResource("metals") >= 100)
-        {
-            Team.Actor!.Resources["metals"] -= 100;
-            isBuildingShip = true;
-            SelectionGUI = new ProgressBar(() => this.progress);
-        }
+        // if (Enabled && Team.Actor!.GetResource("metals") >= 100)
+        // {
+        //     Team.Actor!.Resources["metals"] -= 100;
+        //     isBuildingShip = true;
+        //     SelectionGUI = new ProgressBar(() => this.progress);
+        // }
     }
 
     public override void Tick()
@@ -54,11 +54,10 @@ internal class AssemblyBay : Structure
         if (progress >= 1)
         {
             isBuildingShip = false;
-            var ship = new Ship(Prototypes.Get<ShipPrototype>(Prototype.ShipPrototype), World.NewID(), this.Transform, this.Team);
+            var ship = new Ship(Prototype.ShipPrototype, World.NewID(), this.Transform, this.Team);
             foreach (var moduleFactory in neighbors.OfType<ModuleFactory>())
             {
-                ModulePrototype moduleProto = Prototypes.Get<ModulePrototype>(moduleFactory.Prototype.ProvidedModule);
-                var module = moduleProto.CreateModule(World.NewID(), ship.AsReference());
+                var module = moduleFactory.Prototype.ProvidedModule.CreateModule(World.NewID(), ship.AsReference());
                 ship.modules.Add(module.AsReference());
                 World.Add(module);
             }
@@ -111,8 +110,7 @@ internal class AssemblyBay : Structure
 
 class AssemblyBayPrototype : StructurePrototype
 {
-    public string ShipPrototype { get; set; }
-
+    public ShipPrototype ShipPrototype { get; set; }
 
     public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
     {

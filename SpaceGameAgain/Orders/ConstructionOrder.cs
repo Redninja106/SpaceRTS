@@ -32,7 +32,7 @@ internal class ConstructionOrder : Order
         if (!Grid.Actor!.IsStructureObstructed(Structure, Location, Rotation))
         {
             Grid.Actor!.PlaceStructure(Structure, Location, Rotation, Unit.Actor!.Team.Actor!);
-            Unit.Actor!.Team.Actor!.Resources["metals"] -= Structure.Price;
+            // Unit.Actor!.Team.Actor!.Resources["metals"] -= Structure.Price;
             Complete();
         }
     }

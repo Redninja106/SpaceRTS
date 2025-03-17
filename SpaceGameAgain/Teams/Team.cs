@@ -1,4 +1,7 @@
-﻿using SpaceGame.Commands;
+﻿using ImGuiNET;
+using SpaceGame.Commands;
+using SpaceGame.Economy;
+using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,13 +17,11 @@ internal class Team : WorldActor
     public static readonly Color EnemyColor = Color.Red;
 
     private Dictionary<ActorReference<Team>, TeamRelation> relationships = [];
-    private Dictionary<string, int> resources = [];
+    private Dictionary<ResourcePrototype, ResourceValues> resources = [];
 
     public ICommandProcessor CommandProcessor;
 
-    public Dictionary<string, int> Resources => resources;
-
-    public Team(TeamPrototype prototype, ulong id, Transform transform, Dictionary<ActorReference<Team>, TeamRelation>? relationships = null, Dictionary<string, int>? resources = null) : base(prototype, id, transform)
+    public Team(TeamPrototype prototype, ulong id, Transform transform, Dictionary<ActorReference<Team>, TeamRelation>? relationships = null) : base(prototype, id, transform)
     {
         if (relationships != null)
         {
@@ -34,15 +35,13 @@ internal class Team : WorldActor
             };
         }
 
-        if (resources != null)
+        this.resources = new();
+        foreach (var resource in Prototypes.GetAll<ResourcePrototype>())
         {
-            this.resources = resources;
-        }
-        else
-        {
-            this.resources = new()
+            this.resources[resource] = new()
             {
-                ["metals"] = 100000,
+                Capacity = 0,
+                Consumption = 0,
             };
         }
     }
@@ -55,6 +54,13 @@ internal class Team : WorldActor
 
     public TeamRelation GetRelation(Team other)
     {
+        if (other == this)
+        {
+            return TeamRelation.Self;
+        }
+
+        return TeamRelation.Enemies;
+
         return relationships.TryGetValue(other.AsReference(), out var result) ? result : TeamRelation.Neutral;
     }
 
@@ -69,6 +75,19 @@ internal class Team : WorldActor
         };
     }
 
+    public override void Layout()
+    {
+        base.Layout();
+
+        if (ImGui.CollapsingHeader("Team"))
+        {
+            foreach (var (resource, values) in resources)
+            {
+                ImGui.Text($"{resource.Name}: {values.Remaining} ({values.Capacity} - {values.Consumption})");
+            }
+        }
+    }
+
     public override void Serialize(BinaryWriter writer)
     {
         writer.Write(ID);
@@ -79,19 +98,13 @@ internal class Team : WorldActor
             writer.Write(team);
             writer.Write((int)relation);
         }
-
-        writer.Write(resources.Count);
-        foreach (var resource in resources)
-        {
-            writer.Write(resource.Key);
-            writer.Write(resource.Value);
-        }
     }
 
-    public int GetResource(string resource)
+    public ResourceValues GetResource(ResourcePrototype resource)
     {
         return resources[resource];
     }
+
 }
 
 enum TeamRelation
@@ -100,4 +113,12 @@ enum TeamRelation
     Self,
     Allies,
     Enemies,
+}
+
+class ResourceValues
+{
+    public int Consumption;
+    public int Capacity;
+
+    public int Remaining => Capacity - Consumption;
 }

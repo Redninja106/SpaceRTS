@@ -17,9 +17,7 @@ namespace SpaceGame;
 internal static class DebugMenu
 {
     public static bool Open = false;
-    private static bool ObjectViewerOpen = false;
-    private static bool focusObjectViewer;
-    private static object? objectViewerObject;
+    private static ObjectViewer objectViewer = new();
 
     public static void Layout()
     {
@@ -66,20 +64,26 @@ internal static class DebugMenu
                     ImGui.EndTabItem();
                 }
 
+                if (ImGui.BeginTabItem("overlays"))
+                {
+                    DebugOverlays.Layout();
+                    ImGui.EndTabItem();
+                }
+
                 ImGui.EndTabBar();
             }
         }
         ImGui.End();
 
-        if (focusObjectViewer)
+        if (objectViewer.WantsFocus)
         {
-            focusObjectViewer = false;
+            objectViewer.WantsFocus = false;
             ImGui.SetNextWindowFocus();
         }
 
-        if (ObjectViewerOpen && ImGui.Begin("object viewer", ref ObjectViewerOpen))
+        if (objectViewer.Open && ImGui.Begin("object viewer", ref objectViewer.Open, ImGuiWindowFlags.MenuBar))
         {
-            LayoutObjectViewer();
+            objectViewer.Layout();
         }
         ImGui.End();
     }
@@ -194,114 +198,8 @@ internal static class DebugMenu
         {
             if (ImGui.Selectable($"{prototype.Name} ({prototype.GetType().Name})"))
             {
-                ViewObject(prototype);
+                objectViewer.View(prototype);
             }
-        }
-    }
-
-    private static void LayoutObjectViewer()
-    {
-        if (objectViewerObject == null)
-        {
-            ImGui.Text("no actor selected");
-            return;
-        }
-
-        // if (objectViewerObject is StructurePrototype structurePrototype && ImGui.Button("place"))
-        // {
-        //     World.ConstructionInteractionContext.BeginPlacing(structurePrototype);
-        // }
-
-        if (objectViewerObject is IInspectable inspectable)
-        {
-            inspectable.Layout();
-        }
-        else
-        {
-            ReflectionLayoutObjectFields(objectViewerObject);
-        }
-    }
-
-    public static object? ReflectionLayoutObject(string label, object? obj, bool isReadonly = false)
-    {
-        switch (obj)
-        {
-            case float f when isReadonly:
-                ImGui.Text($"{label}: {f}");
-                return f;
-            case float f:
-                ImGui.DragFloat(label, ref f);
-                return f;
-            case Vector2 v2:
-                ImGui.DragFloat2(label, ref v2);
-                return v2;
-            case DoubleVector d2:
-                Vector2 vec = d2.ToVector2();
-                ImGui.DragFloat2(label, ref vec);
-                return DoubleVector.FromVector2(vec);
-            case int i:
-                ImGui.DragInt(label, ref i);
-                return i;
-            case bool b:
-                ImGui.Checkbox(label, ref b);
-                return b;
-            case string s:
-                ImGui.InputText(label, ref s, 256);
-                return s;
-            case IInspectable inspectable:
-                if (ImGui.TreeNode(label))
-                {
-                    inspectable.Layout();
-                    ImGui.TreePop();
-                }
-                return inspectable;
-            case null:
-            case object when obj.GetType().IsPrimitive:
-                ImGui.Text($"{label}: {obj ?? "null"}");
-                return obj;
-            case object:
-                if (ImGui.TreeNode(label))
-                {
-                    ReflectionLayoutObjectFields(obj);
-                    ImGui.TreePop();
-                }
-                return obj;
-        }
-    }
-
-    public static void ReflectionLayoutObjectFields(object obj)
-    {
-        foreach (var member in obj.GetType().GetMembers(BindingFlags.Public | BindingFlags.Instance))
-        {
-            object? value;
-            switch (member)
-            {
-                case FieldInfo field:
-                    value = field.GetValue(obj);
-                    value = ReflectionLayoutObject(field.Name, value);
-                    if (!field.Attributes.HasFlag(FieldAttributes.InitOnly))
-                    {
-                        field.SetValue(obj, value);
-                    }
-                    break;
-                case PropertyInfo prop:
-                    if (prop.CanRead && prop.GetIndexParameters().Length == 0)
-                    {
-                        value = prop.GetValue(obj);
-                        value = ReflectionLayoutObject(prop.Name, value, !prop.CanWrite);
-                        if (prop.CanWrite)
-                        {
-                            prop.SetValue(obj, value);
-                        }
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        foreach (var field in obj.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance))
-        {
         }
     }
 
@@ -328,12 +226,6 @@ internal static class DebugMenu
         }
     }
 
-    private static void ViewObject(object obj)
-    {
-        objectViewerObject = obj;
-        focusObjectViewer = true;
-        ObjectViewerOpen = true;
-    }
 
 
     private static DebugSearch<WorldActor>? actorList;
@@ -371,7 +263,7 @@ internal static class DebugMenu
         {
             if (ImGui.Selectable(actor.ToString()))
             {
-                ViewObject(actor);
+                objectViewer.View(actor);
             }
         }
     }
@@ -426,7 +318,7 @@ class DebugSearch<T>
                 T item = QueryItems[pruneIndex];
                 string[] strings = stringProvider?.Invoke(item) ?? [item?.ToString() ?? ""];
 
-                if (strings.Any(s => s.Contains(query, StringComparison.InvariantCultureIgnoreCase)))
+                if (strings.Any(s => s != null && s.Contains(query, StringComparison.InvariantCultureIgnoreCase)))
                 {
                     pruneIndex++;
                 }
@@ -437,4 +329,180 @@ class DebugSearch<T>
             }
         }
     }
+}
+
+class ObjectViewer
+{
+    public bool Open = false;
+    public bool WantsFocus = false;
+
+    private object? focusObject = null;
+    private HashSet<object> targets = [];
+    public void Layout()
+    {
+        if (ImGui.BeginMenuBar())
+        {
+            ImGui.EndMenuBar();
+        }
+
+        if (ImGui.BeginTabBar("tabbar"))
+        {
+            foreach (var target in targets)
+            {
+                bool open = true;
+                ImGuiTabItemFlags flags = 0;
+                if (target == focusObject)
+                {
+                    focusObject = null;
+                    flags = ImGuiTabItemFlags.SetSelected;
+                }
+                if (ImGui.BeginTabItem(target.ToString(), ref open, flags))
+                {
+                    if (target is IInspectable inspectable)
+                    {
+                        inspectable.Layout();
+                    }
+                    else
+                    {
+                        ReflectionLayoutObjectFields(target);
+                    }
+                    ImGui.EndTabItem();
+                }
+                if (!open)
+                {
+                    targets.Remove(target);
+
+                    if (targets.Count == 0)
+                    {
+                        this.Open = false;
+                    }
+                }
+            }
+
+            ImGui.EndTabBar();
+        }
+    }
+
+    public object? ReflectionLayoutObject(string label, object? obj, bool isReadonly = false)
+    {
+        switch (obj)
+        {
+            case float f when isReadonly:
+                ImGui.Text($"{label}: {f}");
+                return f;
+            case float f:
+                ImGui.DragFloat(label, ref f);
+                return f;
+            case Vector2 v2:
+                ImGui.DragFloat2(label, ref v2);
+                return v2;
+            case DoubleVector d2:
+                Vector2 vec = d2.ToVector2();
+                ImGui.DragFloat2(label, ref vec);
+                return DoubleVector.FromVector2(vec);
+            case int i:
+                ImGui.DragInt(label, ref i);
+                return i;
+            case bool b:
+                ImGui.Checkbox(label, ref b);
+                return b;
+            case string s:
+                ImGui.InputText(label, ref s, 256);
+                return s;
+            case Prototype proto:
+                if (ImGui.Selectable($"{label}: {proto.Name} ({proto.GetType().Name})"))
+                {
+                    View(proto);
+                }
+                return proto;
+            case IInspectable inspectable:
+                if (ImGui.TreeNode(label))
+                {
+                    inspectable.Layout();
+                    ImGui.TreePop();
+                }
+                return inspectable;
+            case null:
+            case object when obj.GetType().IsPrimitive:
+                ImGui.Text($"{label}: {obj ?? "null"}");
+                return obj;
+            case object:
+                if (ImGui.TreeNode(label))
+                {
+                    ReflectionLayoutObjectFields(obj);
+                    ImGui.TreePop();
+                }
+                return obj;
+        }
+    }
+
+    public void ReflectionLayoutObjectFields(object obj)
+    {
+        foreach (var member in obj.GetType().GetMembers(BindingFlags.Public | BindingFlags.Instance))
+        {
+            object? value;
+            switch (member)
+            {
+                case FieldInfo field:
+                    value = field.GetValue(obj);
+                    value = ReflectionLayoutObject(field.Name, value);
+                    if (!field.Attributes.HasFlag(FieldAttributes.InitOnly))
+                    {
+                        field.SetValue(obj, value);
+                    }
+                    break;
+                case PropertyInfo prop:
+                    if (prop.CanRead && prop.GetIndexParameters().Length == 0)
+                    {
+                        value = prop.GetValue(obj);
+                        bool isReadonly = !prop.CanWrite;
+
+                        if (isReadonly)
+                        {
+                            ImGui.BeginDisabled();
+                        }
+
+                        value = ReflectionLayoutObject(prop.Name, value, isReadonly);
+                        if (isReadonly)
+                        {
+                            ImGui.EndDisabled();
+                        }
+                        else
+                        {
+                            prop.SetValue(obj, value);
+                        }
+                    }
+                    break;
+                case MethodInfo method when method.GetCustomAttribute<DebugButtonAttribute>() != null:
+                    if (ImGui.Button(method.Name))
+                    {
+                        method.Invoke(obj, null);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        //foreach (var field in obj.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance))
+        //{
+        //}
+    }
+
+    public void View(object obj)
+    {
+        if (!targets.Contains(obj))
+        {
+            targets.Add(obj);
+        }
+
+        focusObject = obj;
+        WantsFocus = true;
+        Open = true;
+    }
+}
+
+[AttributeUsage(AttributeTargets.Method)]
+class DebugButtonAttribute : Attribute
+{
 }

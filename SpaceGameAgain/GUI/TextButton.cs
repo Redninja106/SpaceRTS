@@ -13,12 +13,13 @@ internal class TextButton : Element
     public bool pressed;
     public bool clicked;
 
-    public bool FitContainer { get; set; } = false;
+    public bool FitContainer { get; set; }
 
-    public TextButton(string text, Action? click = null)
+    public TextButton(string text, Action? click = null, bool fitContainer = false)
     {
         this.Text = text;
         this.click = click;
+        this.FitContainer = fitContainer;
     }
 
     public override void Render(ICanvas canvas)
@@ -55,7 +56,7 @@ internal class TextButton : Element
         clicked = false;
 
         Rectangle bounds = new(locationX, locationY, Width, Height);
-        hovered = bounds.ContainsPoint(Mouse.Position / Program.actualGUIScale);
+        hovered = bounds.ContainsPoint(World.WindowManager.MousePosition);
        
         if (hovered && Mouse.IsButtonPressed(MouseButton.Left))
         {

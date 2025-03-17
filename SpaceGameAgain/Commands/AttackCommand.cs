@@ -48,4 +48,21 @@ class AttackCommandPrototype : CommandPrototype
         var target = reader.ReadActorReference<Unit>();
         return new AttackCommand(this, unit, target);
     }
+
+    //public override void Issue(Unit? target, PlayerCommandProcessor processor)
+    //{
+    //    foreach (var unit in World.SelectionHandler.GetSelectedUnits())
+    //    {
+    //        processor.AddCommand(new AttackCommand(this, unit.AsReference(), target!.AsReference()));
+    //    }
+    //}
+
+    public override void Issue(Unit? target, HashSet<Unit> selected, PlayerCommandProcessor processor)
+    {
+        throw new NotImplementedException();
+    }
+    public override bool Applies(Unit? target, HashSet<Unit> selected)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -151,9 +151,9 @@ internal class Grid : WorldActor
         }
     }
 
-    public GridCell? GetCellFromPoint(Vector2 point, Transform transform)
+    public GridCell? GetCellFromPoint(DoubleVector point)
     {
-        var localPos = this.Transform.WorldToLocal(transform.LocalToWorld(point));
+        var localPos = this.Transform.WorldToLocal(point.ToVector2());
         var coord = HexCoordinate.FromCartesian(localPos);
         return GetCell(coord);
     }

@@ -1,0 +1,8 @@
+{
+  "prototype": "WeaponModulePrototype",
+  "name": "chaingun_module",
+  "weapon_system_prototype": "chaingun_system",
+  "commands": [
+    "attack_command"
+  ]
+}

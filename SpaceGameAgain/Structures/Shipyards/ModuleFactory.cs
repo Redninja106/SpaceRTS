@@ -1,4 +1,5 @@
-﻿using SpaceGame.Teams;
+﻿using SpaceGame.Ships.Modules;
+using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,8 +18,7 @@ internal class ModuleFactory : Structure
 
 class ModuleFactoryPrototype : StructurePrototype
 {
-    public string ProvidedModule { get; set; }
-
+    public ModulePrototype ProvidedModule { get; set; }
 
     public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
     {

@@ -35,4 +35,13 @@ class CancelOrdersCommandPrototype : CommandPrototype
 
         return new CancelOrdersCommand(this, target.Actor!);
     }
+
+    public override void Issue(Unit? target, HashSet<Unit> selected, PlayerCommandProcessor processor)
+    {
+        throw new NotImplementedException();
+    }
+    public override bool Applies(Unit? target, HashSet<Unit> selected)
+    {
+        throw new NotImplementedException();
+    }
 }

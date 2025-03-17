@@ -1,7 +1,9 @@
 ﻿using ImGuiNET;
 using Silk.NET.Core.Native;
+using Silk.NET.Input;
 using SimulationFramework;
 using SimulationFramework.Drawing;
+using SpaceGame.GUI;
 using SpaceGame.Interaction;
 using SpaceGame.Orders;
 using SpaceGame.Planets;
@@ -45,7 +47,7 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
             Team playerTeam = World.PlayerTeam.Actor!;
             canvas.Stroke(playerTeam.GetRelationColor(Team.Actor!));
             canvas.StrokeWidth(0);
-            canvas.DrawCircle(0, 0, MathF.Max(.65f/2f, World.Camera.ScreenDistanceToWorldDistance(2.5f/2f)));
+            canvas.DrawCircle(0, 0, MathF.Max((float)GetCollisionRadius(), World.Camera.ScreenDistanceToWorldDistance(2.5f/2f)));
         }
 
         canvas.Fill(Color.White);
@@ -123,9 +125,9 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
         }
     }
 
-    public override bool TestPoint(Vector2 point, Transform transform)
+    public override bool TestPoint(DoubleVector point)
     {
-        return Util.TestPoint(verts.Select(v => v *= Prototype.Scale).ToArray(), this.Transform, point, transform);
+        return Util.TestPoint(verts.Select(v => v *= Prototype.Scale).ToArray(), this.Transform, point.ToVector2(), Transform.Default);
     }
 
     public void RenderShadow(ICanvas canvas, float floorHeight)
@@ -149,6 +151,13 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
             canvas.Rotate(-InterpolatedTransform.Rotation);
         }
         canvas.PopState();
+    }
+
+    public override Element[]? GetSelectionGUI()
+    {
+        return [
+            new Label("hello there"),
+            ];
     }
 
     public override void Serialize(BinaryWriter writer)

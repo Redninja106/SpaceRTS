@@ -90,7 +90,7 @@ internal class ConstructionInteractionContext : IInteractionContext
     {
         foreach (var planet in World.Planets)
         {
-            if (planet.Grid.GetCellFromPoint(World.MousePosition.ToVector2(), Transform.Default) != null)
+            if (planet.Grid.GetCellFromPoint(World.MousePosition) != null)
             {
                 if (planet.Grid != hoveredGrid)
                 {

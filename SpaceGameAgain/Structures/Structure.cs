@@ -91,9 +91,9 @@ internal class Structure : Unit
         }
     }
 
-    public override bool TestPoint(Vector2 point, Transform transform)
+    public override bool TestPoint(DoubleVector point)
     {
-        Vector2 localPoint = Grid.Transform.WorldToLocal(transform.LocalToWorld(point));
+        Vector2 localPoint = Grid.Transform.WorldToLocal(point.ToVector2());
         HexCoordinate coord = HexCoordinate.FromCartesian(localPoint);
         return Grid.GetCell(coord) is GridCell cell && cell.Structure.Actor == this;
     }

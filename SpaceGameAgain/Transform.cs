@@ -25,7 +25,7 @@ public struct Transform
     {
     }
 
-    public Matrix3x2 LocalFromWorldMatrix()
+    public Matrix3x2 WorldToLocalMatrix()
     {
         return
             Matrix3x2.CreateTranslation(-Position.ToVector2()) *
@@ -33,7 +33,7 @@ public struct Transform
             Matrix3x2.CreateScale(1f / Scale.X, 1f / Scale.Y);
     }
 
-    public Matrix3x2 WorldFromLocalMatrix()
+    public Matrix3x2 LocalToWorldMatrix()
     {
         return
             Matrix3x2.CreateScale(Scale) *
@@ -60,12 +60,12 @@ public struct Transform
 
     public Vector2 WorldToLocal(Vector2 point)
     {
-        return Vector2.Transform(point, LocalFromWorldMatrix());
+        return Vector2.Transform(point, WorldToLocalMatrix());
     }
 
     public Vector2 LocalToWorld(Vector2 point)
     {
-        return Vector2.Transform(point, WorldFromLocalMatrix());
+        return Vector2.Transform(point, LocalToWorldMatrix());
     }
 
     public Transform Rotated(float angle)

@@ -1,4 +1,7 @@
-﻿using SpaceGame.Planets;
+﻿using SpaceGame.Economy;
+using SpaceGame.Planets;
+using SpaceGame.Ships;
+using SpaceGame.Ships.Modules;
 using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
@@ -17,17 +20,12 @@ internal class StructurePrototype : UnitPrototype
     public int PowerProduced { get; set; } = 0;
     public int PowerConsumed { get; set; } = 0;
     public Model Model { get; private set; } = null!;
-    public Vector2[] Outline { get; private set; }
-
-    public StructurePrototype(int price, Model model, string? presetModel, HexCoordinate[] footprint)
-    {
-        this.Price = price;
-        this.PresetModel = presetModel ?? "default";
-        this.Model = model ;
-    }
+    public Vector2[] Outline { get; private set; } = [];
+    public Dictionary<ResourcePrototype, int> Cost { get; set; } = [];
 
     public StructurePrototype()
     {
+
     }
 
     public override void InitializePrototype()
@@ -83,5 +81,15 @@ internal class StructurePrototype : UnitPrototype
         grid = reader.ReadActorReference<Grid>();
         location = reader.ReadHexCoordinate();
         rotation = reader.ReadInt32();
+    }
+
+    [DebugButton]
+    public void Build()
+    {
+        var ctorShip = World.SelectionHandler.GetSelectedUnits().OfType<Ship>().FirstOrDefault(u => u is Ship s && s.modules.Any(m => m!.Actor is ConstructionModule));
+        if (ctorShip != null)
+        {
+            World.ConstructionInteractionContext.BeginPlacing(this, ctorShip);
+        }
     }
 }

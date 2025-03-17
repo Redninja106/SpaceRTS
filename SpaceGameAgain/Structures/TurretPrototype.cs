@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 namespace SpaceGame.Structures;
 internal class TurretPrototype : StructurePrototype
 {
-    public string WeaponSystemPrototype { get; set; }
+    public WeaponSystemPrototype WeaponSystemPrototype { get; set; }
 
     public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
     {
         var turret = new Turret(this, id, grid, location, rotation, team);
-        var weaponSystem = Prototypes.Get<WeaponSystemPrototype>(WeaponSystemPrototype).CreateWeapon(World.NewID(), ((Unit)turret).AsReference());
+        var weaponSystem = WeaponSystemPrototype.CreateWeapon(World.NewID(), ((Unit)turret).AsReference());
         World.Add(weaponSystem);
 
         return turret;

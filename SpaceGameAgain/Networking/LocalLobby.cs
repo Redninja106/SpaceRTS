@@ -1,4 +1,6 @@
 ﻿using SpaceGame.Commands;
+using SpaceGame.Planets;
+using SpaceGame.Ships;
 using SpaceGame.Teams;
 using System.Net.Sockets;
 
@@ -36,17 +38,24 @@ class LocalLobby : Lobby
         {
             Console.WriteLine("got a hello from " + hello.ClientName);
 
+            Planet startingPlanet = (Planet)Random.Shared.GetItems(World.GetActorsByPrototype(Prototypes.Get<PlanetPrototype>("generic_planet")).ToArray(), 1).Single();
+
+            Team team = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
+            associations[team] = client;
+            team.CommandProcessor = new NetworkCommandProcessor();
+
+            Ship startingShip = new Ship(Prototypes.Get<ShipPrototype>("small_ship"), World.NewID(), startingPlanet.Transform, team.AsReference());
+
+            World.Add(team);
+            World.Add(startingShip);
+
             Console.WriteLine("sending world to " + hello.ClientName);
             var prototype = Prototypes.Get<WorldDownloadPacketPrototype>("world_download_packet");
             WorldSerializer serializer = new();
             using MemoryStream ms = new();
             using BinaryWriter writer = new(ms);
             serializer.Serialize(World, writer);
-            Team team = World.Teams.Except([World.PlayerTeam.Actor!]).First();
             WorldDownloadPacket worldPacket = new(prototype, team.AsReference(), ms.GetBuffer());
-            team.CommandProcessor = new NetworkCommandProcessor();
-            associations[team] = client;
-            //
             World.TurnProcessor.startingTurn = World.TurnProcessor.turn;
 
             network.Send(worldPacket, client);
@@ -54,6 +63,13 @@ class LocalLobby : Lobby
 
         if (network.ReceivePacket<TurnPacket>(out var turn, out client))
         {
+            foreach (var (_, c) in associations)
+            {
+                if (c != client)
+                {
+                    network.Send(turn, c);
+                }
+            }
             // TODO: forward to other clients
 
             turn.Process();

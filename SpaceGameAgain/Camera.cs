@@ -42,50 +42,56 @@ public abstract class Camera : IInspectable
         canvas.Clear(Color.Black);
     }
 
-    public Matrix3x2 ScreenFromWorldMatrix(bool interpolated = true)
+    public Matrix3x2 WorldToScreenMatrix(bool interpolated = true)
     {
-        return (interpolated ? SmoothTransform : Transform).LocalFromWorldMatrix() * ScreenFromLocalMatrix(interpolated);
+        return (interpolated ? SmoothTransform : Transform).WorldToLocalMatrix() * LocalToScreenMatrix(interpolated);
     }
 
-    public Matrix3x2 WorldFromScreenMatrix(bool interpolated = true)
+    public Matrix3x2 ScreenToWorldMatrix(bool interpolated = true)
     {
-        return LocalFromScreenMatrix(interpolated) * (interpolated ? SmoothTransform : Transform).WorldFromLocalMatrix();
+        return ScreenToLocalMatrix(interpolated) * (interpolated ? SmoothTransform : Transform).LocalToWorldMatrix();
     }
 
-    public Matrix3x2 ScreenFromLocalMatrix(bool interpolated = true)
+    public Matrix3x2 LocalToScreenMatrix(bool interpolated = true)
     {
-        Matrix3x2 result = Matrix3x2.Identity;
-        result = Matrix3x2.CreateTranslation(DisplayWidth / 2f, DisplayHeight / 2f) * result;
-        result = Matrix3x2.CreateScale(DisplayHeight / (interpolated ? SmoothVerticalSize : VerticalSize)) * result;
-        return result;
+        return
+            Matrix3x2.CreateScale(DisplayHeight / (interpolated ? SmoothVerticalSize : VerticalSize)) *
+            Matrix3x2.CreateTranslation(DisplayWidth / 2f, DisplayHeight / 2f);
     }
 
-    public Matrix3x2 LocalFromScreenMatrix(bool interpolated = true)
+    public Matrix3x2 ScreenToLocalMatrix(bool interpolated = true)
     {
-        Matrix3x2 result = Matrix3x2.Identity;
-        result = Matrix3x2.CreateScale((interpolated ? SmoothVerticalSize : VerticalSize) / DisplayHeight) * result;
-        result = Matrix3x2.CreateTranslation(-DisplayWidth / 2f, -DisplayHeight / 2f) * result;
-        return result;
+        return
+            Matrix3x2.CreateTranslation(-DisplayWidth / 2f, -DisplayHeight / 2f) * 
+            Matrix3x2.CreateScale((interpolated ? SmoothVerticalSize : VerticalSize) / DisplayHeight);
     }
 
     public Vector2 ScreenToWorld(Vector2 point, bool interpolated = true)
     {
-        return Vector2.Transform(point, WorldFromScreenMatrix(interpolated));
+        return Vector2.Transform(point, ScreenToWorldMatrix(interpolated));
     }
 
     public Vector2 ScreenToLocal(Vector2 point, bool interpolated = true)
     {
-        return Vector2.Transform(point, LocalFromScreenMatrix(interpolated));
+        return Vector2.Transform(point, ScreenToLocalMatrix(interpolated));
     }
 
     public Vector2 WorldToScreen(Vector2 point, bool interpolated = true)
     {
-        return Vector2.Transform(point, ScreenFromWorldMatrix(interpolated));
+        return Vector2.Transform(point, WorldToScreenMatrix(interpolated));
     }
+
+    // public Vector2 WorldToScreen(DoubleVector point, bool interpolated = true)
+    // {
+    //     Transform ptTransform = new Transform() { Position = point };
+    //     Matrix3x2 matrix = CreateRelativeMatrix(interpolated ? this.SmoothTransform : this.Transform);
+    // 
+    //     return Vector2.Transform(point, matrix);
+    // }
 
     public Vector2 LocalToScreen(Vector2 point, bool interpolated = true)
     {
-        return Vector2.Transform(point, ScreenFromLocalMatrix(interpolated));
+        return Vector2.Transform(point, LocalToScreenMatrix(interpolated));
     }
 
     public float ScreenDistanceToWorldDistance(float distance)

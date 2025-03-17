@@ -24,33 +24,34 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, ulong i
 
     public override Element[] BuildGUI()
     {
-        return [
-            new ElementStack(
-                Prototypes.RegisteredPrototypes.OfType<StructurePrototype>().Select(proto => {
-                    return new TextButton($"{proto.Title} ({proto.Price})", () => {
-                        if (Ship.Actor!.Team.Actor!.Resources["metals"] >= proto.Price)
-                        {
-                            World.ConstructionInteractionContext.BeginPlacing(proto, this.Ship.Actor!);
-                        }
-                    }) { FitContainer = true , Margin   = 0};
-                }).ToArray()
-            ),
-        ];
+        return [];
+        //return [
+        //    new ElementStack(
+        //        Prototypes.RegisteredPrototypes.OfType<StructurePrototype>().Select(proto => {
+        //            return new TextButton($"{proto.Title} ({proto.Price})", () => {
+        //                if (Ship.Actor!.Team.Actor!.GetResource("metals") >= proto.Price)
+        //                {
+        //                    World.ConstructionInteractionContext.BeginPlacing(proto, this.Ship.Actor!);
+        //                }
+        //            }) { FitContainer = true , Margin   = 0};
+        //        }).ToArray()
+        //    ),
+        //];
 
-        ImageButton BuildButton(ITexture texture, StructurePrototype structure)
-        {
-            return new ImageButton(texture, 16, 16, () =>
-            {
-                if (Ship.Actor!.Team.Actor!.Resources["metals"] >= structure.Price)
-                {
-                    World.ConstructionInteractionContext.BeginPlacing(structure, this.Ship.Actor!);
-                }
-            })
-            {
-                FitContainer = true,
-                Alignment = Alignment.Center,
-            };
-        }
+        //ImageButton BuildButton(ITexture texture, StructurePrototype structure)
+        //{
+        //    return new ImageButton(texture, 16, 16, () =>
+        //    {
+        //        if (Ship.Actor!.Team.Actor!.Resources["metals"] >= structure.Price)
+        //        {
+        //            World.ConstructionInteractionContext.BeginPlacing(structure, this.Ship.Actor!);
+        //        }
+        //    })
+        //    {
+        //        FitContainer = true,
+        //        Alignment = Alignment.Center,
+        //    };
+        //}
     }
 
     public override void Tick()

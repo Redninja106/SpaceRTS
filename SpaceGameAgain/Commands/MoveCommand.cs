@@ -40,4 +40,27 @@ class MoveCommandPrototype : CommandPrototype
 
         return new MoveCommand(this, s.Actor!, v);
     }
+
+    public override void Issue(Unit? target, HashSet<Unit> selected, PlayerCommandProcessor processor)
+    {
+        foreach (var unit in selected)
+        {
+            DoubleVector targetPosition;
+            if (target == null)
+            {
+                targetPosition = World.MousePosition;
+            }
+            else
+            {
+                targetPosition = target.Transform.Position;
+            }
+
+            processor.AddCommand(new MoveCommand(this, (Ship)unit!, targetPosition));
+        }
+    }
+
+    public override bool Applies(Unit? target, HashSet<Unit> selected)
+    {
+        return selected.Count > 0;
+    }
 }

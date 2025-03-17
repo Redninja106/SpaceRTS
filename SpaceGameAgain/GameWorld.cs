@@ -5,6 +5,8 @@ using SpaceGame.Structures;
 using SpaceGame.Teams;
 using SpaceGame.Combat;
 using SpaceGame.GUI;
+using ImGuiNET;
+using System.Diagnostics;
 
 namespace SpaceGame;
 internal class GameWorld
@@ -14,7 +16,6 @@ internal class GameWorld
     public ulong NextID { get; set; } = 1;
 
     public Dictionary<ulong, WorldActor> Actors = [];
-
 
     public List<Ship> Ships { get; } = [];
     public List<Planet> Planets { get; } = [];
@@ -28,6 +29,8 @@ internal class GameWorld
     //public List<Station> Stations { get; } = [];
     // public List<Asteroid> Asteroids { get; } = [];
 
+    public UnitCollision Collision { get; } = new();
+
     // GLOBALS
     public Camera Camera { get; set; } = new FreeCamera();
 
@@ -37,13 +40,13 @@ internal class GameWorld
     // public Sidebar RightSidebar;
 
     public DoubleVector MousePosition;
-    public bool HasFocus;
 
     public ulong tick;
     public Random TickRandom;
     public ulong idleTicks;
 
     // HANDLERS
+
 
     public SelectionHandler SelectionHandler { get; } = new();
     public MouseDragHandler MouseDragHandler { get; } = new();
@@ -56,33 +59,39 @@ internal class GameWorld
 
     public MouseState leftMouse = new(MouseButton.Left);
     public MouseState rightMouse = new(MouseButton.Right);
+    public MouseState middleMouse = new(MouseButton.Middle);
 
     private StarShader backgroundShader = new();
+
+
+    // GUI
+    public ContextMenuWindow ContextMenu = new();
+    public WindowManager WindowManager = new WindowManager();
 
     // public StructureList Structures { get; } = new();
 
     public IMask WorldShadowMask { get; private set; }
-    public ElementWindow InfoWindow { get; set; } = new()
-    {
-        Anchor = Alignment.BottomRight,
-        Width = 240,
-        Height = 240,
-    }; 
-    public ElementWindow MapWindow { get; set; } = new()
-    {
-        Anchor = Alignment.BottomLeft,
-        Width = 240,
-        Height = 120,
-    };
+    // public ElementWindow InfoWindow { get; set; } = new()
+    // {
+    //     Anchor = Alignment.BottomRight,
+    //     Width = 240,
+    //     Height = 240,
+    // }; 
+    // public ElementWindow MapWindow { get; set; } = new()
+    // {
+    //     Anchor = Alignment.BottomLeft,
+    //     Width = 240,
+    //     Height = 120,
+    // };
 
     // public FogOfWarHandler FogOfWar { get; set; } = new();
     
     public GameWorld()
     {
-
+        WindowManager.RegisterWindow(ContextMenu);
     }
 
-    public void Update(Vector2 viewportMousePosition, bool hasFocus, float tickProgress)
+    public void Update(Vector2 viewportMousePosition, float tickProgress)
     {
         MousePosition = DoubleVector.FromVector2(Camera.ScreenToWorld(viewportMousePosition));
 
@@ -94,9 +103,10 @@ internal class GameWorld
 
         leftMouse.Update();
         rightMouse.Update();
+        middleMouse.Update();
 
         MouseDragHandler.Update();
-
+        
         CurrentInteractionContext ??= SelectInteractionContext;
         CurrentInteractionContext.Update(leftMouse, rightMouse);
 
@@ -114,10 +124,8 @@ internal class GameWorld
         }
     }
 
-    public void Tick(Vector2 viewportMousePosition, bool hasFocus)
+    public void Tick(Vector2 viewportMousePosition)
     {
-        this.HasFocus = hasFocus;
-
         if (TurnProcessor.RemainingTicks == 0)
         {
             if (!TurnProcessor.TryPerformTurn())
@@ -137,6 +145,7 @@ internal class GameWorld
 
         TickRandom = new(unchecked((int)tick));
 
+
         TickActorList(Planets); 
         
         foreach (var planet in Planets)
@@ -146,6 +155,10 @@ internal class GameWorld
 
         leftMouse.Tick();
         rightMouse.Tick();
+
+        Collision.ClearBins();
+        Collision.Update();
+        
 
         TickActorList(Structures);
         TickActorList(Grids);
@@ -161,11 +174,12 @@ internal class GameWorld
             planet.SphereOfInfluence.Tick();
         }
 
-        MapWindow.Stack.Clear();
-        foreach (var (name, count) in PlayerTeam.Actor!.Resources)
-        {
-            MapWindow.Stack.Add(new Label($"{name}: {count}"));
-        }
+
+        // MapWindow.Stack.Clear();
+        // foreach (var (name, count) in PlayerTeam.Actor!.Resources)
+        // {
+        //     MapWindow.Stack.Add(new Label($"{name}: {count}"));
+        // }
 
         tick++;
     }
@@ -219,7 +233,6 @@ internal class GameWorld
         //RenderActorList(Asteroids, canvas);
         CurrentInteractionContext ??= SelectInteractionContext;
         CurrentInteractionContext.Render(canvas, leftMouse, rightMouse);
-
 
         // render objects - true->mask
         // render shadows - false->mask

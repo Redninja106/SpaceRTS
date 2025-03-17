@@ -62,7 +62,7 @@ internal class Missile : WorldActor, IDestructable
 
         Transform.Position += Velocity * Program.Timestep;
 
-        if (age > 1 && Target.Actor!.TestPoint(Transform.Position.ToVector2(), Transform.Default))
+        if (age > 1 && Target.Actor!.TestPoint(Transform.Position))
         {
             Detonate();
             Target.Actor!.Health--;

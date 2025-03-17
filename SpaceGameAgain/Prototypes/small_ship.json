@@ -6,5 +6,10 @@
   "rise_speed": 0.5,
   "scale": 1,
   "turn_speed": 1,
-  "fly_speed": 10
+  "fly_speed": 10,
+  "collision_radius": 0.35,
+  "commands": [
+    "move_command",
+    "attack_command"
+  ]
 }

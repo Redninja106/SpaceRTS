@@ -9,10 +9,15 @@ using SpaceGame.Ships.Modules;
 using SpaceGame.Structures;
 using SpaceGame.Teams;
 using SpaceGame.Tiles;
-
-Console.WriteLine("hello world");
+using System.Diagnostics;
 
 DesktopPlatform.Register();
+
+if (Path.GetFullPath(Environment.CurrentDirectory) != Path.GetDirectoryName(Environment.ProcessPath))
+{
+    Environment.CurrentDirectory = Path.GetDirectoryName(Environment.ProcessPath)!;
+}
+
 Start<Program>();
 
 partial class Program : Simulation
@@ -34,110 +39,122 @@ partial class Program : Simulation
     public static Lobby? Lobby;
     public static NetworkSerializer NetworkSerializer = new();
 
+    public static float ViewportScale;
 
     public override void OnInitialize()
     {
         Time.MaxDeltaTime = 1 / 30f;
         // view = Graphics.CreateTexture(640, 480);
         font ??= Graphics.LoadFont("Assets/Fonts/VictorMono-Regular.ttf");
-        
+
+        DebugOverlays.Register();
         Prototypes.Load();
 
         World = new();
-
+        
         var playerTeam = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
         playerTeam.CommandProcessor = new PlayerCommandProcessor();
-
-        var enemies = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
-        enemies.CommandProcessor = new PlayerCommandProcessor();
-
-
-        playerTeam.MakeEnemies(enemies);
-
-        World.Add(playerTeam);
-        World.Add(enemies);
-
         World.PlayerTeam = playerTeam.AsReference();
+        World.Add(playerTeam);
 
-        World.Add(new Ship((ShipPrototype)Prototypes.Get("small_ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(playerTeam)));
-        var constMod = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), World.Ships[0].AsReference());
-        World.Ships[0].modules.Add(((Module)constMod).AsReference());
-        World.Add(constMod);
+        var starterShip = new Ship(Prototypes.Get<ShipPrototype>("small_ship"), World.NewID(), Transform.Default, playerTeam.AsReference());
+        starterShip.modules.Add(new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), starterShip.AsReference()).AsReference<Module>());
+        World.Add(starterShip);
 
-        World.Add(new Ship((ShipPrototype)Prototypes.Get("small_ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(enemies)));
-        var constMod2 = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), World.Ships[1].AsReference());
-        World.Ships[1].modules.Add(((Module)constMod2).AsReference());
-        World.Add(constMod2);
+        // var enemies = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
+        // enemies.CommandProcessor = new PlayerCommandProcessor();
+
+
+        // playerTeam.MakeEnemies(enemies);
+        // World.Add(playerTeam);
+        // World.Add(enemies);
+
+
+        // World.Add(new Ship((ShipPrototype)Prototypes.Get("small_ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(playerTeam)));
+        // var constMod = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), World.Ships[0].AsReference());
+        // World.Ships[0].modules.Add(((Module)constMod).AsReference());
+        // World.Add(constMod);
+
+        // World.Add(new Ship((ShipPrototype)Prototypes.Get("small_ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(enemies)));
+        // var constMod2 = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), World.Ships[1].AsReference());
+        // World.Ships[1].modules.Add(((Module)constMod2).AsReference());
+        // World.Add(constMod2);
 
         PlanetPrototype planetProto = Prototypes.Get<PlanetPrototype>("generic_planet");
+        StarSystemGenerator generator = new(planetProto, Random.Shared);
+        generator.GenerateSystem();
 
-        var sun = new Planet(planetProto, World.NewID(), Transform.Default, null)
-        {
-            Color = Color.Yellow,
-            Radius = 50,
-        };
-        sun.SphereOfInfluence.Radius = 1000;
+        Planet starterPlanet = World.Planets[Random.Shared.Next(1, World.Planets.Count)];
+        starterShip.Teleport(starterPlanet.Transform);
+        World.Camera.Transform = World.Camera.SmoothTransform = starterPlanet.Transform;
 
-        World.Add(sun);
+        // var sun = new Planet(planetProto, World.NewID(), Transform.Default, null)
+        // {
+        //     Color = Color.Yellow,
+        //     Radius = 50,
+        // };
+        // sun.SphereOfInfluence.Radius = 1000;
+        // 
+        // World.Add(sun);
+        // 
+        // var planet1 = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)sun).AsReference(), 500, 0))
+        // {
+        //     Color = Color.DarkGreen,
+        //     Radius = 26,
+        // };
+        // planet1.SphereOfInfluence.Radius = 80;
+        // Grid.FillRadius(planet1.Grid, planet1.Radius);
+        // World.Add(planet1);
+        // 
+        // var moon = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)planet1).AsReference(), 100, MathF.PI * 1.25f))
+        // {
+        //     Color = Color.DarkGray,
+        //     Radius = 9,
+        // };
+        // Grid.FillRadius(moon.Grid, moon.Radius);
+        // World.Add(moon);
+        // 
+        // var planet2 = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)sun).AsReference(), 400, MathF.PI * .75f))
+        // {
+        //     Color = Color.DarkOliveGreen,
+        //     Radius = 17,
+        // };
+        // Grid.FillRadius(planet2.Grid, planet2.Radius);
+        // World.Add(planet2);
+        // 
+        // var planet3 = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)sun).AsReference(), 800, MathF.PI * 1.75f))
+        // {
+        //     Color = Color.Lerp(Color.OrangeRed, Color.Black, 0.25f),
+        //     Radius = 13,
+        // };
+        // Grid.FillRadius(planet3.Grid, planet3.Radius);
+        // World.Add(planet3);
+
+        //World.Camera.Transform.Position = planet1.Transform.Position;
+        //World.Camera.SmoothTransform.Position = planet1.Transform.Position;
+
+        //planet1.Grid.GetCell(HexCoordinate.Zero)!.Tile = new ResourceDepositTile(Prototypes.Get<TilePrototype>("rare_metals_deposit"), World.NewID(), Transform.Default, 100);
+
+        //// planet1.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("particle_accelerator"), new(0, 0), 0, playerTeam);
+
+        ////planet1.Grid.PlaceStructure(World.Structures.ResourceNode, new(0, 0), 0, World.NeutralTeam);
+
+        ////planet1.Grid.PlaceStructure(World.Structures.SmallShipyard, new(5, -5), 0, enemies);
+        ////planet1.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(3, -3), 0, enemies);
+
+        //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("headquarters"), new(0, 0), 1, enemies);
+
+        //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(2, 0), 0, enemies);
+        //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(2, 4), 0, enemies);
+        //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(-2, 4), 0, enemies);
+
+        //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(3, 1), 0, enemies);
+        //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(0, 5), 0, enemies);
+        //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(-1, 2), 0, enemies);
         
-        var planet1 = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)sun).AsReference(), 500, 0))
-        {
-            Color = Color.DarkGreen,
-            Radius = 26,
-        };
-        planet1.SphereOfInfluence.Radius = 80;
-        Grid.FillRadius(planet1.Grid, planet1.Radius);
-        World.Add(planet1);
+        //// planet1.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("rare_metals_deposit"), new(0, 0), 0, null);
 
-        var moon = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)planet1).AsReference(), 100, MathF.PI * 1.25f))
-        {
-            Color = Color.DarkGray,
-            Radius = 9,
-        };
-        Grid.FillRadius(moon.Grid, moon.Radius);
-        World.Add(moon);
-
-        var planet2 = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)sun).AsReference(), 400, MathF.PI * .75f))
-        {
-            Color = Color.DarkOliveGreen,
-            Radius = 17,
-        };
-        Grid.FillRadius(planet2.Grid, planet2.Radius);
-        World.Add(planet2);
-
-        var planet3 = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)sun).AsReference(), 800, MathF.PI * 1.75f))
-        {
-            Color = Color.Lerp(Color.OrangeRed, Color.Black, 0.25f),
-            Radius = 13,
-        };
-        Grid.FillRadius(planet3.Grid, planet3.Radius);
-        World.Add(planet3);
-
-        World.Camera.Transform.Position = planet1.Transform.Position;
-        World.Camera.SmoothTransform.Position = planet1.Transform.Position;
-
-        planet1.Grid.GetCell(HexCoordinate.Zero)!.Tile = new ResourceDepositTile(Prototypes.Get<TilePrototype>("rare_metals_deposit"), World.NewID(), Transform.Default, 100);
-
-        // planet1.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("particle_accelerator"), new(0, 0), 0, playerTeam);
-
-        //planet1.Grid.PlaceStructure(World.Structures.ResourceNode, new(0, 0), 0, World.NeutralTeam);
-
-        //planet1.Grid.PlaceStructure(World.Structures.SmallShipyard, new(5, -5), 0, enemies);
-        //planet1.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(3, -3), 0, enemies);
-
-        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("headquarters"), new(0, 0), 1, enemies);
-
-        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(2, 0), 0, enemies);
-        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(2, 4), 0, enemies);
-        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(-2, 4), 0, enemies);
-
-        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(3, 1), 0, enemies);
-        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(0, 5), 0, enemies);
-        planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(-1, 2), 0, enemies);
-        
-        // planet1.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("rare_metals_deposit"), new(0, 0), 0, null);
-
-        World.Ships.First().Transform.Position = planet1.Transform.Position;
+        //World.Ships.First().Transform.Position = planet1.Transform.Position;
 
         // World.LeftSidebar = new Sidebar(Alignment.TopLeft, 300, 400);
         // World.RightSidebar = new Sidebar(Alignment.TopRight, 300, 400);
@@ -195,10 +212,11 @@ partial class Program : Simulation
 
         float vpScaleY = canvas.Height / (float)view.Height;
         float vpScaleX = canvas.Width / (float)view.Width;
+        ViewportScale = MathF.Min(vpScaleX, vpScaleY);
 
         MatrixBuilder viewMatrix = new MatrixBuilder()
             .Translate(canvas.Width / 2f, canvas.Height / 2f)
-            .Scale(MathF.Min(vpScaleX, vpScaleY))
+            .Scale(ViewportScale)
             .Translate(-view.Width / 2f, -view.Height / 2f);
 
         Update(canvas, viewMatrix);
@@ -214,7 +232,8 @@ partial class Program : Simulation
         canvas.Transform(viewMatrix.Matrix);
         canvas.DrawTexture(view);
         canvas.PopState();
-        RenderUI(canvas);
+
+        World.WindowManager.Render(canvas, canvas.Width, canvas.Height);
 
         // canvas.Font(font);
         // canvas.PushState();
@@ -244,26 +263,29 @@ partial class Program : Simulation
         actualGUIScale = uiscale * Math.Clamp(canvas.Width * uiscaleResolutionFactor, 1 / uiscale, 1);
 
         ViewportMousePosition = Vector2.Transform(Mouse.Position, viewMatrix.InverseMatrix);
-        World.InfoWindow.CalculateBounds(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale, out var infoBounds, out _);
-        World.MapWindow.CalculateBounds(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale, out var mapBounds, out _);
+        // World.InfoWindow.CalculateBounds(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale, out var infoBounds, out _);
+        // World.MapWindow.CalculateBounds(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale, out var mapBounds, out _);
 
-        bool worldFocused = vp.ContainsPoint(ViewportMousePosition) &&
-            !infoBounds.ContainsPoint(Mouse.Position / actualGUIScale) &&
-            !mapBounds.ContainsPoint(Mouse.Position / actualGUIScale);
+        // bool worldFocused = vp.ContainsPoint(ViewportMousePosition) &&
+        //     !infoBounds.ContainsPoint(Mouse.Position / actualGUIScale) &&
+        //     !mapBounds.ContainsPoint(Mouse.Position / actualGUIScale);
 
         if (forceTickThisFrame || GameSpeed >= 0 && timeAccumulated >= Timestep / GameSpeed)
         {
             forceTickThisFrame = false;
             DebugDraw.Clear();
 
-            World.Tick(ViewportMousePosition, worldFocused);
+            World.Tick(ViewportMousePosition);
+            DebugOverlays.Tick();
+
             timeAccumulated = 0;
             tickProgress = 0;
         }
 
-        World.Update(ViewportMousePosition, worldFocused, tickProgress);
-        World.InfoWindow.Update(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale);
-        World.MapWindow.Update(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale);
+        World.Update(ViewportMousePosition, tickProgress);
+        World.WindowManager.Update(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale);
+        // World.InfoWindow.Update(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale);
+        // World.MapWindow.Update(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale);
     }
 
     private void RenderView()
@@ -294,16 +316,17 @@ partial class Program : Simulation
     private void RenderUI(ICanvas canvas)
     {
         canvas.ResetState();
-        canvas.Font(font);
 
         canvas.Scale(actualGUIScale);
 
-        canvas.PushState();
-        World.InfoWindow.Render(canvas, (int)(canvas.Width / actualGUIScale), (int)(canvas.Height / actualGUIScale));
         canvas.PopState();
 
-        canvas.PushState();
-        World.MapWindow.Render(canvas, (int)(canvas.Width / actualGUIScale), (int)(canvas.Height / actualGUIScale));
-        canvas.PopState();
+        //canvas.PushState();
+        //World.InfoWindow.Render(canvas, (int)(canvas.Width / actualGUIScale), (int)(canvas.Height / actualGUIScale));
+        //canvas.PopState();
+
+        //canvas.PushState();
+        //World.MapWindow.Render(canvas, (int)(canvas.Width / actualGUIScale), (int)(canvas.Height / actualGUIScale));
+        //canvas.PopState();
     }
 }

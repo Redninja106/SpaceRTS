@@ -1,4 +1,5 @@
-﻿using SpaceGame.GUI;
+﻿using SpaceGame.Commands;
+using SpaceGame.GUI;
 using SpaceGame.Planets;
 using SpaceGame.Teams;
 using System;
@@ -10,6 +11,8 @@ using System.Threading.Tasks;
 namespace SpaceGame;
 internal abstract class Unit(UnitPrototype prototype, ulong id, Transform transform, ActorReference<Team> team) : WorldActor(prototype, id, transform), IDestructable
 {
+    public override UnitPrototype Prototype => (UnitPrototype)base.Prototype;
+
     public ActorReference<Team> Team { get; set; } = team;
     public int Health { get; set; } = prototype.MaxHealth;
 
@@ -24,5 +27,17 @@ internal abstract class Unit(UnitPrototype prototype, ulong id, Transform transf
         return null;
     }
 
-    public abstract bool TestPoint(Vector2 point, Transform transform);
+    public virtual double GetCollisionRadius()
+    {
+        return Prototype.CollisionRadius;
+    }
+
+    public virtual CommandPrototype[] GetCommands()
+    {
+        return [];
+    }
+
+    public abstract bool TestPoint(DoubleVector point);
+
+
 }

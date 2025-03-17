@@ -15,32 +15,42 @@ using System.Threading.Tasks;
 namespace SpaceGame.Interaction;
 internal class SelectInteractionHandler : IInteractionContext
 {
+    private Unit? target;
+
     public void Update(MouseState leftMouse, MouseState rightMouse)
     {
+        target = PickUnit();
+
         if (leftMouse.Released)
         {
             if (leftMouse.Dragged)
             {
                 World.SelectionHandler.ClearSelection();
-                foreach (var ship in PickArea(Rectangle.FromPoints(leftMouse.DragStart.ToVector2(), World.MousePosition.ToVector2())))
+                foreach (var ship in PickArea(rightMouse.DragStart, World.MousePosition))
                 {
-                    World.SelectionHandler.Add(ship);
+                    World.SelectionHandler.Select(ship);
                 }
             }
             else
             {
-                World.SelectionHandler.ClearSelection();
-                var pickedUnit = PickUnit();
-                if (pickedUnit != null)
+                if (target != null)
                 {
-                    World.SelectionHandler.Add(pickedUnit);
+                    if (World.SelectionHandler.IsSelected(target))
+                    {
+                        World.SelectionHandler.Deselect(target);
+                    }
+                    else
+                    {
+                        World.SelectionHandler.ClearSelection();
+                        World.SelectionHandler.Select(target);
+                    }
                 }
                 else
                 {
                     var pickedStructure = PickStructure();
                     if (pickedStructure != null)
                     {
-                        World.SelectionHandler.Add(pickedStructure);
+                        World.SelectionHandler.Select(pickedStructure);
                     }
                     else
                     {
@@ -50,18 +60,17 @@ internal class SelectInteractionHandler : IInteractionContext
             }
         }
 
-        if (rightMouse.Released && !rightMouse.Dragged)
+        if (rightMouse.Released)
         {
-            var target = PickUnit();
-            if (target is not null && target.Team.Actor?.GetRelation(World.PlayerTeam!.Actor) is TeamRelation.Enemies)
+            if (target?.Team.Actor?.GetRelation(World.PlayerTeam!.Actor!) == TeamRelation.Enemies)
             {
-                foreach (var selectedObject in World.SelectionHandler.GetSelectedObjects())
+                foreach (var selectedObject in World.SelectionHandler.GetSelectedUnits())
                 {
                     if (selectedObject is Ship ship && ship.Team == World.PlayerTeam)
                     {
                         // IssueOrder(target, order.AsReference().Cast<Order>(), ship.orders.ToList());
                         var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
-                        
+
                         if (!Keyboard.IsKeyDown(Key.LeftShift))
                         {
                             commandProcessor.AddCommand(new CancelOrdersCommand(Prototypes.Get<CommandPrototype>("cancel_orders_command"), ship));
@@ -75,16 +84,12 @@ internal class SelectInteractionHandler : IInteractionContext
 
                         commandProcessor.AddCommand(command);
                     }
-                    else
-                    {
-                        World.SelectionHandler.Deselect(selectedObject);
-                    }
                 }
             }
             else
             {
                 List<Ship> ships = [];
-                foreach (var selectedObject in World.SelectionHandler.GetSelectedObjects())
+                foreach (var selectedObject in World.SelectionHandler.GetSelectedUnits())
                 {
                     if (selectedObject is Ship ship && ship.Team == World.PlayerTeam)
                     {
@@ -122,7 +127,92 @@ internal class SelectInteractionHandler : IInteractionContext
                     }
                 }
             }
+
+            //if (target != null)
+            //{
+            //    World.ContextMenu.Show();
+            //    World.ContextMenu.Offset = World.WindowManager.MousePosition;
+            //    World.ContextMenu.SetTarget(target);
+            //}
+            //else
+            //{
+            //    World.ContextMenu.Show();
+            //    World.ContextMenu.Offset = World.WindowManager.MousePosition;
+            //    World.ContextMenu.SetTarget(target);
+            //}
+
+            //if (target is not null && target.Team.Actor?.GetRelation(World.PlayerTeam!.Actor) is TeamRelation.Enemies)
+            //{
+            //    foreach (var selectedObject in World.SelectionHandler.GetSelectedObjects())
+            //    {
+            //        if (selectedObject is Ship ship && ship.Team == World.PlayerTeam)
+            //        {
+            //            // IssueOrder(target, order.AsReference().Cast<Order>(), ship.orders.ToList());
+            //            var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+
+            //            if (!Keyboard.IsKeyDown(Key.LeftShift))
+            //            {
+            //                commandProcessor.AddCommand(new CancelOrdersCommand(Prototypes.Get<CommandPrototype>("cancel_orders_command"), ship));
+            //            }
+
+            //            var command = new AttackCommand(
+            //                Prototypes.Get<AttackCommandPrototype>("attack_command"),
+            //                ship.AsReference().Cast<Unit>(),
+            //                target.AsReference()
+            //                );
+
+            //            commandProcessor.AddCommand(command);
+            //        }
+            //        else
+            //        {
+            //            World.SelectionHandler.Deselect(selectedObject);
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    List<Ship> ships = [];
+            //    foreach (var selectedObject in World.SelectionHandler.GetSelectedObjects())
+            //    {
+            //        if (selectedObject is Ship ship && ship.Team == World.PlayerTeam)
+            //        {
+            //            ships.Add(ship);
+            //        }
+            //        else
+            //        {
+            //            World.SelectionHandler.Deselect(selectedObject);
+            //        }
+            //    }
+
+            //    var positions = ClusterFormation.PlaceShips(ships.ToArray());
+
+            //    for (int i = 0; i < ships.Count; i++)
+            //    {
+            //        if (Keyboard.IsKeyDown(Key.LeftShift) && ships[i].orders.TryPeek(out ActorReference<Order> order) && order.Actor is MoveOrder)
+            //        {
+            //            // moveOrder.targets.Add(World.MousePosition + positions[i]);
+            //        }
+            //        else
+            //        {
+            //            var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+            //            // MoveOrder moveOrder = new MoveOrder(Prototypes.Get<MoveOrderPrototype>("move_order"), World.NewID(), ships[i].AsReference().Cast<Unit>(), World.MousePosition + positions[i]);
+
+            //            if (!Keyboard.IsKeyDown(Key.LeftShift))
+            //            {
+            //                commandProcessor.AddCommand(new CancelOrdersCommand(Prototypes.Get<CommandPrototype>("cancel_orders_command"), ships[i]));
+            //            }
+
+            //            commandProcessor.AddCommand(new MoveCommand(Prototypes.Get<MoveCommandPrototype>("move_command"), ships[i], World.MousePosition + positions[i]));
+            //            // ships[i].Team.SubmitCommand(new UpdateOrdersCommand());
+            //            // IssueOrder(ships[i], o.AsReference().Cast<Order>(), ships[i].orders.ToList());
+            //            // ships[i].orders.Enqueue(o.AsReference().Cast<Order>());
+
+            //        }
+            //    }
+            //}
         }
+
+
 
         //if (Keyboard.IsKeyPressed(Key.E))
         //{
@@ -179,6 +269,15 @@ internal class SelectInteractionHandler : IInteractionContext
 
     public void Render(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)
     {
+        if (target != null && !World.SelectionHandler.IsSelected(target))
+        {
+            canvas.PushState();
+            canvas.Transform(World.Camera.CreateRelativeMatrix(target.Transform));
+            canvas.Stroke(World.PlayerTeam.Actor!.GetRelationColor(target.Team.Actor!) with { A = 100 });
+            canvas.DrawCircle(0, 0, (float)target.GetCollisionRadius());
+            canvas.PopState();
+        }
+
         if (leftMouse.Dragging)
         {
             canvas.Transform(World.Camera.CreateRelativeMatrix(Transform.Default));
@@ -190,12 +289,11 @@ internal class SelectInteractionHandler : IInteractionContext
 
     private Unit? PickUnit()
     {
+        Unit? unit = World.Collision.TestPoint(World.MousePosition);
+        return unit;
+
         foreach (var ship in World.Ships)
         {
-            if (ship.TestPoint(World.MousePosition.ToVector2(), Transform.Default))
-            {
-                return ship;
-            }
         }
         return PickStructure();
     }
@@ -214,13 +312,52 @@ internal class SelectInteractionHandler : IInteractionContext
         return null;
     }
 
-    private IEnumerable<Ship> PickArea(Rectangle area)
+    [DebugOverlay]
+    public static void ShowPickArea()
     {
-        foreach (var ship in World.Ships)
+        if (!World.leftMouse.Dragging)
+            return;
+
+        DoubleVector from = World.leftMouse.DragStart;
+        DoubleVector to = World.MousePosition;
+
+        int minX = (int)(Math.Floor(Math.Min(from.X, to.X) / UnitCollision.BinSize));
+        int minY = (int)(Math.Floor(Math.Min(from.Y, to.Y) / UnitCollision.BinSize));
+
+        int maxX = (int)(Math.Floor(Math.Max(from.X, to.X) / UnitCollision.BinSize));
+        int maxY = (int)(Math.Floor(Math.Max(from.Y, to.Y) / UnitCollision.BinSize));
+
+        for (int x = minX; x <= maxX; x++)
         {
-            if (area.ContainsPoint(ship.Transform.Position.ToVector2()))
+            for (int y = minY; y <= maxY; y++)
             {
-                yield return ship;
+                DebugDraw.Rectangle(new(
+                    (float)(x * UnitCollision.BinSize),
+                    (float)(y * UnitCollision.BinSize),
+                    (float)UnitCollision.BinSize,
+                    (float)UnitCollision.BinSize
+                    ));
+            }
+        }
+    }
+
+    private IEnumerable<Unit> PickArea(DoubleVector from, DoubleVector to)
+    {
+        int minX = (int)(Math.Floor(Math.Min(from.X, to.X) / UnitCollision.BinSize));
+        int minY = (int)(Math.Floor(Math.Min(from.Y, to.Y) / UnitCollision.BinSize));
+
+        int maxX = (int)(Math.Floor(Math.Max(from.X, to.X) / UnitCollision.BinSize));
+        int maxY = (int)(Math.Floor(Math.Max(from.Y, to.Y) / UnitCollision.BinSize));
+
+        for (int x = minX; x <= maxX; x++)
+        {
+            for (int y = minY; y <= maxY; y++)
+            {
+                foreach (var unit in World.Collision.GetBin(x, y))
+                {
+                    if (unit is Ship)
+                        yield return unit;
+                }
             }
         }
     }

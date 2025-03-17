@@ -91,7 +91,7 @@ internal class Planet : WorldActor
             canvas.PushState();
             canvas.Translate(0, -Radius);
             canvas.Scale(World.Camera.SmoothVerticalSize);
-            DrawPlanetBreakdown(canvas);
+            //DrawPlanetBreakdown(canvas);
             canvas.PopState();
         }
 
