@@ -22,11 +22,11 @@ internal class WeaponModule : Module
     {
     }
 
-    public override Element[] BuildGUI()
-    {
-        return [];
-        // return [new DynamicLabel(() => $"missiles: {system.MissilesRemaining}/{system.SalvoSize}", Element.TextSize, Alignment.CenterLeft)];
-    }
+    //public override Element[] BuildGUI()
+    //{
+    //    return [];
+    //    // return [new DynamicLabel(() => $"missiles: {system.MissilesRemaining}/{system.SalvoSize}", Element.TextSize, Alignment.CenterLeft)];
+    //}
 
     public override void Render(ICanvas canvas)
     {

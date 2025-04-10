@@ -24,10 +24,10 @@ internal abstract class Unit(UnitPrototype prototype, ulong id, Transform transf
     {
     }
 
-    public virtual Element[]? GetSelectionGUI()
-    {
-        return null;
-    }
+    //public virtual Element[]? GetSelectionGUI()
+    //{
+    //    return null;
+    //}
 
     public virtual double GetCollisionRadius()
     {

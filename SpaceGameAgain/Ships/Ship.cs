@@ -54,6 +54,7 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
         canvas.Fill(Color.White);
 
+        canvas.Translate(0, Prototype.FlyHeight - height);
         canvas.DrawPolygon(verts);
 
         canvas.PopState();
@@ -80,10 +81,8 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
     public override void Tick()
     {
         base.Tick();
-        if (height < .4f)
-        {
-            height = height + Program.Timestep * Prototype.RiseSpeed;
-        }
+
+        height = MathHelper.Step(height, Prototype.FlyHeight, Program.Timestep * Prototype.RiseSpeed);
 
         foreach (var module in modules)
         {
@@ -129,6 +128,7 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
     public void RenderShadow(ICanvas canvas, float floorHeight)
     {
         canvas.PushState();
+
         Transform unrotatedTransform = InterpolatedTransform with
         {
             Rotation = 0,
@@ -136,24 +136,16 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
         };
         unrotatedTransform.ApplyTo(canvas, World.Camera);
 
+        //canvas.Translate(0, Prototype.FlyHeight);
+        canvas.Translate(0, Prototype.FlyHeight - height);
         canvas.Translate(InterpolatedTransform.Position.ToVector2().Normalized() * (height - floorHeight));
+
+        canvas.Rotate(this.InterpolatedTransform.Rotation);
+
         canvas.Fill(Color.Black with { A = 100 });
 
-        for (int i = 0; i < 8; i++)
-        {
-            canvas.Translate(InterpolatedTransform.Position.ToVector2().Normalized() * .005f);
-            canvas.Rotate(InterpolatedTransform.Rotation);
-            canvas.DrawPolygon(verts);
-            canvas.Rotate(-InterpolatedTransform.Rotation);
-        }
+        canvas.DrawPolygon(verts);
         canvas.PopState();
-    }
-
-    public override Element[]? GetSelectionGUI()
-    {
-        return [
-            new Label("hello there"),
-            ];
     }
 
     public override void Serialize(BinaryWriter writer)

@@ -18,7 +18,7 @@ internal class AssemblyBay : Structure
 {
     public override AssemblyBayPrototype Prototype => (AssemblyBayPrototype)base.Prototype;
 
-    private Element SelectionGUI;
+    // private Element SelectionGUI;
 
     public bool isBuildingShip;
     public float progress;
@@ -27,11 +27,11 @@ internal class AssemblyBay : Structure
 
     public AssemblyBay(AssemblyBayPrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
     {
-        SelectionGUI = new TextButton("make ship", () =>
-        {
-            var cmdProc = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
-            cmdProc.AddCommand(new AssembleShipCommand(Prototypes.Get<AssembleShipCommandPrototype>("assemble_ship_command"), this));
-        });
+        // SelectionGUI = new TextButton("make ship", () =>
+        // {
+        //     var cmdProc = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+        //     cmdProc.AddCommand(new AssembleShipCommand(Prototypes.Get<AssembleShipCommandPrototype>("assemble_ship_command"), this));
+        // });
     }
 
     public void BuildShip()
@@ -69,18 +69,17 @@ internal class AssemblyBay : Structure
         base.Tick();
     }
 
-    [MemberNotNull(nameof(SelectionGUI))]
     private void Reset()
     {
         isBuildingShip = false;
-        SelectionGUI = new TextButton("make ship", BuildShip);
+        // SelectionGUI = new TextButton("make ship", BuildShip);
         progress = 0;
     }
 
-    public override Element[]? GetSelectionGUI()
-    {
-        return [new ElementReference(() => SelectionGUI)];
-    }
+    // public override Element[]? GetSelectionGUI()
+    // {
+    //     return [new ElementReference(() => SelectionGUI)];
+    // }
 
     public override void OnNeighborAdded(Structure neighbor)
     {

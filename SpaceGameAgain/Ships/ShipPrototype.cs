@@ -14,6 +14,7 @@ internal class ShipPrototype : UnitPrototype
 
     public float FlySpeed { get; set; } = 10;
     public float TurnSpeed { get; set; } = 1f;
+    public float FlyHeight { get; set; } = .4f;
 
     public override WorldActor Deserialize(BinaryReader reader)
     {

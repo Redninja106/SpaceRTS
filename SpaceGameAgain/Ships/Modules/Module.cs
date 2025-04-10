@@ -16,7 +16,7 @@ internal abstract class Module : WorldActor, IGUIProvider
         this.Ship = ship;
     }
 
-    public abstract Element[] BuildGUI();
+    //public abstract Element[] BuildGUI();
     public abstract void RenderSelected(ICanvas canvas);
 
     public abstract void Layout(GUIWindow window);

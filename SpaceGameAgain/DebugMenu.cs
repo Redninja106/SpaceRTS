@@ -546,8 +546,16 @@ class ObjectViewer
 
     public static void ReflectionLayoutObjectFields(object obj, Type? type = null)
     {
-        type = obj.GetType();
-        foreach (var member in type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+        BindingFlags bindFlags = BindingFlags.Public | BindingFlags.Instance;
+        if (type == null) 
+        {
+            type = obj.GetType();
+        }
+        else
+        {
+            bindFlags |= BindingFlags.DeclaredOnly;
+        }
+        foreach (var member in type.GetMembers(bindFlags))
         {
             object? value;
             switch (member)

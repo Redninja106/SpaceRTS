@@ -46,27 +46,14 @@ internal class ConstructionInteractionContext : IInteractionContext
         UpdateHoveredGrid();
         if (hoveredGrid != null)
         {
-            Vector2 hoveredPosition = hoveredGrid.Transform.WorldToLocal(World.MousePosition.ToVector2()) - prototype.Center.Rotated(rotation);
+            Vector2 hoveredPosition = hoveredGrid.Transform.WorldToLocal(World.MousePosition.ToVector2());
             hoveredLocation = HexCoordinate.FromCartesian(hoveredPosition);
 
             if (leftMouse.Released)
             {
-                // make sure the player ends on an empty tile that exists, or the structure we're appending to
                 var cell = hoveredGrid.GetCell(hoveredLocation);
                 if (cell != null && !hoveredGrid.IsStructureObstructed(prototype, hoveredLocation, rotation))
                 {
-                    // hoveredGrid.PlaceStructure(prototype, hoveredLocation, rotation, World.PlayerTeam.Actor!);
-
-                    //var order = new ConstructionOrder(
-                    //    Prototypes.Get<ConstructionOrderPrototype>("construction_order"),
-                    //    World.NewID(),
-                    //    constructionShip.AsReference().Cast<Unit>(),
-                    //    hoveredGrid.AsReference(),
-                    //    prototype,
-                    //    hoveredLocation,
-                    //    rotation
-                    //    );
-
                     var command = new ConstructionCommand(
                         Prototypes.Get<ConstructionCommandPrototype>("construction_command"),
                         constructionShip,
@@ -127,14 +114,13 @@ internal class ConstructionInteractionContext : IInteractionContext
             hoveredGrid.InterpolatedTransform.ApplyTo(canvas, World.Camera);
             obstructed = hoveredGrid.IsStructureObstructed(prototype, hoveredLocation, rotation);
             canvas.Translate(hoveredLocation.ToCartesian());
-            //canvas.Rotate(rotation * (MathF.Tau / 6f));
+            canvas.Rotate(rotation * (MathF.Tau / 6f));
         }
         else
         {
             Transform.Default.ApplyTo(canvas, World.Camera);
             canvas.Translate(World.MousePosition.ToVector2());
-            //canvas.Rotate(rotation * (MathF.Tau / 6f));
-            canvas.Translate(-prototype.Center);
+            canvas.Rotate(rotation * (MathF.Tau / 6f));
         }
 
         canvas.Stroke(Color.Gray);
@@ -147,6 +133,7 @@ internal class ConstructionInteractionContext : IInteractionContext
         ColorF color = obstructed ? ColorF.Red : ColorF.White;
         color.A = 100;
 
+        canvas.Rotate(-rotation * (MathF.Tau / 6f));
         prototype.Model.Render(canvas, this.rotation, color);
     }
 

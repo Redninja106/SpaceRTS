@@ -23,6 +23,8 @@ internal abstract class GUIWindow
 
     private Vector2 mousePosition;
 
+    public float Margin = 3;
+
     public virtual void Update(GUIViewport viewport)
     {
         mousePosition = viewport.MousePosition;
@@ -49,6 +51,10 @@ internal abstract class GUIWindow
     {
         LastItemBounds = Program.font.MeasureText(text, size);
         LastItemBounds.Position += Cursor + new Vector2(0, size);
+        LastItemBounds.X -= Margin;
+        LastItemBounds.Y -= Margin;
+        LastItemBounds.Width += Margin * 2;
+        LastItemBounds.Height += Margin * 2;
 
         commands.Add(new DrawCommand.Text(text, size, Cursor + new Vector2(0, size)));
 
@@ -90,7 +96,13 @@ internal abstract class GUIWindow
     {
         canvas.PushState();
 
-        canvas.Stroke(Color.Red);
+        canvas.Fill(new Color(12, 17, 23));
+        canvas.DrawRect(this.bounds);
+
+        canvas.Stroke(new Color(28, 33, 38));
+        canvas.DrawRect(this.bounds with { X = bounds.X + 1, Y = bounds.Y + 1 });
+
+        canvas.Stroke(new Color(70, 79, 89));
         canvas.DrawRect(this.bounds);
 
         foreach (var command in commands)
@@ -111,6 +123,7 @@ abstract class DrawCommand
     {
         public override void Render(ICanvas canvas)
         {
+            canvas.Fill(Color.FromHSV(0, 0, .65f));
             canvas.Font(Program.font);
             canvas.DrawText(text, size, position);
         }

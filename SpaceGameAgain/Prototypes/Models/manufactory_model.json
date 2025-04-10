@@ -1,0 +1,9 @@
+{
+  "prototype": "SixSpriteModel",
+  "name": "manufactory_model",
+  "sprites_folder": "manufactory",
+  "width": 6.92,
+  "height": 6.92,
+  "offset_x": 1,
+  "offset_y": 1
+}

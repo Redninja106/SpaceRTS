@@ -220,52 +220,52 @@ internal class StructureList
 //        );
 }
 
-static class PresetModels
-{
-    public static Dictionary<string, Model> presetModels = new()
-    {
-        ["headquarters"] = new Model([
-            new PolygonShape(new Rectangle(0, 0, 3, 3, Alignment.Center).ToPolygon(), Color.Orange),
-        ]),
-        ["particle_accelerator"] = new Model([
-        new CanvasShape((canvas, parameters) =>
-            {
-                canvas.StrokeWidth(.4f);
+//static class PresetModels
+//{
+//    public static Dictionary<string, Model> presetModels = new()
+//    {
+//        ["headquarters"] = new Model([
+//            new PolygonShape(new Rectangle(0, 0, 3, 3, Alignment.Center).ToPolygon(), Color.Orange),
+//        ]),
+//        ["particle_accelerator"] = new Model([
+//        new CanvasShape((canvas, parameters) =>
+//            {
+//                canvas.StrokeWidth(.4f);
 
-                canvas.Stroke(parameters.GetOverriddenColor((ColorF.SkyBlue * .5f).ToColor() with { A = 255 }));
-                canvas.DrawCircle(new HexCoordinate(2, 0).ToCartesian(), 3.15f);
+//                canvas.Stroke(parameters.GetOverriddenColor((ColorF.SkyBlue * .5f).ToColor() with { A = 255 }));
+//                canvas.DrawCircle(new HexCoordinate(2, 0).ToCartesian(), 3.15f);
 
-                canvas.Translate(0, -.25f);
-                canvas.Stroke(parameters.GetOverriddenColor(Color.SkyBlue));
-                canvas.DrawCircle(new HexCoordinate(2, 0).ToCartesian(), 3.15f);
-            },
-            (canvas, offset, color) =>
-            {
-                canvas.Stroke(color);
-                canvas.StrokeWidth(.4f);
-                canvas.DrawCircle(new HexCoordinate(2, 0).ToCartesian() + offset, 3.15f);
-            }),
-        ]),
-        ["shipyard"] = new Model([
-            new PolygonShape(new Rectangle(new HexCoordinate(1, 0).ToCartesian(), Vector2.One, Alignment.Center).ToPolygon(), Color.Lerp(Color.Purple, Color.Gray, .5f), .2f),
-            new PolygonShape(new Rectangle(new HexCoordinate(-1, 1).ToCartesian(), Vector2.One, Alignment.Center).ToPolygon(), Color.Lerp(Color.Purple, Color.Gray, .5f), .2f),
-            new CanvasShape(
-                (canvas, parameters) =>
-                {
-                    canvas.Fill(Color.Gray);
-                    canvas.DrawRect(new Vector2(0, -.45f), new Vector2(1, .2f), Alignment.TopCenter);
-                    canvas.Fill(Color.FromHSV(0, 0, .3f));
-                    canvas.DrawRect(new Vector2(0, -.25f), new Vector2(1, 2), Alignment.TopCenter);
-                }
-                )
-        ]),
-        ["chaingun_turret"] = new Model([new Vector2(-.5f, -.5f), new Vector2(-.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, -.5f)], Color.DarkCyan),
-        ["missile_turret"] = new Model([new Vector2(0, 0), HexCoordinate.UnitQ.ToCartesian(), HexCoordinate.UnitR.ToCartesian()], Color.Gray),
-        ["manufactory"] = new Model([
-            new PolygonShape(new Rectangle(-.4f, .85f, .9f, 2.9f, Alignment.CenterLeft).ToPolygon(), Color.Blue),
-            new PolygonShape(new Rectangle(-.4f + .9f, .85f, 2.4f - .9f, 1, Alignment.CenterLeft).ToPolygon(), Color.Blue),
-        ]),
-        ["default"] = new Model([new Vector2(-.5f, -.5f), new Vector2(-.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, -.5f)], Color.Gray),
+//                canvas.Translate(0, -.25f);
+//                canvas.Stroke(parameters.GetOverriddenColor(Color.SkyBlue));
+//                canvas.DrawCircle(new HexCoordinate(2, 0).ToCartesian(), 3.15f);
+//            },
+//            (canvas, offset, color) =>
+//            {
+//                canvas.Stroke(color);
+//                canvas.StrokeWidth(.4f);
+//                canvas.DrawCircle(new HexCoordinate(2, 0).ToCartesian() + offset, 3.15f);
+//            }),
+//        ]),
+//        ["shipyard"] = new Model([
+//            new PolygonShape(new Rectangle(new HexCoordinate(1, 0).ToCartesian(), Vector2.One, Alignment.Center).ToPolygon(), Color.Lerp(Color.Purple, Color.Gray, .5f), .2f),
+//            new PolygonShape(new Rectangle(new HexCoordinate(-1, 1).ToCartesian(), Vector2.One, Alignment.Center).ToPolygon(), Color.Lerp(Color.Purple, Color.Gray, .5f), .2f),
+//            new CanvasShape(
+//                (canvas, parameters) =>
+//                {
+//                    canvas.Fill(Color.Gray);
+//                    canvas.DrawRect(new Vector2(0, -.45f), new Vector2(1, .2f), Alignment.TopCenter);
+//                    canvas.Fill(Color.FromHSV(0, 0, .3f));
+//                    canvas.DrawRect(new Vector2(0, -.25f), new Vector2(1, 2), Alignment.TopCenter);
+//                }
+//                )
+//        ]),
+//        ["chaingun_turret"] = new Model([new Vector2(-.5f, -.5f), new Vector2(-.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, -.5f)], Color.DarkCyan),
+//        ["missile_turret"] = new Model([new Vector2(0, 0), HexCoordinate.UnitQ.ToCartesian(), HexCoordinate.UnitR.ToCartesian()], Color.Gray),
+//        ["manufactory"] = new Model([
+//            new PolygonShape(new Rectangle(-.4f, .85f, .9f, 2.9f, Alignment.CenterLeft).ToPolygon(), Color.Blue),
+//            new PolygonShape(new Rectangle(-.4f + .9f, .85f, 2.4f - .9f, 1, Alignment.CenterLeft).ToPolygon(), Color.Blue),
+//        ]),
+//        ["default"] = new Model([new Vector2(-.5f, -.5f), new Vector2(-.5f, .5f), new Vector2(.5f, .5f), new Vector2(.5f, -.5f)], Color.Gray),
 
-    };
-}
+//    };
+//}

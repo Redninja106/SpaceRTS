@@ -5,54 +5,55 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.GUI;
-internal class WindowManager
-{
-    public float Scale { get; set; } = 2f;
-    public Vector2 MousePosition { get; set; }
 
-    private List<ElementWindow> windows = [];
+//internal class WindowManager
+//{
+//    public float Scale { get; set; } = 2f;
+//    public Vector2 MousePosition { get; set; }
 
-    public bool IsAnyWindowHovered = false;
+//    private List<ElementWindow> windows = [];
 
-    public void RegisterWindow(ElementWindow window)
-    {
-        this.windows.Add(window);
-    }
+//    public bool IsAnyWindowHovered = false;
 
-    public void Render(ICanvas canvas, float displayWidth, float displayHeight)
-    {
-        canvas.ResetState();
-        canvas.Font(Program.font);
-        canvas.Scale(Scale);
+//    public void RegisterWindow(ElementWindow window)
+//    {
+//        this.windows.Add(window);
+//    }
 
-        foreach (var window in windows)
-        {
-            if (window.Visible)
-            {
-                canvas.PushState();
-                window.Render(canvas, displayWidth / Scale, displayHeight / Scale);
-                canvas.PopState();
-            }
-        }
-    }
+//    public void Render(ICanvas canvas, float displayWidth, float displayHeight)
+//    {
+//        canvas.ResetState();
+//        canvas.Font(Program.font);
+//        canvas.Scale(Scale);
 
-    public void Update(float displayWidth, float displayHeight)
-    {
-        MousePosition = Mouse.Position / Scale;
+//        foreach (var window in windows)
+//        {
+//            if (window.Visible)
+//            {
+//                canvas.PushState();
+//                window.Render(canvas, displayWidth / Scale, displayHeight / Scale);
+//                canvas.PopState();
+//            }
+//        }
+//    }
 
-        IsAnyWindowHovered = false;
-        foreach (var window in windows)
-        {
-            if (window.Visible)
-            {
-                if (window.Bounds.ContainsPoint(MousePosition))
-                {
-                    IsAnyWindowHovered = true;
-                }
+//    public void Update(float displayWidth, float displayHeight)
+//    {
+//        MousePosition = Mouse.Position / Scale;
 
-                window.Update(displayWidth / Scale, displayHeight / Scale);
-            }
-        }
-    }
-}
+//        IsAnyWindowHovered = false;
+//        foreach (var window in windows)
+//        {
+//            if (window.Visible)
+//            {
+//                if (window.Bounds.ContainsPoint(MousePosition))
+//                {
+//                    IsAnyWindowHovered = true;
+//                }
+
+//                window.Update(displayWidth / Scale, displayHeight / Scale);
+//            }
+//        }
+//    }
+//}
 

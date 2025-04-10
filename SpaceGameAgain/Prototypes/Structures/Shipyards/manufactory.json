@@ -2,6 +2,7 @@
   "prototype": "ManufactoryPrototype",
   "name": "manufactory",
   "title": "Manufactory",
+  "model": "manufactory_model",
   "footprint": [
     [ 0, 0 ],
     [ 0, 1 ],
@@ -10,5 +11,9 @@
   "price": 100,
   "can_be_rotated": true,
   "max_health": 10,
-  "power_consumed": 3
+  "power_consumed": 3,
+  "center": {
+    "x": 1,
+    "y": 1
+  }
 }
