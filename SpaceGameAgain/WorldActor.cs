@@ -45,9 +45,9 @@ internal abstract class WorldActor(WorldActorPrototype prototype, ulong id, Tran
         this.interpolatedTransform = destination;
     }
 
-    public override void Layout()
+    public override void DebugLayout()
     {
-        base.Layout();
+        base.DebugLayout();
         if (ImGui.CollapsingHeader("WorldActor"))
         {
             ImGui.Text("ID: " + ID);
@@ -56,6 +56,21 @@ internal abstract class WorldActor(WorldActorPrototype prototype, ulong id, Tran
                 Transform.Layout();
                 ImGui.TreePop();
             }
+        }
+
+        DebugLayoutSubclass(this.GetType());
+    }
+
+    private void DebugLayoutSubclass(Type type)
+    {
+        if (type == typeof(WorldActor))
+            return;
+
+        DebugLayoutSubclass(type.BaseType!);
+
+        if (ImGui.CollapsingHeader(type.Name))
+        {
+            ObjectViewer.ReflectionLayoutObjectFields(this, type);
         }
     }
 

@@ -1,0 +1,7 @@
+{
+  "prototype": "SixSpriteModel",
+  "name": "particle_accelerator_model",
+  "sprites_folder": "particle_accelerator",
+  "width": 8.66,
+  "height": 8.66
+}

@@ -6,9 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Ships.Modules;
-internal abstract class Module : WorldActor
+internal abstract class Module : WorldActor, IGUIProvider
 {
     public ActorReference<Ship> Ship { get; }
+    public abstract ITexture Icon { get; }
 
     public Module(ModulePrototype prototype, ulong id, ActorReference<Ship> ship) : base(prototype, id, Transform.Default)
     {
@@ -17,6 +18,8 @@ internal abstract class Module : WorldActor
 
     public abstract Element[] BuildGUI();
     public abstract void RenderSelected(ICanvas canvas);
+
+    public abstract void Layout(GUIWindow window);
 }
 
 abstract class ModulePrototype : WorldActorPrototype

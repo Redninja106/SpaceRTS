@@ -1,0 +1,9 @@
+{
+  "prototype": "SixSpriteModel",
+  "name": "default_model",
+  "sprites_folder": "default",
+  "width": 2,
+  "height": 2,
+  "offset_x": 0,
+  "offset_y": 0
+}

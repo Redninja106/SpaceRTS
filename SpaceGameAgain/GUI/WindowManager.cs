@@ -30,7 +30,7 @@ internal class WindowManager
             if (window.Visible)
             {
                 canvas.PushState();
-                window.Render(canvas, displayWidth, displayHeight);
+                window.Render(canvas, displayWidth / Scale, displayHeight / Scale);
                 canvas.PopState();
             }
         }
@@ -50,7 +50,7 @@ internal class WindowManager
                     IsAnyWindowHovered = true;
                 }
 
-                window.Update(displayWidth, displayHeight);
+                window.Update(displayWidth / Scale, displayHeight / Scale);
             }
         }
     }

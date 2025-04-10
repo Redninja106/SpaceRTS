@@ -9,17 +9,23 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships.Modules;
 internal class ConstructionModule(ConstructionModulePrototype prototype, ulong id, ActorReference<Ship> ship) : Module(prototype, id, ship)
 {
-    static ITexture defensive = Graphics.LoadTexture("./Assets/Icons/defensive.png");
-    static ITexture industrial = Graphics.LoadTexture("./Assets/Icons/industrial.png");
-    static ITexture economic = Graphics.LoadTexture("./Assets/Icons/economic.png");
-    static ITexture research = Graphics.LoadTexture("./Assets/Icons/research.png");
+    public override ITexture Icon => Icons.Construction;
 
     static ConstructionModule()
     {
-        defensive.Filter = TextureFilter.Point;
-        industrial.Filter = TextureFilter.Point;
-        economic.Filter = TextureFilter.Point;
-        research.Filter = TextureFilter.Point;
+    }
+
+    public override void Layout(GUIWindow window)
+    {
+        foreach (var proto in Prototypes.GetAll<StructurePrototype>())
+        {
+            window.Text(proto.Title);
+            if (window.LastItemClicked(MouseButton.Left))
+            {
+                World.ConstructionInteractionContext.BeginPlacing(proto, Ship.Actor!);
+            }
+        }
+
     }
 
     public override Element[] BuildGUI()

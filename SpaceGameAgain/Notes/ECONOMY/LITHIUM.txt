@@ -1,0 +1,26 @@
+LITHIUM
+
+enables dense energy storage
+
+capacity model
+
+sourced from putting a resource extractor on a deposit
+
+buildings:
+	energy shield
+		ring shaped, prevents buildings inside from taking damage up to a limit, which recharges over time
+	power booster ???
+		buildings on same planet produce power one level higher
+	laser defense turret
+		- see module
+modules:
+	laser defense
+		- missile defense, expensive but much more effective then machine guns
+	energy shield 
+		- prevents ship from taking damage up to a limit, limit recharges over time
+	engine overclock ? electric afterburners ?
+		- ship moves alot faster but causes an explosion when ship is destroyed
+	
+megastructure: Dyson Sphere
+	provides "Absurd" power level to all friendly planets in system
+	

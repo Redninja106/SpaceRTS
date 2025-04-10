@@ -11,7 +11,7 @@ internal class WorldSerializer
 {
     public GameWorld Deserialize(BinaryReader reader)
     {
-        var world = World = new();
+        GameWorld world = new();
 
         world.NextID = reader.ReadUInt64();
         world.PlayerTeam = reader.ReadActorReference<Team>();

@@ -1,5 +1,4 @@
-﻿
-using SpaceGame.Commands;
+﻿using SpaceGame.Commands;
 using SpaceGame.Teams;
 
 namespace SpaceGame;

@@ -10,9 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="SimulationFramework" Version="0.3.0-alpha.12" />
-    <PackageReference Include="SimulationFramework.Desktop" Version="0.3.0-alpha.12" />
+    <Compile Remove="Assets\Structures\**" />
+    <EmbeddedResource Remove="Assets\Structures\**" />
+    <None Remove="Assets\Structures\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SimulationFramework" Version="0.3.0-alpha.13" />
+    <PackageReference Include="SimulationFramework.Desktop" Version="0.3.0-alpha.13" />
   </ItemGroup>
 	
 	<ItemGroup>
@@ -30,7 +35,6 @@
 
 	<ItemGroup>
 	  <Folder Include="Assets\Icons\" />
-	  <Folder Include="Prototypes\Sprites\" />
 	</ItemGroup>
 
 	<ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

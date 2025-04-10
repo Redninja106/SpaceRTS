@@ -2,6 +2,7 @@
 using SimulationFramework.Drawing.Shaders;
 using SimulationFramework.Drawing.Shaders.Compiler;
 using SpaceGame;
+using SpaceGame.Economy;
 using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
@@ -14,9 +15,8 @@ namespace SpaceGame.Planets;
 internal class Planet : WorldActor
 {
     public float Radius { get; init; } = 26;
-    public int PowerProduced = 0;
-    public int PowerConsumed = 0;
-    public int NetPower => PowerProduced - PowerConsumed;
+
+    public PowerLevel HighestPowerLevel => Grid.PowerLevel;
 
     public Color Color 
     { 
@@ -102,7 +102,7 @@ internal class Planet : WorldActor
     {
         canvas.DrawAlignedText("planet", .04f, 0, -.1f, Alignment.BottomCenter);
         canvas.Fill(Color.Yellow);
-        canvas.DrawAlignedText("power: " + NetPower, .03f, 0, -.05f, Alignment.BottomCenter);
+        // canvas.DrawAlignedText("power: " + NetPower, .03f, 0, -.05f, Alignment.BottomCenter);
     }
 
     public void TickOrbit()
@@ -134,9 +134,9 @@ internal class Planet : WorldActor
 
     }
 
-    public override void Layout()
+    public override void DebugLayout()
     {
-        base.Layout();
+        base.DebugLayout();
 
         if (ImGui.CollapsingHeader("Planet"))
         {

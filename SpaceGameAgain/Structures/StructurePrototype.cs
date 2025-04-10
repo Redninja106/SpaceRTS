@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
@@ -14,18 +15,20 @@ internal class StructurePrototype : UnitPrototype
 {
     public HexCoordinate[] Footprint { get; set; } = [HexCoordinate.Zero];
     public int Price { get; set; }
-    public string? PresetModel { get; set; } = "default";
+    // public string PresetModel { get; set; } = "default";
     public Vector2 Center { get; set; }
     public bool CanBeRotated { get; set; } = true;
-    public int PowerProduced { get; set; } = 0;
-    public int PowerConsumed { get; set; } = 0;
-    public Model Model { get; private set; } = null!;
     public Vector2[] Outline { get; private set; } = [];
     public Dictionary<ResourcePrototype, int> Cost { get; set; } = [];
+    public SixSpriteModel Model { get; set; } = Prototypes.Get<SixSpriteModel>("default_model");
+
+    [JsonConverter(typeof(JsonStringEnumConverter<PowerLevel>))]
+    public PowerLevel ProvidedPowerLevel { get; set; } = PowerLevel.None;
+    [JsonConverter(typeof(JsonStringEnumConverter<PowerLevel>))]
+    public PowerLevel RequiredPowerLevel { get; set; } = PowerLevel.None;
 
     public StructurePrototype()
     {
-
     }
 
     public override void InitializePrototype()
@@ -34,7 +37,7 @@ internal class StructurePrototype : UnitPrototype
         this.Center = ComputeCenter(this.Footprint);
         this.Outline = CreateOutline(this.Footprint);
 
-        this.Model ??= PresetModels.presetModels[this.PresetModel!];
+        // this.Model ??= PresetModels.presetModels[this.PresetModel!];
     }
 
     private Vector2 ComputeCenter(HexCoordinate[] footprint)

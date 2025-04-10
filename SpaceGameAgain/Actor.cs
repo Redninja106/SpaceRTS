@@ -10,7 +10,7 @@ internal abstract class Actor(Prototype prototype) : IInspectable
 {
     public virtual Prototype Prototype { get; } = prototype;
 
-    public virtual void Layout()
+    public virtual void DebugLayout()
     {
         if (ImGui.CollapsingHeader("Actor"))
         {

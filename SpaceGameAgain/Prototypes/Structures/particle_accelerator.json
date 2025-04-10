@@ -4,20 +4,19 @@
   "title": "Particle Accelerator",
   "price": 500,
   "max_health": 10,
-  "preset_model": "particle_accelerator",
-  // "center": [ 2, 0 ],
+  "model": "particle_accelerator_model",
   "footprint": [
+    [ 0, -2 ],
+    [ 1, -2 ],
     [ 2, -2 ],
-    [ 3, -2 ],
-    [ 4, -2 ],
-    [ 4, -1 ],
-    [ 4, 0 ],
-    [ 3, 1 ],
-    [ 2, 2 ],
-    [ 1, 2 ],
+    [ 2, -1 ],
+    [ 2, 0 ],
+    [ 1, 1 ],
     [ 0, 2 ],
-    [ 0, 1 ],
-    [ 0, 0 ],
-    [ 1, -1 ]
+    [ -1, 2 ],
+    [ -2, 2 ],
+    [ -2, 1 ],
+    [ -2, 0 ],
+    [ -1, -1 ]
   ]
 }

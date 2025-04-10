@@ -17,7 +17,7 @@ internal class Team : WorldActor
     public static readonly Color EnemyColor = Color.Red;
 
     private Dictionary<ActorReference<Team>, TeamRelation> relationships = [];
-    private Dictionary<ResourcePrototype, ResourceValues> resources = [];
+    internal Dictionary<ResourcePrototype, ResourceValues> resources = [];
 
     public ICommandProcessor CommandProcessor;
 
@@ -75,9 +75,9 @@ internal class Team : WorldActor
         };
     }
 
-    public override void Layout()
+    public override void DebugLayout()
     {
-        base.Layout();
+        base.DebugLayout();
 
         if (ImGui.CollapsingHeader("Team"))
         {

@@ -47,7 +47,7 @@ internal class TurnPacket : Packet
         if (team.Actor!.CommandProcessor is not NetworkCommandProcessor commandProcessor)
         {
             // Debug.Assert(false);
-            Console.WriteLine($"WARNING: Received commands for player controlled team {team.ID}. Dropping commands.");
+            DebugLog.Warning($"Received commands for player controlled team {team.ID}. Dropping commands.");
             return;
         }
 
@@ -62,7 +62,7 @@ internal class TurnPacket : Packet
         }
         else
         {
-            Console.WriteLine($"received turn {turn} for {team.Actor!} twice!");
+            DebugLog.Warning($"received turn {turn} for {team.Actor!} twice!");
         }
 
         if (World.TurnProcessor.turn < turn && !commandProcessor.HasCommands(turn - 1))
@@ -70,7 +70,7 @@ internal class TurnPacket : Packet
             commandProcessor.AddCommands(turn - 1, prevTurnCommands.ToArray());
         }
 
-        Console.WriteLine("got commands for turn " + turn);
+        // Console.WriteLine("got commands for turn " + turn);
     }
 }
 

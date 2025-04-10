@@ -9,19 +9,18 @@ namespace SpaceGame.Networking;
 internal class WorldDownloadPacket : Packet
 {
     public ActorReference<Team> teamToPlayAs;
-    public byte[] data;
+    public int numberOfChunks;
 
-    public WorldDownloadPacket(WorldDownloadPacketPrototype prototype, ActorReference<Team> team, byte[] data) : base(prototype)
+    public WorldDownloadPacket(WorldDownloadPacketPrototype prototype, ActorReference<Team> team, int numberOfChunks) : base(prototype)
     {
         this.teamToPlayAs = team;
-        this.data = data;
+        this.numberOfChunks = numberOfChunks;
     }
 
     public override void Serialize(BinaryWriter writer)
     {
         writer.Write(teamToPlayAs);
-        writer.Write(data.Length);
-        writer.Write(data);
+        writer.Write(numberOfChunks);
     }
 }
 
@@ -30,9 +29,8 @@ class WorldDownloadPacketPrototype : PacketPrototype
     public override Packet Deserialize(BinaryReader reader)
     {
         ActorReference<Team> team = reader.ReadActorReference<Team>();
-        int byteCount = reader.ReadInt32();
-        byte[] data = reader.ReadBytes(byteCount);
+        int numberOfChunks = reader.ReadInt32();
 
-        return new WorldDownloadPacket(this, team, data);
+        return new WorldDownloadPacket(this, team, numberOfChunks);
     }
 }

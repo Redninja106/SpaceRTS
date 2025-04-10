@@ -4,7 +4,6 @@
   "title": "Missile Turret",
   "max_health": 15,
   "price": 100,
-  "preset_model": "missile_turret",
   "footprint": [
     [ 0, 0 ],
     [ 1, 0 ],

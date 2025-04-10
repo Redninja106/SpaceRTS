@@ -3,8 +3,7 @@
   "name": "generator",
   "title": "Generator",
   "max_health": 10,
-  "preset_model": "default",
   "can_be_rotated": true,
-  "power_produced": 5,
-  "power_consumed": 0
+  "provided_power_level": "low",
+  "required_power_level": "none"
 }

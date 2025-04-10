@@ -127,13 +127,13 @@ internal class ConstructionInteractionContext : IInteractionContext
             hoveredGrid.InterpolatedTransform.ApplyTo(canvas, World.Camera);
             obstructed = hoveredGrid.IsStructureObstructed(prototype, hoveredLocation, rotation);
             canvas.Translate(hoveredLocation.ToCartesian());
-            canvas.Rotate(rotation * (MathF.Tau / 6f));
+            //canvas.Rotate(rotation * (MathF.Tau / 6f));
         }
         else
         {
             Transform.Default.ApplyTo(canvas, World.Camera);
             canvas.Translate(World.MousePosition.ToVector2());
-            canvas.Rotate(rotation * (MathF.Tau / 6f));
+            //canvas.Rotate(rotation * (MathF.Tau / 6f));
             canvas.Translate(-prototype.Center);
         }
 
@@ -144,7 +144,25 @@ internal class ConstructionInteractionContext : IInteractionContext
             canvas.DrawLine(prototype.Outline[i], prototype.Outline[i + 1]);
         }
 
-        prototype.Model.Render(canvas, alpha: 100, color: obstructed ? Color.Red : null);
+        ColorF color = obstructed ? ColorF.Red : ColorF.White;
+        color.A = 100;
+
+        prototype.Model.Render(canvas, this.rotation, color);
+    }
+
+    [DebugOverlay]
+    public static void ShowHoveredGridCoordinate()
+    {
+        foreach (var planet in World.Planets)
+        {
+            if (planet.Grid.GetCellFromPoint(World.MousePosition) != null)
+            {
+                Vector2 hoveredPosition = planet.Grid.Transform.WorldToLocal(World.MousePosition.ToVector2());
+                HexCoordinate location = HexCoordinate.FromCartesian(hoveredPosition);
+                DebugDraw.Text(location.ToString(), World.Camera.VerticalSize / 30, location.ToCartesian(), planet.Grid.Transform);
+                return;
+            }
+        }
     }
 
     public void BeginPlacing(StructurePrototype prototype, Ship constructionShip)

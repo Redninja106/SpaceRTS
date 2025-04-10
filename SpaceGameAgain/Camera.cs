@@ -129,7 +129,7 @@ public abstract class Camera : IInspectable
         return result;
     }
 
-    public virtual void Layout()
+    public virtual void DebugLayout()
     {
         Transform.Layout();
         ImGui.Text($"display size: {DisplayWidth}x{DisplayHeight}");

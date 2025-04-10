@@ -4,46 +4,47 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Networking;
-internal class NetworkClient
+
+internal class SocketClient
 {
     private Socket connection;
     private List<Packet> receivedPackets = [];
+    private SocketPacketReceiver packetReceiver;
 
-    public NetworkClient(string host, int port)
+    public SocketClient(string host, int port)
     {
         connection = new Socket(AddressFamily.InterNetwork, SocketType.Stream, 0);
-        connection.Connect(host, port);
         connection.Blocking = false;
         connection.NoDelay = true;
 
-        Console.WriteLine("connected to " + connection.RemoteEndPoint?.ToString());
+        Task connectTask = connection.ConnectAsync(host, port);
+
+        connectTask.GetAwaiter().GetResult();
+
+        DebugLog.Message("connected to " + connection.RemoteEndPoint?.ToString());
+
+        packetReceiver = new(connection);
     }
 
     public void Update()
     {
-        if (connection.Poll(10, SelectMode.SelectRead))
-        {
-            byte[] buffer = new byte[1024 * 64];
-            int received = connection.Receive(buffer);
-            using MemoryStream ms = new(buffer);
-            using BinaryReader reader = new(ms);
-            Packet packet = (Packet)Program.NetworkSerializer.Deserialize(reader);
-            receivedPackets.Add(packet);
-        }
+        receivedPackets.AddRange(packetReceiver.ReceivePackets());
     }
 
     public void SendPacket(Packet packet)
     {
-        using MemoryStream ms = new();
-        using BinaryWriter writer = new(ms);
-        Program.NetworkSerializer.Serialize(packet, writer);
-        connection.Send(ms.ToArray());
+        byte[] packetData = Program.NetworkSerializer.SerializeWithLengthPrefix(packet);
+        connection.Send(packetData);
+        if (NetworkSettings.LogOutgoingPackets)
+        {
+            DebugLog.Message($"sent packet {packet.Prototype.Name}, data [{string.Join(',', packetData)}]");
+        }
     }
-
 
     public bool ReceivePacket<TPacket>([NotNullWhen(true)] out TPacket? packet)
         where TPacket : Packet

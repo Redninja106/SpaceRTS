@@ -12,12 +12,16 @@ internal class ResourceMine : Structure
 {
     public override ResourceMinePrototype Prototype => (ResourceMinePrototype)base.Prototype;
 
-    private ResourcePrototype resource;
+    private ResourcePrototype? resource;
 
     public ResourceMine(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
     {
-        resource = (Grid.GetCell(location)!.Tile as ResourceDepositTile)?.Prototype.Resource ?? Prototypes.Get<ResourcePrototype>("aluminum");
-        team.Actor!.GetResource(resource).Capacity += 1;
+        resource = Grid.GetCell(location)!.Tile?.Prototype?.Resource;
+        
+        if (resource != null)
+        {
+            team.Actor!.GetResource(resource).Capacity += 1;
+        }
     }
 
     public override void FinalizeDeserialization()
@@ -32,7 +36,10 @@ internal class ResourceMine : Structure
 
     public override void OnDestroyed()
     {
-        Team.Actor!.GetResource(resource).Capacity -= 1;
+        if (resource != null)
+        {
+            Team.Actor!.GetResource(resource).Capacity -= 1;
+        }
         base.OnDestroyed();
     }
 }

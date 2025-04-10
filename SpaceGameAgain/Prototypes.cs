@@ -128,13 +128,12 @@ static class Prototypes
 
         public Prototype Load(JsonSerializerOptions options)
         {
-            Console.Write("Loading " + PrototypeName + "...");
+            DebugLog.Message("Loading " + PrototypeName + "...");
 
             CurrentPrototypeType = PrototypeType;
             Prototype instance = GetInstance();
             JsonPopulate.PopulateObjectWithPopulateResolver(document, PrototypeType, instance, options);
             
-            Console.WriteLine("done");
             return instance;
         }
     }
@@ -164,6 +163,8 @@ static class Prototypes
 
     class PrototypeConverter(Dictionary<string, PrototypeFile> files) : JsonConverter<Prototype>
     {
+        public override bool HandleNull => true;
+
         public override bool CanConvert(Type typeToConvert)
         {
             if (PrototypeFile.CurrentPrototypeType == typeToConvert)
@@ -177,7 +178,14 @@ static class Prototypes
 
         public override Prototype? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return files[reader.GetString()!].GetInstance();
+            string value = reader.GetString()!;
+
+            if (value == "null")
+            {
+                return null;
+            }
+
+            return files[value].GetInstance();
         }
 
         public override void Write(Utf8JsonWriter writer, Prototype value, JsonSerializerOptions options)

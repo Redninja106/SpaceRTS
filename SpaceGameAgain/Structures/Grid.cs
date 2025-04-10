@@ -1,4 +1,6 @@
-﻿using SpaceGame.Planets;
+﻿using ImGuiNET;
+using SpaceGame.Economy;
+using SpaceGame.Planets;
 using SpaceGame.Teams;
 using SpaceGame.Tiles;
 using System;
@@ -24,6 +26,7 @@ internal class Grid : WorldActor
     public List<ActorReference<Structure>> structures = [];
     private ActorReference<WorldActor> parent;
 
+    public PowerLevel PowerLevel { get; private set; }
     public WorldActor Parent => parent.Actor!;
 
     public override ref Transform Transform => ref parent.Actor!.Transform;
@@ -36,7 +39,7 @@ internal class Grid : WorldActor
 
     public void AddCell(HexCoordinate location)
     {
-        cells.Add(location, new(new Tile(Prototypes.Get<TilePrototype>("ground_tile"), World.NewID(), Transform.Default)));
+        cells.Add(location, new(new Tile(Prototypes.Get<TilePrototype>("ground_tile"))));
     }
 
     public void RemoveCell(HexCoordinate location)
@@ -72,28 +75,31 @@ internal class Grid : WorldActor
             canvas.Translate(coord.ToCartesian());
             cell.Tile.RenderTile(canvas, this, coord);
 
-            if (cell?.Structure.IsNull ?? false)
+            if (World.CurrentInteractionContext == World.ConstructionInteractionContext)
             {
-                canvas.DrawLine(hexagon[0], hexagon[1]);
-                canvas.DrawLine(hexagon[1], hexagon[2]);
-                canvas.DrawLine(hexagon[2], hexagon[3]);
-
-                GridCell? neighbor = GetCell(coord + new HexCoordinate(-1, 0));
-                if (neighbor is null || !neighbor.Structure.IsNull)
+                if (cell?.Structure.IsNull ?? false)
                 {
-                    canvas.DrawLine(hexagon[3], hexagon[4]);
-                }
+                    canvas.DrawLine(hexagon[0], hexagon[1]);
+                    canvas.DrawLine(hexagon[1], hexagon[2]);
+                    canvas.DrawLine(hexagon[2], hexagon[3]);
 
-                neighbor = GetCell(coord + new HexCoordinate(0, -1));
-                if (neighbor is null || !neighbor.Structure.IsNull)
-                {
-                    canvas.DrawLine(hexagon[4], hexagon[5]);
-                }
+                    GridCell? neighbor = GetCell(coord + new HexCoordinate(-1, 0));
+                    if (neighbor is null || !neighbor.Structure.IsNull)
+                    {
+                        canvas.DrawLine(hexagon[3], hexagon[4]);
+                    }
 
-                neighbor = GetCell(coord + new HexCoordinate(1, -1));
-                if (neighbor is null || !neighbor.Structure.IsNull)
-                {
-                    canvas.DrawLine(hexagon[5], hexagon[0]);
+                    neighbor = GetCell(coord + new HexCoordinate(0, -1));
+                    if (neighbor is null || !neighbor.Structure.IsNull)
+                    {
+                        canvas.DrawLine(hexagon[4], hexagon[5]);
+                    }
+
+                    neighbor = GetCell(coord + new HexCoordinate(1, -1));
+                    if (neighbor is null || !neighbor.Structure.IsNull)
+                    {
+                        canvas.DrawLine(hexagon[5], hexagon[0]);
+                    }
                 }
             }
             canvas.PopState();
@@ -158,11 +164,20 @@ internal class Grid : WorldActor
         return GetCell(coord);
     }
 
+    public void UpdatePowerLevel()
+    {
+        PowerLevel maxPowerLevel = PowerLevel.None;
+        foreach (var structure in structures)
+        {
+             maxPowerLevel = (PowerLevel)Math.Max((int)maxPowerLevel, (int)structure.Actor!.Prototype.ProvidedPowerLevel);
+        }
+        this.PowerLevel = maxPowerLevel;
+    }
+
     public override void Tick()
     {
         base.Tick();
     }
-
 
     internal void RemoveStructure(Structure structure)
     {
@@ -200,6 +215,11 @@ internal class Grid : WorldActor
             writer.Write(cell.Structure);
         }
     }
+
+    public override void DebugLayout()
+    {
+        base.DebugLayout();
+    }
 }
 
 class GridPrototype : WorldActorPrototype
@@ -222,7 +242,7 @@ class GridPrototype : WorldActorPrototype
         {
             HexCoordinate coordinate = reader.ReadHexCoordinate();
             ActorReference<Structure> cell = reader.ReadActorReference<Structure>();
-            cells.Add(coordinate, new(new Tile(Prototypes.Get<TilePrototype>("ground_tile"), World.NewID(), Transform.Default)) { Structure = cell });
+            cells.Add(coordinate, new(new Tile(Prototypes.Get<TilePrototype>("ground_tile"))) { Structure = cell });
         }
 
         return new Grid(this, id, parent)

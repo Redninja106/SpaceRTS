@@ -49,20 +49,23 @@ internal class PlayerCommandProcessor : ICommandProcessor
         var cmds = GetCommands(turn);
         var packet = new TurnPacket(prototype, turn, World.PlayerTeam, cmds.ToList(), GetCommands(turn-1).ToList());
 
-        if (Program.Lobby is NetworkLobby networkLobby)
+        if (Program.Lobby is RemoteLobby networkLobby)
         {
-            networkLobby.network.SendPacket(packet);
+            networkLobby.client.SendPacket(packet);
         }
-        else if (Program.Lobby is LocalLobby localLobby)
+        else if (Program.Lobby is HostedLobby localLobby)
         {
-            localLobby.network.SendAll(packet);
+            foreach (var (t, c) in localLobby.associations)
+            {
+                localLobby.server.Send(packet, c);
+            }
         }
         else
         {
             throw new UnreachableException();
         }
 
-        Console.WriteLine("send commands for turn " + turn);
+        // DebugLog.Message("send commands for turn " + turn);
     }
     
 }

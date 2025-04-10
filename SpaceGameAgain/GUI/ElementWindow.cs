@@ -40,7 +40,7 @@ internal class ElementWindow
         bounds.Position -= new Vector2(.5f, .5f);
         bounds.Size += new Vector2(1, 1);
         canvas.DrawRect(bounds);
-
+        
         canvas.Translate(content.Position);
         RootElement?.Render(canvas);
     }

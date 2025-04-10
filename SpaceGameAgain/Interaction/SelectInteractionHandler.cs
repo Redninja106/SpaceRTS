@@ -26,7 +26,7 @@ internal class SelectInteractionHandler : IInteractionContext
             if (leftMouse.Dragged)
             {
                 World.SelectionHandler.ClearSelection();
-                foreach (var ship in PickArea(rightMouse.DragStart, World.MousePosition))
+                foreach (var ship in PickArea(leftMouse.DragStart, World.MousePosition))
                 {
                     World.SelectionHandler.Select(ship);
                 }

@@ -12,7 +12,7 @@ internal class MouseState(MouseButton button)
     public void Update()
     {
         Dragged = false;
-        Pressed = !World.WindowManager.IsAnyWindowHovered && Mouse.IsButtonPressed(button);
+        Pressed = !World.GUIViewport.IsAnyWindowHovered && Mouse.IsButtonPressed(button);
         Released = Holding && Mouse.IsButtonReleased(button);
         
         if (Pressed)

@@ -1,4 +1,5 @@
-﻿using SpaceGame.Interaction;
+﻿using SpaceGame.GUI;
+using SpaceGame.Interaction;
 using SpaceGame.Planets;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
@@ -26,6 +27,7 @@ internal class Structure : Unit
     public HashSet<Structure> neighbors = [];
 
     public bool Enabled { get; set; }
+    public override ITexture Icon => Icons.Structure;
 
     public Structure(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid.Actor!.Transform.Translated(DoubleVector.FromVector2(location.ToCartesian())).Rotated(rotation * (MathF.Tau / 6f)), team)
     {
@@ -33,9 +35,9 @@ internal class Structure : Unit
         Rotation = rotation;
         this.grid = grid;
 
-        var planet = (Planet)Grid.Parent;
-        planet.PowerProduced += Prototype.PowerProduced;
-        planet.PowerConsumed += Prototype.PowerConsumed;
+        // var planet = (Planet)Grid.Parent;
+        // planet.PowerProduced += Prototype.PowerProduced;
+        // planet.PowerConsumed += Prototype.PowerConsumed;
     }
 
     //public override ref Transform Transform 
@@ -113,18 +115,18 @@ internal class Structure : Unit
             }
         }
 
-        if (((Planet)Grid.Parent).NetPower < 0 && Prototype.PowerConsumed > 0)
-        {
-            Prototype.Model.Render(canvas);
-            Prototype.Model.Render(canvas, new RenderParameters() { colorOverride = Color.Black with { A = 100 } });
-            canvas.Fill(Color.Red);
-            canvas.DrawAlignedText("no power", .25f, Prototype.Center, Alignment.Center);
-            return;
-        }
+        //if (((Planet)Grid.Parent).NetPower < 0 && Prototype.PowerConsumed > 0)
+        //{
+        //    Prototype.Model.Render(canvas);
+        //    Prototype.Model.Render(canvas, new RenderParameters() { colorOverride = Color.Black with { A = 100 } });
+        //    canvas.Fill(Color.Red);
+        //    canvas.DrawAlignedText("no power", .25f, Prototype.Center, Alignment.Center);
+        //    return;
+        //}
 
         if (Prototype is ZonedStructurePrototype zone)
         {
-            if (!isSelected && ((World.SelectionHandler.GetSelectedObject() as Ship)?.modules?.Any(m => m is ConstructionModule) ?? false))
+            if (!isSelected && ((World.SelectionHandler.GetSelectedUnit() as Ship)?.modules?.Any(m => m is ConstructionModule) ?? false))
             {
                 canvas.Fill((zone.Color with { A = .5f }));
                 foreach (var cell in Prototype.Footprint)
@@ -153,7 +155,8 @@ internal class Structure : Unit
         }
         else
         {
-            Prototype.Model.Render(canvas);
+            canvas.Rotate(-(this.Rotation * MathF.Tau / 6f));
+            Prototype.Model.Render(canvas, this.Rotation, ColorF.White);
         }
     }
 
@@ -172,7 +175,7 @@ internal class Structure : Unit
             return;
         }
 
-        Prototype.Model.RenderShadow(canvas, offset);
+        // Prototype.Model.RenderShadow(canvas, offset);
     }
 
     public override void FinalizeDeserialization()
@@ -201,15 +204,15 @@ internal class Structure : Unit
         base.Tick();
         this.Transform = Grid.Transform.Translated(DoubleVector.FromVector2(Location.ToCartesian())).Rotated(Rotation * (MathF.Tau / 6f));
 
-        Enabled = ((Planet)Grid.Parent).NetPower >= 0;
+        // Enabled = ((Planet)Grid.Parent).NetPower >= 0;
         // Behavior?.Update();
     }
 
     public override void OnDestroyed()
     {
         var planet = (Planet)Grid.Parent;
-        planet.PowerProduced -= Prototype.PowerProduced;
-        planet.PowerConsumed -= Prototype.PowerConsumed;
+        // planet.PowerProduced -= Prototype.PowerProduced;
+        // planet.PowerConsumed -= Prototype.PowerConsumed;
 
         Grid.RemoveStructure(this);
         base.OnDestroyed();
@@ -234,5 +237,10 @@ internal class Structure : Unit
     public virtual void OnNeighborRemoved(Structure neighbor)
     {
 
+    }
+
+    public override void Layout(GUIWindow window)
+    {
+        window.Text(Prototype.Title);
     }
 }

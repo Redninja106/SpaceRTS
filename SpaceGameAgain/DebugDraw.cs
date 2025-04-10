@@ -11,6 +11,7 @@ public static class DebugDraw
     private static List<((Vector2, Vector2), Color color, Transform transform)> lines = [];
     private static List<(Circle, Color color, Transform transform)> circles = [];
     private static List<(Rectangle, Color color, Transform transform)> rectangles = [];
+    private static List<(string text, float size, Vector2 position, Color color, Transform transform)> texts = [];
 
     public static void Polygon(Vector2[] polygon, Transform? transform = null, Color? color = null)
     {
@@ -33,6 +34,7 @@ public static class DebugDraw
         polygons.Clear();
         circles.Clear();
         rectangles.Clear();
+        texts.Clear();
     }
 
     public static void Draw(ICanvas canvas, Camera camera)
@@ -85,6 +87,17 @@ public static class DebugDraw
             canvas.PopState();
         }
 
+        foreach (var (text, size, pos, color, t) in texts)
+        {
+            canvas.PushState();
+            t.ApplyTo(canvas, camera);
+
+            canvas.Stroke(color);
+            canvas.DrawText(text, size, pos);
+
+            canvas.PopState();
+        }
+
         canvas.PopState();
     }
 
@@ -101,5 +114,10 @@ public static class DebugDraw
     public static void Ray(Vector2 origin, Vector2 direction, Transform? transform = null, Color? color = null)
     {
         Line(origin, origin + direction, transform, color);
+    }
+
+    public static void Text(string text, float size, Vector2 position, Transform? transform = null, Color? color = null)
+    {
+        texts.Add((text, size, position, color ?? Color.Red, transform ?? Transform.Default));
     }
 }

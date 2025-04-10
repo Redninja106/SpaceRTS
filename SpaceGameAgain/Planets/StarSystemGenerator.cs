@@ -61,7 +61,7 @@ internal class StarSystemGenerator
                     ));
                 if (cell != null)
                 {
-                    cell.Tile = new ResourceDepositTile(Prototypes.Get<ResourceDepositTilePrototype>("lithium_deposit"), World.NewID(), Transform.Default);
+                    cell.Tile = new Tile(Prototypes.Get<TilePrototype>("lithium_deposit"));
                 }
             }
             World.Add(planet);

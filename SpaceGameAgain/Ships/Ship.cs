@@ -23,6 +23,8 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 {
     public override ShipPrototype Prototype => (ShipPrototype)base.Prototype;
 
+    public override ITexture Icon => Icons.Ship;
+
     public static Vector2[] verts = [
         new(.5f / 2f, 0),
         new(-.5f / 2f, .2f / 2f),
@@ -52,13 +54,7 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
         canvas.Fill(Color.White);
 
-        for (int i = 0; i < 8; i++)
-        {
-            canvas.Rotate(-this.Transform.Rotation);
-            canvas.Translate(0, -.005f);
-            canvas.Rotate(this.Transform.Rotation);
-            canvas.DrawPolygon(verts);
-        }
+        canvas.DrawPolygon(verts);
 
         canvas.PopState();
 
@@ -172,5 +168,16 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
         {
             writer.Write(module);
         }
+    }
+
+    public override void DebugLayout()
+    {
+        base.DebugLayout();
+        ObjectViewer.ReflectionLayoutObjectFields(this);
+    }
+
+    public override void Layout(GUIWindow window)
+    {
+        window.Text("SHIP");
     }
 }

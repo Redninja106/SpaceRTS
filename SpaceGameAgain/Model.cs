@@ -60,6 +60,46 @@ internal class Model
     }
 }
 
+abstract class ModelPrototype : Prototype
+{
+    public float Width { get; set; } = 1;
+    public float Height { get; set; } = 1;
+    public float OffsetX { get; set; } = 0;
+    public float OffsetY { get; set; } = 0;
+}
+
+class SixSpriteModel : ModelPrototype
+{
+    private ITexture[] models;
+
+    public string SpritesFolder { get; set; }
+
+    public SixSpriteModel()
+    {
+    }
+
+    public override void InitializePrototype()
+    {
+        models = new ITexture[6];
+        for (int i = 0; i < 6; i++)
+        {
+            models[i] = Graphics.LoadTexture($"./Assets/Sprites/{SpritesFolder}/{i}.png");
+        }
+
+        base.InitializePrototype();
+    }
+
+    public override Actor Deserialize(BinaryReader reader)
+    {
+        throw new NotSupportedException();
+    }
+
+    public void Render(ICanvas canvas, int rotation, ColorF tint)
+    {
+        canvas.DrawTexture(models[(rotation % 6 + 6) % 6], new Rectangle(0, 0, Width, Height, Alignment.Center), tint);
+    }
+}
+
 struct RenderParameters
 {
     public Color? colorOverride;

@@ -5,6 +5,7 @@ using SpaceGame.Networking;
 using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
@@ -12,12 +13,14 @@ using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace SpaceGame;
 internal static class DebugMenu
 {
     public static bool Open = false;
-    private static ObjectViewer objectViewer = new();
+    internal static ObjectViewer objectViewer = new();
+    private static bool showImGuiDemo;
 
     public static void Layout()
     {
@@ -29,6 +32,13 @@ internal static class DebugMenu
             if (ImGui.BeginMenuBar())
             {
                 LayoutFileMenuBar();
+
+                if (ImGui.BeginMenu("imgui"))
+                {
+                    ImGui.MenuItem("demo window", "", ref showImGuiDemo);
+
+                    ImGui.EndMenu();
+                }
 
                 ImGui.EndMenuBar();
             }
@@ -86,8 +96,12 @@ internal static class DebugMenu
             objectViewer.Layout();
         }
         ImGui.End();
-    }
 
+        if (showImGuiDemo)
+        {
+            ImGui.ShowDemoWindow();
+        }
+    }
 
     private static string addressOrPort = "45454";
     private static void LayoutNetworkTab()
@@ -98,8 +112,8 @@ internal static class DebugMenu
         {
             if (ParseAddressAndPort(out var _, out var port))
             {
-                NetworkHost host = new(port);
-                Program.Lobby = new LocalLobby(host);
+                SocketServer server = new(port);
+                Program.Lobby = new HostedLobby(server);
             }
         }
 
@@ -108,8 +122,8 @@ internal static class DebugMenu
         {
             if (ParseAddressAndPort(out var address, out var port))
             {
-                NetworkClient client = new(address, port);
-                Program.Lobby = new NetworkLobby(client);
+                SocketClient client = new(address, port);
+                Program.Lobby = new RemoteLobby(client);
             }
         }
 
@@ -176,14 +190,17 @@ internal static class DebugMenu
     {
         ImGui.SliderFloat("game speed", ref Program.GameSpeed, 0.0f, 2);
         ImGui.SameLine();
-        if (ImGui.SmallButton("reset"))
+        if (ImGui.Button("reset"))
         {
             Program.GameSpeed = 1;
         }
-        if (ImGui.SmallButton("tick"))
+        ImGui.SameLine();
+        if (ImGui.Button("force tick"))
         {
             Program.forceTickThisFrame = true;
         }
+
+        ImGui.DragFloat("GUI Scale", ref World.GUIViewport.Scale, .5f, .5f, 2f);
     }
 
     private static DebugSearch<Prototype>? prototypeSearch = null;
@@ -226,8 +243,6 @@ internal static class DebugMenu
         }
     }
 
-
-
     private static DebugSearch<WorldActor>? actorList;
     private static void LayoutWorldTab()
     {
@@ -249,7 +264,7 @@ internal static class DebugMenu
 
         if (ImGui.TreeNode("camera"))
         {
-            World.Camera.Layout();
+            World.Camera.DebugLayout();
             ImGui.TreePop();
         }
 
@@ -266,6 +281,11 @@ internal static class DebugMenu
                 objectViewer.View(actor);
             }
         }
+    }
+
+    public static void ViewObject(object? obj)
+    {
+        objectViewer.View(obj);
     }
 }
 
@@ -347,7 +367,7 @@ class ObjectViewer
 
         if (ImGui.BeginTabBar("tabbar"))
         {
-            foreach (var target in targets)
+            foreach (var target in targets.ToArray())
             {
                 bool open = true;
                 ImGuiTabItemFlags flags = 0;
@@ -360,7 +380,7 @@ class ObjectViewer
                 {
                     if (target is IInspectable inspectable)
                     {
-                        inspectable.Layout();
+                        inspectable.DebugLayout();
                     }
                     else
                     {
@@ -383,13 +403,109 @@ class ObjectViewer
         }
     }
 
-    public object? ReflectionLayoutObject(string label, object? obj, bool isReadonly = false)
+    public static object? ReflectionLayoutObject(string label, object? obj, bool isReadonly)
+    {
+        if ((obj?.GetType()?.IsConstructedGenericType ?? false) && obj.GetType().GetGenericTypeDefinition() == typeof(ActorReference<>))
+        {
+            ReflectionLayoutObject(label, obj.GetType().GetField("actor", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(obj), isReadonly);
+            return obj;
+        }
+
+        if (obj != null)
+        {
+            label += $" ({FormatTypeName(obj.GetType())})";
+        }
+
+        switch (obj)
+        {
+            case Prototype proto:
+                if (ImGui.Selectable($"{label}: {proto.Name} ({proto.GetType().Name})"))
+                {
+                    DebugMenu.ViewObject(proto);
+                }
+                return proto;
+            case WorldActor actor:
+                bool missing = !World.Actors.ContainsKey(actor.ID);
+                if (missing)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, 0xFF0000FF);
+                }
+                if (ImGui.Selectable(label + (missing ? " (not registered)" : "")))
+                {
+                    DebugMenu.ViewObject(actor);
+                }
+                if (missing)
+                {
+                    ImGui.PopStyleColor();
+                }
+                return actor;
+            case IInspectable inspectable:
+                if (ImGui.TreeNode(label))
+                {
+                    inspectable.DebugLayout();
+                    ImGui.TreePop();
+                }
+                return inspectable;
+            case IEnumerable enumerable:
+                if (ImGui.TreeNode(label))
+                {
+                    int i = 0;
+                    foreach (var element in enumerable)
+                    {
+                        ReflectionLayoutObject(i++.ToString(), element, element.GetType().IsValueType);
+                    }
+
+                    if (i == 0)
+                    {
+                        ImGui.TextDisabled("(empty)");
+                    }
+                    ImGui.TreePop();
+                }
+                return enumerable;
+            case float or Vector2 or DoubleVector or int or bool or string or Enum:
+            case object when obj.GetType().IsPrimitive:
+                if (isReadonly)
+                {
+                    ImGui.BeginDisabled();
+                }
+                object? result = LayoutPrimitiveObject(label, obj); 
+                if (isReadonly)
+                {
+                    ImGui.EndDisabled();
+                }
+                return result;
+            case null:
+            case object:
+                if (ImGui.TreeNode(label))
+                {
+                    if (obj == null)
+                    {
+                        ImGui.TextDisabled("(null)");
+                    }
+                    else
+                    {
+                        ReflectionLayoutObjectFields(obj);
+                    }
+                    ImGui.TreePop();
+                }
+                return obj;
+        }
+    }
+
+    private static string FormatTypeName(Type type)
+    {
+        if (type.IsConstructedGenericType)
+        {
+            return $"{type.Name.Split('`')[0]}<{string.Join(", ", type.GetGenericArguments().Select(FormatTypeName))}>";
+        }
+
+        return type.Name;
+    }
+
+    private static object? LayoutPrimitiveObject(string label, object? obj)
     {
         switch (obj)
         {
-            case float f when isReadonly:
-                ImGui.Text($"{label}: {f}");
-                return f;
             case float f:
                 ImGui.DragFloat(label, ref f);
                 return f;
@@ -409,43 +525,36 @@ class ObjectViewer
             case string s:
                 ImGui.InputText(label, ref s, 256);
                 return s;
-            case Prototype proto:
-                if (ImGui.Selectable($"{label}: {proto.Name} ({proto.GetType().Name})"))
+            case Enum e:
+                Array values = Enum.GetValues(e.GetType());
+                int current = Array.IndexOf(values, e);
+                string opts = (string)values.Cast<object>().Aggregate((a, b) => a.ToString() + "\0" + b.ToString());
+
+                if (ImGui.Combo(label, ref current, opts))
                 {
-                    View(proto);
+                    return values.GetValue(current);
                 }
-                return proto;
-            case IInspectable inspectable:
-                if (ImGui.TreeNode(label))
-                {
-                    inspectable.Layout();
-                    ImGui.TreePop();
-                }
-                return inspectable;
-            case null:
+                return e;
             case object when obj.GetType().IsPrimitive:
-                ImGui.Text($"{label}: {obj ?? "null"}");
+                string objValue = obj?.ToString() ?? "null";
+                ImGui.InputText(label, ref objValue, (uint)objValue.Length);
                 return obj;
-            case object:
-                if (ImGui.TreeNode(label))
-                {
-                    ReflectionLayoutObjectFields(obj);
-                    ImGui.TreePop();
-                }
-                return obj;
+            default:
+                throw new UnreachableException();
         }
     }
 
-    public void ReflectionLayoutObjectFields(object obj)
+    public static void ReflectionLayoutObjectFields(object obj, Type? type = null)
     {
-        foreach (var member in obj.GetType().GetMembers(BindingFlags.Public | BindingFlags.Instance))
+        type = obj.GetType();
+        foreach (var member in type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
         {
             object? value;
             switch (member)
             {
-                case FieldInfo field:
+                case FieldInfo field when !field.Name.Contains('<'):
                     value = field.GetValue(obj);
-                    value = ReflectionLayoutObject(field.Name, value);
+                    value = ReflectionLayoutObject(field.Name, value, !field.Attributes.HasFlag(FieldAttributes.InitOnly));
                     if (!field.Attributes.HasFlag(FieldAttributes.InitOnly))
                     {
                         field.SetValue(obj, value);
@@ -489,9 +598,9 @@ class ObjectViewer
         //}
     }
 
-    public void View(object obj)
+    public void View(object? obj)
     {
-        if (!targets.Contains(obj))
+        if (obj != null && !targets.Contains(obj))
         {
             targets.Add(obj);
         }

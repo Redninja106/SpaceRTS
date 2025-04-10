@@ -1,5 +1,5 @@
 {
-  "prototype": "ResourceDepositTilePrototype",
+  "prototype": "TilePrototype",
   "name": "titanium_deposit",
   "blocks_structures": false,
   "color": "#c4a43b",

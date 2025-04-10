@@ -1,6 +1,8 @@
 ﻿using SimulationFramework.Desktop;
 using SpaceGame;
 using SpaceGame.Commands;
+using SpaceGame.GUI;
+using SpaceGame.Interaction;
 using SpaceGame.Networking;
 using SpaceGame.Planets;
 using SpaceGame.Ships;
@@ -18,7 +20,40 @@ if (Path.GetFullPath(Environment.CurrentDirectory) != Path.GetDirectoryName(Envi
     Environment.CurrentDirectory = Path.GetDirectoryName(Environment.ProcessPath)!;
 }
 
-Start<Program>();
+DebugLog.Initialize();
+
+if (Debugger.IsAttached)
+{
+    try
+    {
+        Start<Program>();
+    }
+#if RELEASE
+catch (Exception ex)
+{
+    DebugLog.ReportException(ex);
+}
+#endif
+    finally
+    {
+        DebugLog.Uninitialize();
+    }
+}
+else
+{
+    try
+    {
+        Start<Program>();
+    }
+    catch (Exception ex)
+    {
+        DebugLog.ReportException(ex);
+    }
+    finally
+    {
+        DebugLog.Uninitialize();
+    }
+}
 
 partial class Program : Simulation
 {
@@ -58,8 +93,10 @@ partial class Program : Simulation
         World.Add(playerTeam);
 
         var starterShip = new Ship(Prototypes.Get<ShipPrototype>("small_ship"), World.NewID(), Transform.Default, playerTeam.AsReference());
-        starterShip.modules.Add(new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), starterShip.AsReference()).AsReference<Module>());
+        var module = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), starterShip.AsReference());
+        starterShip.modules.Add(module.AsReference<Module>());
         World.Add(starterShip);
+        World.Add(module);
 
         // var enemies = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
         // enemies.CommandProcessor = new PlayerCommandProcessor();
@@ -233,7 +270,7 @@ partial class Program : Simulation
         canvas.DrawTexture(view);
         canvas.PopState();
 
-        World.WindowManager.Render(canvas, canvas.Width, canvas.Height);
+        World.GUIViewport.Render(canvas);
 
         // canvas.Font(font);
         // canvas.PushState();
@@ -283,9 +320,9 @@ partial class Program : Simulation
         }
 
         World.Update(ViewportMousePosition, tickProgress);
-        World.WindowManager.Update(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale);
-        // World.InfoWindow.Update(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale);
-        // World.MapWindow.Update(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale);
+        World.GUIViewport.Update(canvas.Width, canvas.Height);
+
+        World.SelectionHandler.Update();
     }
 
     private void RenderView()
@@ -311,22 +348,5 @@ partial class Program : Simulation
         // canvas.PopState();
 
         canvas.PopState();
-    }
-
-    private void RenderUI(ICanvas canvas)
-    {
-        canvas.ResetState();
-
-        canvas.Scale(actualGUIScale);
-
-        canvas.PopState();
-
-        //canvas.PushState();
-        //World.InfoWindow.Render(canvas, (int)(canvas.Width / actualGUIScale), (int)(canvas.Height / actualGUIScale));
-        //canvas.PopState();
-
-        //canvas.PushState();
-        //World.MapWindow.Render(canvas, (int)(canvas.Width / actualGUIScale), (int)(canvas.Height / actualGUIScale));
-        //canvas.PopState();
     }
 }

@@ -11,9 +11,15 @@ internal class WeaponModule : Module
 {
     public ActorReference<WeaponSystem> system;
 
+    public override ITexture Icon => Icons.Defensive;
+
     public WeaponModule(WeaponModulePrototype prototype, ulong id, ActorReference<Ship> ship, ActorReference<WeaponSystem> system) : base(prototype, id, ship)
     {
         this.system = system;
+    }
+
+    public override void Layout(GUIWindow window)
+    {
     }
 
     public override Element[] BuildGUI()

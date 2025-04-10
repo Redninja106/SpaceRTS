@@ -26,20 +26,21 @@ internal class ImageButton : Element
 
     public override void Render(ICanvas canvas)
     {
-        canvas.Fill(ShadowColor);
-        canvas.DrawRect(1, 2, 1 + Width, Height);
-        canvas.Fill(hovered ? Color.Red : Color.FromHSV(0, 0, .4f));
         if (pressed)
         {
-            canvas.Translate(1, 2);
-            canvas.PushState();
+            canvas.Fill(Color.FromHSV(0, 0, .4f));
         }
+        else if (hovered)
+        {
+            canvas.Fill(Color.FromHSV(0, 0, .6f));
+        }
+        else
+        {
+            canvas.Fill(Color.FromHSV(0, 0, .4f));
+        }
+
         canvas.DrawRect(0, 0, Width, Height);
         canvas.DrawTexture(texture, 0, 0, Width, Height);
-        if (pressed)
-        {
-            canvas.PopState();
-        }
     }
 
     public override void UpdateSize(float containerWidth, float containerHeight)
@@ -52,7 +53,7 @@ internal class ImageButton : Element
         clicked = false;
 
         Rectangle bounds = new(locationX, locationY, Width, Height);
-        hovered = bounds.ContainsPoint(Program.ViewportMousePosition);
+        hovered = bounds.ContainsPoint(World.GUIViewport.MousePosition);
 
         if (hovered && Mouse.IsButtonPressed(MouseButton.Left))
         {

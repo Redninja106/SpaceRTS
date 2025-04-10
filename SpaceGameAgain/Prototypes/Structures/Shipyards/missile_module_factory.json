@@ -3,7 +3,6 @@
   "name": "missile_module_factory",
   "title": "Missile Module Factory",
   "price": 100,
-  "preset_model": "default",
   "footprint": [
     [ 0, 0 ],
     [ 0, 1 ],

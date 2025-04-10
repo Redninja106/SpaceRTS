@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 namespace SpaceGame;
 internal interface IInspectable
 {
-    void Layout();
+    void DebugLayout();
 }

@@ -7,6 +7,7 @@ using SpaceGame.Combat;
 using SpaceGame.GUI;
 using ImGuiNET;
 using System.Diagnostics;
+using SpaceGame.Economy;
 
 namespace SpaceGame;
 internal class GameWorld
@@ -65,12 +66,20 @@ internal class GameWorld
 
 
     // GUI
-    public ContextMenuWindow ContextMenu = new();
-    public WindowManager WindowManager = new WindowManager();
+    // public ContextMenuWindow ContextMenu = new();
+
+    public UnitBar UnitBar = new();
+    public ResourceBar ResourceBar = new();
+    public TooltipWindow tooltipWindow = new();
+    
+    // public WindowManager WindowManager = new WindowManager();
+
+    public GUIViewport GUIViewport = new GUIViewport();
 
     // public StructureList Structures { get; } = new();
 
     public IMask WorldShadowMask { get; private set; }
+
     // public ElementWindow InfoWindow { get; set; } = new()
     // {
     //     Anchor = Alignment.BottomRight,
@@ -85,10 +94,16 @@ internal class GameWorld
     // };
 
     // public FogOfWarHandler FogOfWar { get; set; } = new();
-    
+
     public GameWorld()
     {
-        WindowManager.RegisterWindow(ContextMenu);
+        // WindowManager.RegisterWindow(ContextMenu);
+        GUIViewport.Register(UnitBar);
+        GUIViewport.Register(ResourceBar);
+        GUIViewport.Register(tooltipWindow);
+        // GUIViewport.Register(ConstructionMenu);
+        // GUIViewport.Register(InfoMenu);
+        // WindowManager.RegisterWindow(UtilityBar);
     }
 
     public void Update(Vector2 viewportMousePosition, float tickProgress)
@@ -117,7 +132,7 @@ internal class GameWorld
         UpdateActorList(Ships, tickProgress);
         UpdateActorList(Bullets, tickProgress);
         UpdateActorList(Missiles, tickProgress);
-
+        
         foreach (var planet in Planets)
         {
             planet.SphereOfInfluence.Update();

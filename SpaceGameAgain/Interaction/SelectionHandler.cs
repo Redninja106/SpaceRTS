@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using SpaceGame.Commands;
 using SpaceGame.GUI;
 using SpaceGame.Ships;
+using SpaceGame.Ships.Modules;
 using SpaceGame.Structures;
 
 namespace SpaceGame.Interaction;
@@ -19,11 +20,15 @@ internal class SelectionHandler
     public void ClearSelection()
     {
         selected.Clear();
+        World.UnitBar.UpdateButtons();
+        //UpdateGUI();
     }
 
     public void Select(Unit unit)
     {
         selected.Add(unit);
+        World.UnitBar.UpdateButtons();
+        //UpdateGUI();
     }
 
     public CommandPrototype[] GetCommonCommands()
@@ -43,8 +48,59 @@ internal class SelectionHandler
         return selected.Contains(selectable);
     }
 
+
+
+    public void Update()
+    {
+    }
+
     private void UpdateGUI()
     {
+        //if (selected.Count == 0)
+        //{
+        //    World.UtilityBar.RootElement = null;
+        //    World.UtilityBar.Hide();
+        //    return;
+        //}
+
+        //if (selected.Count == 1)
+        //    {
+        //        switch (GetSelectedUnit())
+        //        {
+        //            case Ship ship:
+        //                World.UtilityBar.RootElement = new ElementRow([
+        //                    new ImageButton(UtilityBar.ShipIcon, 8, 8)
+        //                    ])
+        //                { Margin = 0 };
+        //                break;
+        //            case Structure structure:
+        //                World.UtilityBar.RootElement = new ElementRow([
+        //                    new ImageButton(UtilityBar.StructureIcon, 8, 8)
+        //                    ])
+        //                { Margin = 0 };
+        //                break;
+        //            default:
+        //                break;
+        //        }
+        //        World.UtilityBar.Show();
+        //    }
+        //else
+        //    {
+        //        List<Element> elements = new();
+        //        foreach (var selected in GetSelectedUnits())
+        //        {
+        //            var s = selected;
+        //            elements.Add(new ImageButton(selected switch
+        //            {
+        //                Ship => UtilityBar.ShipIcon,
+        //                Structure => UtilityBar.StructureIcon,
+        //            }, 8, 8, () => Deselect(s)));
+        //        }
+        //        World.UtilityBar.RootElement = new ElementRow(elements.ToArray());
+        //        World.UtilityBar.Show();
+        //    }
+        
+
         //var stack = World.InfoWindow.Stack;
         //if (selected.Count is 0)
         //{
@@ -80,7 +136,7 @@ internal class SelectionHandler
         //            new Label(structure.Prototype.Title, 16, Alignment.CenterLeft),
         //            new Label("status: operational", 12, Alignment.CenterLeft),
         //            new Separator(),
-                     
+
         //            .. (s ?? [])
         //        ]);
         //    }
@@ -108,7 +164,7 @@ internal class SelectionHandler
         //}
     }
 
-    public Unit? GetSelectedObject()
+    public Unit? GetSelectedUnit()
     {
         if (selected.Count is 1)
         {
@@ -125,6 +181,7 @@ internal class SelectionHandler
     public void Deselect(Unit selectable)
     {
         selected.Remove(selectable);
-        UpdateGUI();
+        World.UnitBar.UpdateButtons();
+        //UpdateGUI();
     }
 }

@@ -3,7 +3,6 @@
   "name": "chaingun_module_factory",
   "title": "Chaingun Module Factory",
   "price": 100,
-  "preset_model": "default",
   "footprint": [
     [ 0, 0 ],
     [ 0, 1 ],

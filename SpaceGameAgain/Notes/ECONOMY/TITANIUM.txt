@@ -1,0 +1,22 @@
+TITANIUM
+
+high strength metal
+
+capacity model
+
+sourced from putting a resource extractor on a deposit
+
+buildings:
+	
+
+modules:
+	railgun
+		- insane damage
+		- reduced ship mobility
+		- only shoots forward
+	reinforced hull
+		- improved ship hp
+
+
+megastructure
+	

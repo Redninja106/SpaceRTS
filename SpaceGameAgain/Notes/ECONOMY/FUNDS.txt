@@ -1,0 +1,13 @@
+FUNDS (MONEY)
+
+Basic currency
+Produced by urban districts
+- huge (+100%) bonus per planet max power level
+used for buildings
+
+currency model (income/savings/spending)
+
+construction of most structures
+
+
+

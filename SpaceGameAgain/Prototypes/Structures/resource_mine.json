@@ -3,7 +3,6 @@
   "name": "resource_mine",
   "mining_frequency": 25,
   "mining_count": 1,
-  "preset_model": "default",
   "title": "Resource Mine",
   "max_health": 3,
   "cost": {

@@ -3,7 +3,6 @@
   "name": "large_assembly_bay",
   "title": "Large Assembly Bay",
   "price": 10000,
-  "preset_model": "default",
   "can_be_rotated": true,
   "footprint": [
     [ 0, -3 ],

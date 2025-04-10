@@ -1,0 +1,17 @@
+ALUMINUM
+
+abundant progression resource, necessary for scaling up fleets
+
+capacity model
+
+sourced from core drill (which can be built anywhere)
+goal is to encourage entire planets dedicated to mining aluminum
+
+required for ships & modules
+
+megastructure: world eater
+	- giant defenseless ship
+	- can consume entire planets below a certain size, permanently destroying them
+	- provides owned player with aluminum bonus as long as world eater is alive
+		- if destroyed, drops its resources which can be picked up by another world eater?
+	- bonus is based on size/number of planets eaten

@@ -1,4 +1,5 @@
-﻿using SpaceGame.Structures;
+﻿using SpaceGame.Economy;
+using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,9 +8,9 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Tiles;
-internal class Tile : WorldActor
+internal class Tile : Actor
 {
-    public Tile(WorldActorPrototype prototype, ulong id, Transform transform) : base(prototype, id, transform)
+    public Tile(TilePrototype prototype) : base(prototype)
     {
     }
 
@@ -26,18 +27,18 @@ internal class Tile : WorldActor
 
     public override void Serialize(BinaryWriter writer)
     {
-        writer.Write(ID);
     }
 }
 
-class TilePrototype : WorldActorPrototype
+class TilePrototype : Prototype
 {
     public bool BlocksStructures { get; set; }
     public string? Color { get; set; }
+    public ResourcePrototype? Resource { get; set; }
 
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Tile Deserialize(BinaryReader reader)
     {
-        ulong id = reader.ReadUInt64();
-        return new Tile(this, id, Transform.Default);
+        // ulong id = reader.ReadUInt64();
+        return new Tile(this);
     }
 }

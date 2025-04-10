@@ -25,20 +25,34 @@ internal class TextButton : Element
     public override void Render(ICanvas canvas)
     {
         canvas.Fill(ShadowColor);
-        canvas.DrawRect(1, 2, 1 + Width, Height);
-        canvas.Fill(hovered ? Color.Red : Color.FromHSV(0, 0, .4f));
+        //canvas.DrawRect(1, 2, 1 + Width, Height);
+
+
         if (pressed)
         {
-            canvas.Translate(1, 2);
-            canvas.PushState();
+            canvas.Fill(Color.FromHSV(0, 0, .4f));
         }
+        else if (hovered)
+        {
+            canvas.Fill(Color.FromHSV(0, 0, .6f));
+        }
+        else
+        {
+            canvas.Fill(Color.FromHSV(0, 0, .4f));
+        }
+
+        // if (pressed)
+        // {
+        //     canvas.Translate(1, 2);
+        //     canvas.PushState();
+        // }
         canvas.DrawRect(0, 0, Width, Height);
         canvas.Fill(ForegroundColor);
-        DrawShadowedText(canvas, Text, TextSize, new(Margin));
-        if (pressed)
-        {
-            canvas.PopState();
-        }
+        DrawShadowedText(canvas, Text, TextSize, new(Margin, Margin - 2));
+        // if (pressed)
+        // {
+        //     canvas.PopState();
+        // }
     }
 
     public override void UpdateSize(float containerWidth, float containerHeight)
@@ -56,7 +70,7 @@ internal class TextButton : Element
         clicked = false;
 
         Rectangle bounds = new(locationX, locationY, Width, Height);
-        hovered = bounds.ContainsPoint(World.WindowManager.MousePosition);
+        hovered = bounds.ContainsPoint(World.GUIViewport.MousePosition);
        
         if (hovered && Mouse.IsButtonPressed(MouseButton.Left))
         {
