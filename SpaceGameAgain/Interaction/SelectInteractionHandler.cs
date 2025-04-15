@@ -47,15 +47,7 @@ internal class SelectInteractionHandler : IInteractionContext
                 }
                 else
                 {
-                    var pickedStructure = PickStructure();
-                    if (pickedStructure != null)
-                    {
-                        World.SelectionHandler.Select(pickedStructure);
-                    }
-                    else
-                    {
-                        World.SelectionHandler.ClearSelection();
-                    }
+                    World.SelectionHandler.ClearSelection();
                 }
             }
         }
@@ -272,7 +264,7 @@ internal class SelectInteractionHandler : IInteractionContext
         if (target != null && !World.SelectionHandler.IsSelected(target))
         {
             canvas.PushState();
-            canvas.Transform(World.Camera.CreateRelativeMatrix(target.Transform));
+            canvas.Transform(World.Camera.CreateRelativeMatrix(target.InterpolatedTransform));
             canvas.Stroke(World.PlayerTeam.Actor!.GetRelationColor(target.Team.Actor!) with { A = 100 });
             canvas.DrawCircle(0, 0, (float)target.GetCollisionRadius());
             canvas.PopState();
@@ -280,10 +272,10 @@ internal class SelectInteractionHandler : IInteractionContext
 
         if (leftMouse.Dragging)
         {
-            canvas.Transform(World.Camera.CreateRelativeMatrix(Transform.Default));
+            canvas.Transform(World.Camera.CreateRelativeMatrix(Transform.Default with { Position = leftMouse.DragStart }));
             canvas.Stroke(Color.White);
             canvas.StrokeWidth(0);
-            canvas.DrawRect(Rectangle.FromPoints(leftMouse.DragStart.ToVector2(), World.MousePosition.ToVector2()));
+            canvas.DrawRect(Rectangle.FromPoints(Vector2.Zero, (World.MousePosition - leftMouse.DragStart).ToVector2()));
         }
     }
 
@@ -291,11 +283,6 @@ internal class SelectInteractionHandler : IInteractionContext
     {
         Unit? unit = World.Collision.TestPoint(World.MousePosition);
         return unit;
-
-        foreach (var ship in World.Ships)
-        {
-        }
-        return PickStructure();
     }
 
     private Structure? PickStructure()
@@ -343,11 +330,14 @@ internal class SelectInteractionHandler : IInteractionContext
 
     private IEnumerable<Unit> PickArea(DoubleVector from, DoubleVector to)
     {
-        int minX = (int)(Math.Floor(Math.Min(from.X, to.X) / UnitCollision.BinSize));
-        int minY = (int)(Math.Floor(Math.Min(from.Y, to.Y) / UnitCollision.BinSize));
+        DoubleVector min = new(Math.Min(from.X, to.X), Math.Min(from.Y, to.Y));
+        DoubleVector max = new(Math.Max(from.X, to.X), Math.Max(from.Y, to.Y));
 
-        int maxX = (int)(Math.Floor(Math.Max(from.X, to.X) / UnitCollision.BinSize));
-        int maxY = (int)(Math.Floor(Math.Max(from.Y, to.Y) / UnitCollision.BinSize));
+        int minX = (int)(Math.Floor(min.X / UnitCollision.BinSize));
+        int minY = (int)(Math.Floor(min.Y / UnitCollision.BinSize));
+
+        int maxX = (int)(Math.Floor(max.X / UnitCollision.BinSize));
+        int maxY = (int)(Math.Floor(max.Y / UnitCollision.BinSize));
 
         for (int x = minX; x <= maxX; x++)
         {
@@ -355,8 +345,14 @@ internal class SelectInteractionHandler : IInteractionContext
             {
                 foreach (var unit in World.Collision.GetBin(x, y))
                 {
-                    if (unit is Ship)
-                        yield return unit;
+                    if (unit is Ship s)
+                    {
+                        DoubleVector p = unit.Transform.Position;
+                        if (p.X > min.X && p.Y > min.Y && p.X < max.X && p.Y < max.Y)
+                        {
+                            yield return s;
+                        }
+                    }
                 }
             }
         }

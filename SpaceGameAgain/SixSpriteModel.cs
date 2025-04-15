@@ -26,6 +26,8 @@ class SixSpriteModel : ModelPrototype
         for (int i = 0; i < 6; i++)
         {
             models[i] = Graphics.LoadTexture($"./Assets/Sprites/{SpritesFolder}/{i}.png");
+            models[i].Filter = TextureFilter.MipmapPoint;
+            Graphics.GenerateMipmaps(models[i]);
         }
 
         base.InitializePrototype();

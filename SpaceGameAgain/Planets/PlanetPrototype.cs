@@ -15,6 +15,7 @@ internal class PlanetPrototype : WorldActorPrototype
 
         float radius = reader.ReadSingle();
         Color color = (Color)reader.ReadUInt32();
+        float soiRad = reader.ReadSingle();
 
         ActorReference<Grid> grid = reader.ReadActorReference<Grid>();
 
@@ -34,6 +35,7 @@ internal class PlanetPrototype : WorldActorPrototype
             Radius = radius,
             Color = color,
         };
+        planet.SphereOfInfluence.Radius = soiRad;
 
         return planet;
     }

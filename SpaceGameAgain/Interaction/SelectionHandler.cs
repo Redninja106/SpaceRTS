@@ -20,14 +20,14 @@ internal class SelectionHandler
     public void ClearSelection()
     {
         selected.Clear();
-        World.UnitBar.UpdateButtons();
+        //World.UnitBar.UpdateButtons();
         //UpdateGUI();
     }
 
     public void Select(Unit unit)
     {
         selected.Add(unit);
-        World.UnitBar.UpdateButtons();
+        //World.UnitBar.UpdateButtons();
         //UpdateGUI();
     }
 
@@ -181,7 +181,7 @@ internal class SelectionHandler
     public void Deselect(Unit selectable)
     {
         selected.Remove(selectable);
-        World.UnitBar.UpdateButtons();
+        //World.UnitBar.UpdateButtons();
         //UpdateGUI();
     }
 }

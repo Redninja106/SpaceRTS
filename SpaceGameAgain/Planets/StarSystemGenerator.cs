@@ -31,7 +31,7 @@ internal class StarSystemGenerator
         int planetCount = random.Next(12, 12);
         for (int i = 0; i < planetCount; i++)
         {
-            float planetRadius = random.NextSingle(5, 30);
+            float planetRadius = (2 * MathF.Sqrt(3)) * (int)random.NextSingle(2, 10);
 
             orbitDistance += planetRadius * 10;
 
@@ -47,23 +47,23 @@ internal class StarSystemGenerator
             )
             { 
                 Radius = planetRadius,
-                Color = Color.FromHSV(random.NextSingle(), random.NextSingle(), random.NextSingle())
+                Color = Color.FromHSV(random.NextSingle(), random.NextSingle(), random.NextSingle() * .75f + .25f)
             };
 
             planet.SphereOfInfluence.Radius = planetRadius * 5;
 
             Grid.FillRadius(planet.Grid, planetRadius);
-            if (random.NextSingle() < 1)
-            {
-                var cell = planet.Grid.GetCell(new(
-                    random.Next((int)(-planetRadius), (int)(planetRadius)), 
-                    random.Next((int)(-planetRadius), (int)(planetRadius))
-                    ));
-                if (cell != null)
-                {
-                    cell.Tile = new Tile(Prototypes.Get<TilePrototype>("lithium_deposit"));
-                }
-            }
+            //if (random.NextSingle() < 1)
+            //{
+            //    var cell = planet.Grid.GetCell(new(
+            //        random.Next((int)(-planetRadius), (int)(planetRadius)), 
+            //        random.Next((int)(-planetRadius), (int)(planetRadius))
+            //        ));
+            //    if (cell != null)
+            //    {
+            //        cell.Tile = new Tile(Prototypes.Get<TilePrototype>("lithium_deposit"));
+            //    }
+            //}
             World.Add(planet);
 
             orbitDistance += planetRadius * 10;

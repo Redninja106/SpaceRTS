@@ -1,0 +1,4 @@
+farmland/biodome - supply food
+urban districts - supply manpower at cost of food
+
+ships cost manpower

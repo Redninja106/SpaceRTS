@@ -1,6 +1,7 @@
 ﻿using SpaceGame.Commands;
 using SpaceGame.Planets;
 using SpaceGame.Ships;
+using SpaceGame.Ships.Modules;
 using SpaceGame.Teams;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -47,9 +48,12 @@ class HostedLobby : Lobby
             team.CommandProcessor = new NetworkCommandProcessor();
 
             Ship startingShip = new Ship(Prototypes.Get<ShipPrototype>("small_ship"), World.NewID(), startingPlanet.Transform, team.AsReference());
+            ConstructionModule constMod = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), startingShip.AsReference());
+            startingShip.modules.Add(constMod.AsReference<Module>());
 
             World.Add(team);
             World.Add(startingShip);
+            World.Add(constMod);
 
             SendWorld(connection, team);
         }

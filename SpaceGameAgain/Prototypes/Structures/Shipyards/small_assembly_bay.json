@@ -10,5 +10,7 @@
   ],
   "max_health": 10,
   "ship_prototype": "small_ship",
-  "power_consumed": 1
+  "power_consumed": 1,
+  "model": "small_assembly_bay_model",
+  "description": "Produces small ships. Requires an adjacent factory."
 }

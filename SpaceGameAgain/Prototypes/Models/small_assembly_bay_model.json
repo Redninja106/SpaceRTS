@@ -1,0 +1,8 @@
+{
+  "prototype": "NSpriteModel",
+  "name": "small_assembly_bay_model",
+  "width": 3.464,
+  "height": 3.464,
+  "sprites_folder": "small_assembly_bay",
+  "sprite_count": 6
+}

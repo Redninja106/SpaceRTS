@@ -46,7 +46,7 @@ internal class ConstructionInteractionContext : IInteractionContext
         UpdateHoveredGrid();
         if (hoveredGrid != null)
         {
-            Vector2 hoveredPosition = hoveredGrid.Transform.WorldToLocal(World.MousePosition.ToVector2());
+            Vector2 hoveredPosition = hoveredGrid.Transform.WorldToLocal(World.MousePosition.ToVector2()) - prototype.Center.Rotated(rotation * MathF.Tau / 6f);
             hoveredLocation = HexCoordinate.FromCartesian(hoveredPosition);
 
             if (leftMouse.Released)
@@ -75,13 +75,14 @@ internal class ConstructionInteractionContext : IInteractionContext
 
     private void UpdateHoveredGrid()
     {
+        hoveredGrid = null;
         foreach (var planet in World.Planets)
         {
             if (planet.Grid.GetCellFromPoint(World.MousePosition) != null)
             {
                 if (planet.Grid != hoveredGrid)
                 {
-                    Reset();
+                    //Reset();
                 }
 
                 hoveredGrid = planet.Grid;
@@ -108,13 +109,14 @@ internal class ConstructionInteractionContext : IInteractionContext
 
         // TODO: draw relative to grid to avoid precision issues!
 
-        bool obstructed = false;
+        bool obstructed = true;
         if (hoveredGrid is not null)
         {
             hoveredGrid.InterpolatedTransform.ApplyTo(canvas, World.Camera);
             obstructed = hoveredGrid.IsStructureObstructed(prototype, hoveredLocation, rotation);
             canvas.Translate(hoveredLocation.ToCartesian());
             canvas.Rotate(rotation * (MathF.Tau / 6f));
+
         }
         else
         {
@@ -133,8 +135,9 @@ internal class ConstructionInteractionContext : IInteractionContext
         ColorF color = obstructed ? ColorF.Red : ColorF.White;
         color.A = 100;
 
+        canvas.Translate(prototype.Center);
         canvas.Rotate(-rotation * (MathF.Tau / 6f));
-        prototype.Model.Render(canvas, this.rotation, color);
+        prototype.Model.Render(canvas, Transform.Default with { Position = World.MousePosition, Rotation = this.rotation * MathF.Tau / 6f } , color);
     }
 
     [DebugOverlay]

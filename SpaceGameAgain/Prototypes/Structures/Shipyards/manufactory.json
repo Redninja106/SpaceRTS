@@ -13,7 +13,7 @@
   "max_health": 10,
   "power_consumed": 3,
   "center": {
-    "x": 1,
-    "y": 1
+    "x": 0.5,
+    "y": 0.866
   }
 }

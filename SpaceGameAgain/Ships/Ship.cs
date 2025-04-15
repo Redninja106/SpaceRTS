@@ -31,11 +31,18 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
         new(-.5f / 2f, -.2f / 2f),
     ];
 
+    public DoubleVector velocity;
+    public float angularVelocity;
+    
+    public float height = height;
+    public Stance stance;
+
     public Queue<ActorReference<Order>> orders = [];
     public List<ActorReference<Module>> modules = [];
-    public Order? potentialOrder = null;
 
-    public float height = height;
+    
+    // PER CLIENT -- order the player submitted that hasn't been processed yet
+    public Order? potentialOrder = null;
 
     public override void Render(ICanvas canvas)
     {
@@ -52,10 +59,17 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
             canvas.DrawCircle(0, 0, MathF.Max((float)GetCollisionRadius(), World.Camera.ScreenDistanceToWorldDistance(2.5f/2f)));
         }
 
-        canvas.Fill(Color.White);
-
-        canvas.Translate(0, Prototype.FlyHeight - height);
-        canvas.DrawPolygon(verts);
+        if (Prototype.Model == null)
+        {
+            canvas.Fill(Color.White);
+            canvas.DrawPolygon(verts);
+        }
+        else
+        {
+            canvas.Rotate(-this.InterpolatedTransform.Rotation);
+            canvas.Translate(0, Prototype.FlyHeight - height);
+            Prototype.Model.Render(canvas, this.InterpolatedTransform, ColorF.White);
+        }
 
         canvas.PopState();
 
@@ -84,21 +98,27 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
         height = MathHelper.Step(height, Prototype.FlyHeight, Program.Timestep * Prototype.RiseSpeed);
 
-        foreach (var module in modules)
+        if (height >= Prototype.FlyHeight)
         {
-            module.Actor!.Tick();
-        }
-
-        if (orders.Count > 0 && height >= .4f) 
-        {
-            var order = orders.Peek();
-            order.Actor!.Tick();
-            if (order.Actor!.IsCompleted)
+            foreach (var module in modules)
             {
-                orders.Dequeue();
+                module.Actor!.Tick();
             }
-        }
 
+            if (orders.Count > 0)
+            {
+                var order = orders.Peek();
+                order.Actor!.Tick();
+                if (order.Actor!.IsCompleted)
+                {
+                    orders.Dequeue();
+                }
+            }
+
+            this.Transform.Position += this.velocity * Program.Timestep;
+            this.Transform.Rotation += this.angularVelocity * Program.Timestep;
+
+        }
         //if (health <= 0)
         //{
         //    IsDestroyed = true;
@@ -167,9 +187,65 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
         base.DebugLayout();
         ObjectViewer.ReflectionLayoutObjectFields(this);
     }
+    
 
     public override void Layout(GUIWindow window)
     {
-        window.Text("SHIP");
+        window.LayoutMode = LayoutMode.Horizontal;
+        //window.Image(Icons.Construction, new(20, 20));
+        //window.Image(Icons.Defensive, new(20, 20));
+        if (this.modules.FirstOrDefault(m => m.Actor is ConstructionModule) is ActorReference<Module> m && !m.IsNull)
+        {
+            if (window.TextButton("build"))
+            {
+                Vector2 offset = window.LastItemBounds.GetAlignedPoint(Alignment.TopCenter) - World.GUIViewport.Bounds.GetAlignedPoint(Alignment.BottomCenter);
+                World.structureSelectWindow.Show(m.Cast<ConstructionModule>().Actor!, offset);
+            }
+        }
+
+        if (window.TextButton(stance.ToString().ToLower()))
+        {
+            stance = (Stance)(((int)stance + 1) % (int)Stance.StanceCount);
+        }
+        if (window.LastItemHovered())
+        {
+            World.tooltipWindow.Text(stanceDescs[(int)stance]);
+        }
+
+        window.LayoutMode = LayoutMode.Horizontal;
+        foreach (var mod in modules)
+        {
+            window.Image(mod.Actor!.Icon, new(16));
+            if (window.LastItemHovered())
+            {
+                World.tooltipWindow.Text(mod.Actor.Prototype.Name);
+            }
+        }
     }
+
+    public void Rotate(float throttle)
+    {
+        this.angularVelocity += (float.Tau * Prototype.TurnSpeed) * float.Clamp(throttle, -1, 1) * Program.Timestep;
+    }
+
+    internal void Fly(float throttle)
+    {
+        this.velocity += this.Transform.Forward * Prototype.FlySpeed * float.Clamp(throttle, -1, 1) * Program.Timestep;
+    }
+
+    static string[] stanceDescs = [
+            "ship will not attack under any circumstances",
+            "ship will only attack when attacked first",
+            "ship will attack nearby enemy units",
+            "ship will attack and pursue nearby enemy units"
+        ];
+}
+
+enum Stance
+{
+    Passive,
+    Neutral,
+    Defensive,
+    Agressive,
+    StanceCount
 }

@@ -5,8 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.GUI;
-internal abstract class GUIWindow
+internal class GUIWindow
 {
+    public static Color DefaultTextColor = Color.FromHSV(0, 0, .65f);
+
     public Vector2 Offset = new(0, 0);
     public Alignment Anchor = Alignment.TopLeft;
     public bool Visible = false;
@@ -31,15 +33,19 @@ internal abstract class GUIWindow
 
         if (Visible)
         {
+            Hovered = bounds.ContainsPoint(viewport.MousePosition);
+
             bounds = new(viewport.Bounds.GetAlignedPoint(Anchor) + this.Offset, bounds.Size, this.Anchor);
             bounds.Size = Vector2.Zero;
             Cursor = this.bounds.Position;
-            Layout();
-            Hovered = bounds.ContainsPoint(viewport.MousePosition);
         }
         else
         {
             Hovered = false;
+            if (commands.Count > 0)
+            {
+                commands.Clear();
+            }
         }
     }
 
@@ -61,6 +67,35 @@ internal abstract class GUIWindow
         UpdateLayout();
     }
 
+    public bool TextButton(string text, float size = 16, bool disabled = false)
+    {
+        LastItemBounds.Width = Program.font.MeasureText(text, size).Width;
+        LastItemBounds.Height = size;
+        LastItemBounds.Position = Cursor + new Vector2(0, Margin);
+        LastItemBounds.X -= Margin;
+        LastItemBounds.Y -= Margin;
+        LastItemBounds.Width += Margin * 2;
+        LastItemBounds.Height += Margin * 2;
+
+        if (LastItemHovered())
+        {
+            commands.Add(new DrawCommand.Rectangle(LastItemBounds, Color.Gray, true));
+        }
+        else
+        {
+            commands.Add(new DrawCommand.Rectangle(LastItemBounds, Color.FromHSV(.6f, .25f, .25f), true));
+        }
+
+        commands.Add(new DrawCommand.Rectangle(LastItemBounds with { X = LastItemBounds.X + 1, Y = LastItemBounds.Y + 1 }, new Color(28, 33, 38), false));
+        commands.Add(new DrawCommand.Rectangle(LastItemBounds, new Color(70, 79, 89), false));
+        
+        commands.Add(new DrawCommand.Text(text, size, Cursor + new Vector2(0, size)));
+
+        UpdateLayout();
+
+        return LastItemClicked(MouseButton.Left);
+    }
+
     private void UpdateLayout()
     {
         if (LayoutMode == LayoutMode.Horizontal)
@@ -77,7 +112,12 @@ internal abstract class GUIWindow
 
     public void Image(ITexture image)
     {
-        LastItemBounds = new(Cursor.X, Cursor.Y, image.Width, image.Height);
+        Image(image, new(image.Width, image.Height));
+    }
+
+    public void Image(ITexture image, Vector2 size)
+    {
+        LastItemBounds = new(Cursor.X, Cursor.Y, size.X, size.Y);
         commands.Add(new DrawCommand.Image(image, LastItemBounds));
         UpdateLayout();
     }
@@ -92,7 +132,7 @@ internal abstract class GUIWindow
         return Visible && LastItemHovered() && Mouse.IsButtonPressed(button);
     }
 
-    public void Render(ICanvas canvas, float displayWidth, float displayHeight)
+    public virtual void Render(ICanvas canvas, float displayWidth, float displayHeight)
     {
         canvas.PushState();
 
@@ -113,26 +153,52 @@ internal abstract class GUIWindow
         commands.Clear();
         canvas.PopState();
     }
+
+    internal void ProgressBar(float progress, float width)
+    {
+        LastItemBounds = new(Cursor.X, Cursor.Y, width, 5f);
+
+        commands.Add(new DrawCommand.Rectangle(LastItemBounds, Color.Gray, true));
+        commands.Add(new DrawCommand.Rectangle(LastItemBounds with { Width = LastItemBounds.Width * progress }, Color.DarkGray, true));
+
+        UpdateLayout();
+    }
 }
 
 abstract class DrawCommand
 {
     public abstract void Render(ICanvas canvas);
 
-    public class Text(string text, float size, Vector2 position) : DrawCommand
+    public class Text(string text, float size, Vector2 position, Color? color = null) : DrawCommand
     {
         public override void Render(ICanvas canvas)
         {
-            canvas.Fill(Color.FromHSV(0, 0, .65f));
+            canvas.Fill(color ?? Color.FromHSV(0, 0, .65f));
             canvas.Font(Program.font);
             canvas.DrawText(text, size, position);
         }
     }
-    public class Image(ITexture image, Rectangle destination) : DrawCommand
+    public class Image(ITexture image, SimulationFramework.Rectangle destination) : DrawCommand
     {
         public override void Render(ICanvas canvas)
         {
             canvas.DrawTexture(image, destination);
+        }
+    }
+    public class Rectangle(SimulationFramework.Rectangle rectangle, Color color, bool fill) : DrawCommand
+    {
+        public override void Render(ICanvas canvas)
+        {
+            if (fill)
+            {
+                canvas.Fill(color);
+            }
+            else
+            {
+                canvas.Stroke(color);
+                canvas.StrokeWidth(1);
+            }
+            canvas.DrawRect(rectangle);
         }
     }
 }

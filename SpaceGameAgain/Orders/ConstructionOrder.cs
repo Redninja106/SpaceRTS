@@ -42,7 +42,7 @@ internal class ConstructionOrder : Order
         Grid.Actor!.Transform.ApplyTo(canvas, World.Camera);
         canvas.Translate(Location.ToCartesian());
         // canvas.Rotate(Rotation * (MathF.Tau / 6f));
-        Structure.Model.Render(canvas, this.Rotation, ColorF.White with { A = 100 });
+        Structure.Model.Render(canvas, this.InterpolatedTransform, ColorF.White with { A = 100 });
 
         base.Render(canvas);
     }

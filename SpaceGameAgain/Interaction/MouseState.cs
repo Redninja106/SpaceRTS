@@ -38,7 +38,7 @@ internal class MouseState(MouseButton button)
     public void Tick()
     {
         var soi = World.GetSphereOfInfluence(DragStart);
-        if (soi != null)
+        if (Holding && soi != null)
         {
             DragStart = soi.ApplyTickTo(DragStart);
         }

@@ -71,7 +71,8 @@ internal class GameWorld
     public UnitBar UnitBar = new();
     public ResourceBar ResourceBar = new();
     public TooltipWindow tooltipWindow = new();
-    
+    public PopupWindow structureSelectWindow = new();
+
     // public WindowManager WindowManager = new WindowManager();
 
     public GUIViewport GUIViewport = new GUIViewport();
@@ -100,6 +101,8 @@ internal class GameWorld
         // WindowManager.RegisterWindow(ContextMenu);
         GUIViewport.Register(UnitBar);
         GUIViewport.Register(ResourceBar);
+        GUIViewport.Register(structureSelectWindow);
+
         GUIViewport.Register(tooltipWindow);
         // GUIViewport.Register(ConstructionMenu);
         // GUIViewport.Register(InfoMenu);
@@ -108,7 +111,7 @@ internal class GameWorld
 
     public void Update(Vector2 viewportMousePosition, float tickProgress)
     {
-        MousePosition = DoubleVector.FromVector2(Camera.ScreenToWorld(viewportMousePosition));
+        MousePosition = Camera.SmoothTransform.Position + DoubleVector.FromVector2(Camera.ScreenToLocal(viewportMousePosition));
 
         UpdateActorList(Planets, tickProgress);
 
@@ -136,6 +139,11 @@ internal class GameWorld
         foreach (var planet in Planets)
         {
             planet.SphereOfInfluence.Update();
+        }
+
+        foreach (var window in GUIViewport.windows)
+        {
+            window.Layout();
         }
     }
 
@@ -170,6 +178,7 @@ internal class GameWorld
 
         leftMouse.Tick();
         rightMouse.Tick();
+        middleMouse.Tick();
 
         Collision.ClearBins();
         Collision.Update();
@@ -230,7 +239,14 @@ internal class GameWorld
             canvas.PopState();
         }
 
-        RenderActorList(Structures, canvas);
+        Structures.Sort((a, b) => -a.Location.Q.CompareTo(b.Location.Q));
+        foreach (var structure in Structures)
+        {
+            canvas.PushState();
+            structure.InterpolatedTransform.ApplyTo(canvas, Camera);
+            structure.Render(canvas);
+            canvas.PopState();
+        }
 
         foreach (var ship in Ships)
         {

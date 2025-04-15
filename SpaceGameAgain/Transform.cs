@@ -142,6 +142,27 @@ public struct DoubleVector
         return X * X + Y * Y;
     }
 
+    public static DoubleVector Step(DoubleVector point, DoubleVector target, float distance)
+    {
+        DoubleVector vector = target - point;
+        if (vector.LengthSquared() <= distance * distance)
+        {
+            return target;
+        }
+
+        return point + distance * vector.Normalized();
+    }
+
+    public static double Dot(DoubleVector a, DoubleVector b)
+    {
+        return a.X * b.X + a.Y * b.Y;
+    }
+
+    public static double Cross(DoubleVector a, DoubleVector b)
+    {
+        return a.X * b.Y - a.Y * b.X;
+    }
+
     public DoubleVector Normalized()
     {
         return this * (1.0 / Length());

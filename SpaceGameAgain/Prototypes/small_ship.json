@@ -8,6 +8,7 @@
   "turn_speed": 1,
   "fly_speed": 10,
   "collision_radius": 0.35,
+  "model": "small_ship_model",
   "commands": [
     "move_command",
     "attack_command"

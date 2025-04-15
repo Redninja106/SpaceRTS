@@ -26,7 +26,7 @@ internal class Structure : Unit
 
     public HashSet<Structure> neighbors = [];
 
-    public bool Enabled { get; set; }
+    public bool Enabled { get; set; } = true;
     public override ITexture Icon => Icons.Structure;
 
     public Structure(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid.Actor!.Transform.Translated(DoubleVector.FromVector2(location.ToCartesian())).Rotated(rotation * (MathF.Tau / 6f)), team)
@@ -155,8 +155,9 @@ internal class Structure : Unit
         }
         else
         {
+            canvas.Translate(Prototype.Center);
             canvas.Rotate(-(this.Rotation * MathF.Tau / 6f));
-            Prototype.Model.Render(canvas, this.Rotation, ColorF.White);
+            Prototype.Model.Render(canvas, this.InterpolatedTransform, ColorF.White);
         }
     }
 
@@ -241,6 +242,6 @@ internal class Structure : Unit
 
     public override void Layout(GUIWindow window)
     {
-        window.Text(Prototype.Title);
+        // window.Text(Prototype.Title);
     }
 }

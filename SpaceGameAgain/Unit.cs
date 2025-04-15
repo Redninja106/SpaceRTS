@@ -45,6 +45,5 @@ internal abstract class Unit(UnitPrototype prototype, ulong id, Transform transf
 
 interface IGUIProvider
 {
-    ITexture Icon { get; }
     void Layout(GUIWindow window);
 }

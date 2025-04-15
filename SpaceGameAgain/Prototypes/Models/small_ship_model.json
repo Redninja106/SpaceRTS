@@ -1,0 +1,8 @@
+{
+  "prototype": "NSpriteModel",
+  "name": "small_ship_model",
+  "width": 1,
+  "height": 1,
+  "sprites_folder": "small_ship",
+  "sprite_count": 32
+}

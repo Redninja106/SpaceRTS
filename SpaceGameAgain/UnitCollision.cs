@@ -1,4 +1,5 @@
 ﻿using SpaceGame.Ships;
+using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,9 +18,9 @@ internal class UnitCollision
     {
     }
 
-    public List<Unit> GetBin(int binX, int binY)
+    public List<WorldActor> GetBin(int binX, int binY)
     {
-        return bins.TryGetValue(new(binX, binY), out var value) ? value.Units : [];
+        return bins.TryGetValue(new(binX, binY), out var value) ? value.actors : [];
     }
 
     public void ClearBins()
@@ -28,7 +29,7 @@ internal class UnitCollision
         {
             bin.Clear();
 
-            if (bin.Units.Count == 0)
+            if (bin.actors.Count == 0)
             {
                 bins.Remove(pos);
             }
@@ -41,11 +42,22 @@ internal class UnitCollision
 
         if (bins.TryGetValue(binPosition, out CollisionBin bin))
         {
-            foreach (var unit in bin.Units)
+            foreach (var actor in bin.actors)
             {
-                if (unit.TestPoint(point))
+                switch (actor)
                 {
-                    return unit;
+                    case Unit unit:
+                        if (unit.TestPoint(point))
+                        {
+                            return unit;
+                        }
+                        break;
+                    case Grid grid:
+                        if (grid.GetCellFromPoint(point) is GridCell cell)
+                        {
+                            return cell.Structure.Actor!;
+                        }
+                        break;
                 }
             }
         }
@@ -57,25 +69,25 @@ internal class UnitCollision
     {
         foreach (var ship in World.Ships)
         {
-            InsertUnit(ship);
+            Insert(ship, ship.GetCollisionRadius());
         }
-        foreach (var structure in World.Structures)
+        
+        foreach (var grid in World.Grids)
         {
-            InsertUnit(structure);
+            Insert(grid, grid.CollisionRadius);
         }
     }
 
-    public void InsertUnit(Unit unit)
+    public void Insert(WorldActor actor, double collisionRadius)
     {
-        double collisionRadius = unit.GetCollisionRadius();
-        DoubleVector binPosition = unit.Transform.Position;
+        DoubleVector binPosition = actor.Transform.Position;
         BinPosition min = new BinPosition(
-            (int)Math.Floor((unit.Transform.Position.X - collisionRadius) / BinSize), 
-            (int)Math.Floor((unit.Transform.Position.Y - collisionRadius) / BinSize)
+            (int)Math.Floor((actor.Transform.Position.X - collisionRadius) / BinSize), 
+            (int)Math.Floor((actor.Transform.Position.Y - collisionRadius) / BinSize)
             ); 
         BinPosition max = new BinPosition(
-            (int)Math.Ceiling((unit.Transform.Position.X + collisionRadius) / BinSize),
-            (int)Math.Ceiling((unit.Transform.Position.Y + collisionRadius) / BinSize)
+            (int)Math.Ceiling((actor.Transform.Position.X + collisionRadius) / BinSize),
+            (int)Math.Ceiling((actor.Transform.Position.Y + collisionRadius) / BinSize)
             );
 
         for (int y = min.Y; y < max.Y; y++)
@@ -85,11 +97,11 @@ internal class UnitCollision
                 BinPosition pos = new(x, y);
                 if (bins.TryGetValue(pos, out CollisionBin bin))
                 {
-                    bin.Units.Add(unit);
+                    bin.actors.Add(actor);
                 }
                 else 
                 {
-                    bins.Add(pos, new() { Units = [unit] });
+                    bins.Add(pos, new() { actors = [actor] });
                 }
             }
         }
@@ -111,9 +123,9 @@ internal class UnitCollision
         {
             DebugDraw.Circle(new(0, 0, (float)ship.GetCollisionRadius()), ship.Transform);
         }
-        foreach (var structure in World.Structures)
+        foreach (var grid in World.Grids)
         {
-            DebugDraw.Circle(new(0, 0, (float)structure.GetCollisionRadius()), structure.Transform);
+            DebugDraw.Circle(new(0, 0, (float)grid.CollisionRadius), grid.Transform);
         }
     }
 
@@ -136,7 +148,7 @@ internal class UnitCollision
 
     struct CollisionBin
     {
-        public List<Unit> Units = [];
+        public List<WorldActor> actors = [];
 
         public CollisionBin()
         {
@@ -144,7 +156,7 @@ internal class UnitCollision
 
         public void Clear() 
         {
-            Units.Clear();
+            actors.Clear();
         }
     }
 }

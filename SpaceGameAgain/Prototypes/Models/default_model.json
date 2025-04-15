@@ -1,9 +1,10 @@
 {
-  "prototype": "SixSpriteModel",
+  "prototype": "NSpriteModel",
   "name": "default_model",
   "sprites_folder": "default",
   "width": 2,
   "height": 2,
   "offset_x": 0,
-  "offset_y": 0
+  "offset_y": 0,
+  "sprite_count": 6
 }

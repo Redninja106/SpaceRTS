@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Interaction;
 internal class UnitBar : GUIWindow
 {
-    private List<UtilityWindow> windows = [];
+    private List<PopupWindow> windows = [];
 
     public UnitBar()
     {
@@ -58,54 +58,81 @@ internal class UnitBar : GUIWindow
     //    */
     //}
 
-    public void UpdateButtons()
-    {
-        foreach (var window in windows)
-        {
-            World.GUIViewport.windows.Remove(window);
-        }
-        windows.Clear();
+    //public void UpdateButtons()
+    //{
+    //    foreach (var window in windows)
+    //    {
+    //        World.GUIViewport.windows.Remove(window);
+    //    }
+    //    windows.Clear();
 
-        if (World.SelectionHandler.SelectedCount == 1)
-        {
-            var u = World.SelectionHandler.GetSelectedUnit()!;
-            windows.Add(new(u));
+    //    if (World.SelectionHandler.SelectedCount == 1)
+    //    {
+    //        var u = World.SelectionHandler.GetSelectedUnit()!;
+    //        windows.Add(new(u));
 
-            if (u is Ship s)
-            {
-                foreach (var m in s.modules)
-                {
-                    windows.Add(new(m.Actor!));
-                }
-            }
-            else
-            {
-            }
-        }
-        else if (World.SelectionHandler.SelectedCount > 1)
-        {
-            foreach (var u in World.SelectionHandler.GetSelectedUnits())
-            {
-                windows.Add(new(u));
-            }
-        }
+    //        if (u is Ship s)
+    //        {
+    //            foreach (var m in s.modules)
+    //            {
+    //                windows.Add(new(m.Actor!));
+    //            }
+    //        }
+    //        else
+    //        {
+    //        }
+    //    }
+    //    else if (World.SelectionHandler.SelectedCount > 1)
+    //    {
+    //        foreach (var u in World.SelectionHandler.GetSelectedUnits())
+    //        {
+    //            windows.Add(new(u));
+    //        }
+    //    }
 
-        World.GUIViewport.windows.AddRange(windows);
+    //    World.GUIViewport.windows.AddRange(windows);
 
-    }
+    //}
 
     public override void Layout()
     {
-        for (int i = 0; i < windows.Count; i++)
+        if (World.SelectionHandler.SelectedCount == 1)
         {
-            Image(windows[i].GUIProvider.Icon);
+            var unit = World.SelectionHandler.GetSelectedUnit()!;
+
+            LayoutMode = LayoutMode.Horizontal;
+            Image(unit.Icon);
+            LayoutMode = LayoutMode.Vertical;
+            Text(unit.Prototype.Title, 24);
+
+            string healthDescription = (unit.Health / (float)unit.Prototype.MaxHealth) switch
+            {
+                1 => "operational",
+                >= .5f => "damaged",
+                _ => "critial"
+            };
+
+            Text(healthDescription);
             if (LastItemHovered())
             {
-                Vector2 offset = LastItemBounds.GetAlignedPoint(Alignment.TopCenter) - World.GUIViewport.Bounds.GetAlignedPoint(Alignment.BottomCenter);
-                windows[i].Show(offset);
+                World.tooltipWindow.Text($"{unit.Health}/{unit.Prototype.MaxHealth}hp");
             }
+
+            unit.Layout(this);
         }
+
         return;
+
+        // for (int i = 0; i < windows.Count; i++)
+        // {
+        //     Image(windows[i].GUIProvider.Icon);
+        //     if (LastItemHovered())
+        //     {
+        //         Vector2 offset = LastItemBounds.GetAlignedPoint(Alignment.TopCenter) - World.GUIViewport.Bounds.GetAlignedPoint(Alignment.BottomCenter);
+        //         windows[i].Show(offset);
+        //     }
+        // }
+        // return;
 
         var selectedCount = World.SelectionHandler.SelectedCount;
 
@@ -166,23 +193,22 @@ internal class UnitBar : GUIWindow
     }
 }
 
-class UtilityWindow : GUIWindow
+class PopupWindow : GUIWindow
 {
-    public IGUIProvider GUIProvider { get; set; }
-
     private bool justShown;
+    private IGUIProvider provider;
 
-    public void Show(Vector2 offset)
+    public void Show(IGUIProvider provider, Vector2 offset)
     {
         Visible = true;
         Anchor = Alignment.BottomCenter;
         Offset = offset;
         justShown = true;
+        this.provider = provider;
     }
 
-    public UtilityWindow(IGUIProvider guiProvider)
+    public PopupWindow()
     {
-        this.GUIProvider = guiProvider;
     }
 
     public override void Update(GUIViewport viewport)
@@ -190,7 +216,7 @@ class UtilityWindow : GUIWindow
         base.Update(viewport);
         if (Visible)
         {
-            if (!Hovered && !justShown)
+            if (World.leftMouse.Pressed || World.rightMouse.Pressed)
             {
                 Visible = false;
             }
@@ -200,7 +226,7 @@ class UtilityWindow : GUIWindow
 
     public override void Layout()
     {
+        provider?.Layout(this);
         base.Layout();
-        GUIProvider.Layout(this);
     }
 }

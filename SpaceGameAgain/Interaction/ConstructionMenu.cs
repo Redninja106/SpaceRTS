@@ -40,7 +40,6 @@ internal class ConstructionMenu : GUIWindow
             }
             if (LastItemHovered())
             {
-                World.tooltipWindow.Show();
                 World.tooltipWindow.Text(proto.Title);
             }
         }

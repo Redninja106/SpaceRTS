@@ -22,6 +22,8 @@ internal class Grid : WorldActor
         Angle.ToVector(5 * MathF.Tau / 6),
     ];
 
+    public double CollisionRadius { get; set; }
+
     public Dictionary<HexCoordinate, GridCell> cells = [];
     public List<ActorReference<Structure>> structures = [];
     private ActorReference<WorldActor> parent;
@@ -39,6 +41,7 @@ internal class Grid : WorldActor
 
     public void AddCell(HexCoordinate location)
     {
+        CollisionRadius = Math.Max(CollisionRadius, location.ToCartesian().Length());
         cells.Add(location, new(new Tile(Prototypes.Get<TilePrototype>("ground_tile"))));
     }
 
@@ -155,6 +158,8 @@ internal class Grid : WorldActor
                 }
             }
         }
+
+        UpdatePowerLevel();
     }
 
     public GridCell? GetCellFromPoint(DoubleVector point)
@@ -195,12 +200,15 @@ internal class Grid : WorldActor
                 cell.Structure = ActorReference<Structure>.Null;
             }
         }
+
+        UpdatePowerLevel();
     }
 
     public override void Serialize(BinaryWriter writer)
     {
         writer.Write(ID);
         writer.Write(parent);
+        writer.Write(CollisionRadius);
 
         writer.Write(structures.Count);
         foreach (var actor in structures)
@@ -213,6 +221,7 @@ internal class Grid : WorldActor
         {
             writer.Write(coordinate);
             writer.Write(cell.Structure);
+            //writer.Write(cell.Tile.Prototype.Name);
         }
     }
 
@@ -228,6 +237,7 @@ class GridPrototype : WorldActorPrototype
     {
         ulong id = reader.ReadUInt64();
         ActorReference<WorldActor> parent = reader.ReadActorReference<WorldActor>();
+        double collisionRadius = reader.ReadDouble();
 
         List<ActorReference<Structure>> structures = new();
         int structureCount = reader.ReadInt32();
@@ -249,6 +259,7 @@ class GridPrototype : WorldActorPrototype
         {
             cells = cells,
             structures = structures,
+            CollisionRadius = collisionRadius,
         };
 
     }

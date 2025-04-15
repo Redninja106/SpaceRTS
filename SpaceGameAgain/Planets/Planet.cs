@@ -120,6 +120,7 @@ internal class Planet : WorldActor
         writer.Write(Transform);
         writer.Write(Radius);
         writer.Write(Color.Value);
+        writer.Write(SphereOfInfluence.Radius);
 
         writer.Write(grid);
 

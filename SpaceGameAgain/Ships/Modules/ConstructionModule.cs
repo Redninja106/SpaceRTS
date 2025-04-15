@@ -24,6 +24,10 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, ulong i
             {
                 World.ConstructionInteractionContext.BeginPlacing(proto, Ship.Actor!);
             }
+            if (window.LastItemHovered())
+            {
+                proto.Layout(World.tooltipWindow);
+            }
         }
 
     }

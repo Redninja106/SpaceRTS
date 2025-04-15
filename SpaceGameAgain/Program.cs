@@ -319,9 +319,9 @@ partial class Program : Simulation
             tickProgress = 0;
         }
 
-        World.Update(ViewportMousePosition, tickProgress);
         World.GUIViewport.Update(canvas.Width, canvas.Height);
-
+        World.Update(ViewportMousePosition, tickProgress);
+        
         World.SelectionHandler.Update();
     }
 

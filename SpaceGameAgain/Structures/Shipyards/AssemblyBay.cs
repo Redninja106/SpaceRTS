@@ -1,4 +1,5 @@
 ﻿using SpaceGame.Commands;
+using SpaceGame.Economy;
 using SpaceGame.GUI;
 using SpaceGame.Planets;
 using SpaceGame.Ships;
@@ -34,14 +35,16 @@ internal class AssemblyBay : Structure
         // });
     }
 
+    [DebugButton]
     public void BuildShip()
     {
-        // if (Enabled && Team.Actor!.GetResource("metals") >= 100)
-        // {
-        //     Team.Actor!.Resources["metals"] -= 100;
-        //     isBuildingShip = true;
-        //     SelectionGUI = new ProgressBar(() => this.progress);
-        // }
+        ResourcePrototype aluminum = Prototypes.Get<ResourcePrototype>("aluminum");
+
+        //if (Enabled) // && Team.Actor!.resources[aluminum])
+        //{
+            // Team.Actor!.resources[aluminum] -= 100;
+            isBuildingShip = true;
+        //}
     }
 
     public override void Tick()
@@ -54,7 +57,12 @@ internal class AssemblyBay : Structure
         if (progress >= 1)
         {
             isBuildingShip = false;
-            var ship = new Ship(Prototype.ShipPrototype, World.NewID(), this.Transform, this.Team);
+            Transform shipTransform = this.Transform;
+            shipTransform = shipTransform.Translated(DoubleVector.FromVector2(this.Prototype.Center.Rotated(this.Rotation * MathF.Tau / 6f)));
+            shipTransform.Rotation = this.Rotation * MathF.Tau / 6f - (MathF.PI / 2f);
+            shipTransform.Position.Y -= Prototype.ShipPrototype.FlyHeight;
+
+            var ship = new Ship(Prototype.ShipPrototype, World.NewID(), shipTransform, this.Team);
             foreach (var moduleFactory in neighbors.OfType<ModuleFactory>())
             {
                 var module = moduleFactory.Prototype.ProvidedModule.CreateModule(World.NewID(), ship.AsReference());
@@ -104,6 +112,24 @@ internal class AssemblyBay : Structure
         base.Serialize(writer);
         writer.Write(isBuildingShip);
         writer.Write(progress);
+    }
+
+    public override void Layout(GUIWindow window)
+    {
+        if (isBuildingShip)
+        {
+            window.ProgressBar(this.progress, 100);
+        }
+        else
+        {
+            if (window.TextButton("assemble ship"))
+            {
+                var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+                commandProcessor.AddCommand(new AssembleShipCommand(Prototypes.Get<AssembleShipCommandPrototype>("assemble_ship_command"), this));
+            }
+        }
+
+        base.Layout(window);
     }
 }
 
