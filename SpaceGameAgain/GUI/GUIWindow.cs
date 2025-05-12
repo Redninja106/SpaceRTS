@@ -53,7 +53,7 @@ internal class GUIWindow
     {
     }
 
-    public void Text(string text, float size = 16)
+    public void Text(string text, float size = 16, Color? color = null)
     {
         LastItemBounds = Program.font.MeasureText(text, size);
         LastItemBounds.Position += Cursor + new Vector2(0, size);
@@ -62,7 +62,7 @@ internal class GUIWindow
         LastItemBounds.Width += Margin * 2;
         LastItemBounds.Height += Margin * 2;
 
-        commands.Add(new DrawCommand.Text(text, size, Cursor + new Vector2(0, size)));
+        commands.Add(new DrawCommand.Text(text, size, Cursor + new Vector2(0, size), color));
 
         UpdateLayout();
     }

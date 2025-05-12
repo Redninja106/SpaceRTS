@@ -1,0 +1,8 @@
+{
+    "prototype": "SpriteModel",
+    "name": "missile_turret_model",
+    "width": 3.4641016151377544,
+    "height": 3.4641016151377544,
+    "sprites_folder": "missile_turret",
+    "sprite_count": 6
+}

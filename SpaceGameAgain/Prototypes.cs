@@ -2,7 +2,6 @@
 using SpaceGame.Structures;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
@@ -14,6 +13,8 @@ static class Prototypes
 {
     private static Dictionary<string, Prototype> prototypes = [];
     private static Dictionary<string, Type> prototypeTypes = [];
+    private static Dictionary<string, PrototypeFile> files = [];
+    
 
     static Prototypes()
     {
@@ -45,11 +46,10 @@ static class Prototypes
     public static void Load()
     {
         string[] fileNames = Directory.GetFiles("Prototypes", "*", SearchOption.AllDirectories);
-        Dictionary<string, PrototypeFile> files = [];
 
         foreach (var fileName in fileNames)
         {
-            PrototypeFile file = new PrototypeFile(fileName);
+            PrototypeFile file = new(fileName);
             files.Add(file.PrototypeName, file);
         }
 
@@ -61,8 +61,8 @@ static class Prototypes
             ReadCommentHandling = JsonCommentHandling.Skip,
         };
         options.Converters.Add(new HexCoordinateConverter());
+        options.Converters.Add(new ColorConverter());
         options.Converters.Add(new PrototypeConverter(files));
-
         options = JsonPopulate.GetOptionsWithPopulateResolver(options);
 
         foreach (var (_, file) in files)
@@ -71,6 +71,24 @@ static class Prototypes
             prototype.InitializePrototype();
             prototypes.Add(file.PrototypeName, prototype);
         }
+    }
+
+    public static void ReloadPrototype(Prototype prototype)
+    {
+        PrototypeFile file = files.Single(f => f.Value.GetInstance() == prototype).Value;
+
+        JsonSerializerOptions options = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+            AllowTrailingCommas = true,
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+        };
+        options.Converters.Add(new HexCoordinateConverter());
+        options.Converters.Add(new PrototypeConverter(files));
+        options = JsonPopulate.GetOptionsWithPopulateResolver(options);
+        file.Load(options);
+        prototype.InitializePrototype();
     }
 
     class PrototypeFile
@@ -265,5 +283,46 @@ static class Prototypes
                 return typeInfo;
             }
         }
+    }
+}
+
+internal class ColorConverter : JsonConverter<Color>
+{
+    public override Color Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.StartArray)
+        {
+            reader.Read();
+            byte r = reader.GetByte();
+            reader.Read();
+            byte g = reader.GetByte();
+            reader.Read();
+            byte b = reader.GetByte();
+            reader.Read();
+            byte a = 255;
+            if (reader.TokenType != JsonTokenType.EndArray)
+            {
+                a = reader.GetByte();
+                reader.Read();
+            }
+            return new Color(r, g, b, a);
+        }
+
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            string value = reader.GetString()!;
+
+            if (Color.TryParse(value, out Color result))
+            {
+                return result;
+            }
+        }
+
+        throw new Exception("invalid color");
+    }
+
+    public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options)
+    {
+        throw new NotImplementedException();
     }
 }

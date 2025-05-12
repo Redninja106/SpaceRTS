@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame;
-internal class ShadowedModel : NSpriteModel
+internal class ShadowedModel : SpriteModel
 {
     const int ShadowCount = 16;
 

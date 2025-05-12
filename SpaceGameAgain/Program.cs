@@ -88,6 +88,7 @@ partial class Program : Simulation
         World = new();
         
         var playerTeam = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
+        playerTeam.Money += 1000;
         playerTeam.CommandProcessor = new PlayerCommandProcessor();
         World.PlayerTeam = playerTeam.AsReference();
         World.Add(playerTeam);

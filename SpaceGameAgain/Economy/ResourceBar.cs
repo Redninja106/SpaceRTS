@@ -16,6 +16,8 @@ internal class ResourceBar : GUIWindow
 
     public override void Layout()
     {
+        Text("$" + World.PlayerTeam.Actor!.Money.ToString() + "k");
+
         foreach (var (proto, values) in World.PlayerTeam.Actor!.resources)
         {
             Text(proto.Name + ": " + values.Remaining);

@@ -1,9 +1,8 @@
 {
-  "prototype": "NSpriteModel",
-  "name": "particle_accelerator_model",
-  "sprites_folder": "particle_accelerator",
-  "width": 8.66,
-  "height": 8.66,
-  "sprite_count": 6
-
+    "prototype": "SpriteModel",
+    "name": "particle_accelerator_model",
+    "width": 8.660254037844386,
+    "height": 8.660254037844386,
+    "sprites_folder": "particle_accelerator",
+    "sprite_count": 6
 }

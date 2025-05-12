@@ -1,10 +1,8 @@
 {
-  "prototype": "NSpriteModel",
-  "name": "default_model",
-  "sprites_folder": "default",
-  "width": 2,
-  "height": 2,
-  "offset_x": 0,
-  "offset_y": 0,
-  "sprite_count": 6
+    "prototype": "SpriteModel",
+    "name": "default_model",
+    "width": 3.4641016151377544,
+    "height": 3.4641016151377544,
+    "sprites_folder": "default",
+    "sprite_count": 6
 }

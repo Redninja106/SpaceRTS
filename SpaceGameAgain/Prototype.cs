@@ -21,4 +21,10 @@ internal abstract class Prototype
     {
         return $"{Name} ({GetType().Name})";
     }
+
+    [DebugButton]
+    public void Reload()
+    {
+        Prototypes.ReloadPrototype(this);
+    }
 }

@@ -5,7 +5,5 @@
   "mining_count": 1,
   "title": "Resource Mine",
   "max_health": 3,
-  "cost": {
-    "aluminum": 1
-  }
+  "cost": 2
 }

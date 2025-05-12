@@ -20,8 +20,8 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
     public Vector2 Center { get; set; }
     public bool CanBeRotated { get; set; } = true;
     public Vector2[] Outline { get; private set; } = [];
-    public Dictionary<ResourcePrototype, int> Cost { get; set; } = [];
-    public NSpriteModel Model { get; set; } = Prototypes.Get<NSpriteModel>("default_model");
+    public Dictionary<ResourcePrototype, int> ResourceCosts { get; set; } = [];
+    public SpriteModel Model { get; set; } = Prototypes.Get<SpriteModel>("default_model");
 
     [JsonConverter(typeof(JsonStringEnumConverter<PowerLevel>))]
     public PowerLevel ProvidedPowerLevel { get; set; } = PowerLevel.None;
@@ -30,6 +30,7 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
 
     public ITexture Icon = Icons.Structure;
     public string? Description { get; set; }
+    public int Cost { get; set; }
 
     public StructurePrototype()
     {
@@ -106,10 +107,7 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
         window.Image(this.Icon);
         window.LayoutMode = LayoutMode.Vertical;
         window.Text(this.Title, 24);
-        foreach (var cost in Cost)
-        {
-            window.Text(cost.Value + " " + cost.Key.Name, 12);
-        }
+        window.Text("$" + this.Cost + "k");
         window.Text(this.Description ?? string.Empty);
     }
 }

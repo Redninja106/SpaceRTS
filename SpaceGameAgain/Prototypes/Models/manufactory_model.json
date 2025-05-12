@@ -1,11 +1,8 @@
 {
-  "prototype": "NSpriteModel",
-  "name": "manufactory_model",
-  "sprites_folder": "manufactory",
-  "width": 6.92,
-  "height": 6.92,
-  "offset_x": 1,
-  "offset_y": 1,
-  "sprite_count": 6
-
+    "prototype": "SpriteModel",
+    "name": "manufactory_model",
+    "width": 6.928203230275509,
+    "height": 6.928203230275509,
+    "sprites_folder": "manufactory",
+    "sprite_count": 6
 }

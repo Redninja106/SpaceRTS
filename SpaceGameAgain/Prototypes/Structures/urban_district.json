@@ -1,0 +1,11 @@
+{
+  "prototype": "UrbanDistrictPrototype",
+  "name": "urban_district",
+  "max_health": 10,
+  "title": "Urban District",
+  "footprint": [
+    [ 0, 0 ]
+  ],
+  "payout_amount": 5,
+  "payout_interval": 250
+}

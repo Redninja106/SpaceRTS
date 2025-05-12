@@ -12,10 +12,7 @@ internal abstract class Actor(Prototype prototype) : IInspectable
 
     public virtual void DebugLayout()
     {
-        if (ImGui.CollapsingHeader("Actor"))
-        {
-            ImGui.Text("Prototype: " + Prototype.Name);
-        }
+        ImGui.Text("Prototype: " + Prototype.Name);
     }
 
     public abstract void Serialize(BinaryWriter writer);

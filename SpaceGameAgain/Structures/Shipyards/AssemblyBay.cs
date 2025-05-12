@@ -122,10 +122,15 @@ internal class AssemblyBay : Structure
         }
         else
         {
-            if (window.TextButton("assemble ship"))
+            if (window.TextButton("assemble ship") && manufactoryCount > 0)
             {
                 var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
                 commandProcessor.AddCommand(new AssembleShipCommand(Prototypes.Get<AssembleShipCommandPrototype>("assemble_ship_command"), this));
+            }
+
+            if (window.LastItemHovered() && manufactoryCount == 0)
+            {
+                World.tooltipWindow.Text("requires at least one adjacent manufactory!");
             }
         }
 

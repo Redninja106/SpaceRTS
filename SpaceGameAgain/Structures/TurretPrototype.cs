@@ -10,6 +10,7 @@ namespace SpaceGame.Structures;
 internal class TurretPrototype : StructurePrototype
 {
     public WeaponSystemPrototype WeaponSystemPrototype { get; set; }
+    public SpriteModel TurretModel { get; set; }
 
     public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
     {

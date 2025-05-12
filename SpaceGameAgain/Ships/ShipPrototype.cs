@@ -16,7 +16,7 @@ internal class ShipPrototype : UnitPrototype
     public float TurnSpeed { get; set; } = 1f;
     public float FlyHeight { get; set; } = .4f;
 
-    public NSpriteModel? Model { get; set; }
+    public SpriteModel? Model { get; set; }
 
     public override WorldActor Deserialize(BinaryReader reader)
     {

@@ -1,0 +1,6 @@
+{
+  "prototype": "TextWidgetPrototype",
+  "name": "income_text_widget",
+  "size": 0.5,
+  "color": "#FFFFFF"
+}

@@ -19,10 +19,14 @@ internal class Team : WorldActor
     private Dictionary<ActorReference<Team>, TeamRelation> relationships = [];
     internal Dictionary<ResourcePrototype, ResourceValues> resources = [];
 
+    public int Money { get; set; }
+
     public ICommandProcessor CommandProcessor;
 
-    public Team(TeamPrototype prototype, ulong id, Transform transform, Dictionary<ActorReference<Team>, TeamRelation>? relationships = null) : base(prototype, id, transform)
+    public Team(TeamPrototype prototype, ulong id, Transform transform, Dictionary<ActorReference<Team>, TeamRelation>? relationships = null, int money = 0) : base(prototype, id, transform)
     {
+        this.Money = money;
+
         if (relationships != null)
         {
             this.relationships = relationships;
@@ -79,12 +83,11 @@ internal class Team : WorldActor
     {
         base.DebugLayout();
 
-        if (ImGui.CollapsingHeader("Team"))
+        ImGui.Text("money: " + Money);
+
+        foreach (var (resource, values) in resources)
         {
-            foreach (var (resource, values) in resources)
-            {
-                ImGui.Text($"{resource.Name}: {values.Remaining} ({values.Capacity} - {values.Consumption})");
-            }
+            ImGui.Text($"{resource.Name}: {values.Remaining} ({values.Capacity} - {values.Consumption})");
         }
     }
 
@@ -92,6 +95,7 @@ internal class Team : WorldActor
     {
         writer.Write(ID);
 
+        writer.Write(Money);
         writer.Write(relationships.Count);
         foreach (var (team, relation) in relationships)
         {

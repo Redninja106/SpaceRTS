@@ -35,6 +35,7 @@
 
 	<ItemGroup>
 	  <Folder Include="Assets\Icons\" />
+	  <Folder Include="Prototypes\Widgets\" />
 	</ItemGroup>
 
 	<ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

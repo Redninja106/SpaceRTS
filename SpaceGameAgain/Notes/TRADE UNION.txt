@@ -1,0 +1,7 @@
+neutral faction
+
+player can choose to trade/attack them
+
+once attacked enough they will go hostile (and stay that way for rest of game)
+
+high risk/high reward to attack them, trading instead is also a viable strategy

@@ -48,17 +48,14 @@ internal abstract class WorldActor(WorldActorPrototype prototype, ulong id, Tran
     public override void DebugLayout()
     {
         base.DebugLayout();
-        if (ImGui.CollapsingHeader("WorldActor"))
-        {
-            ImGui.Text("ID: " + ID);
-            if (ImGui.TreeNode("Transform"))
-            {
-                Transform.Layout();
-                ImGui.TreePop();
-            }
-        }
 
-        DebugLayoutSubclass(this.GetType());
+        ImGui.Text("ID: " + ID);
+        Transform.Layout();
+
+        if (this.GetType().GetMethod("DebugLayout")?.DeclaringType == typeof(WorldActor))
+        {
+            DebugLayoutSubclass(this.GetType());
+        }
     }
 
     private void DebugLayoutSubclass(Type type)
@@ -68,10 +65,8 @@ internal abstract class WorldActor(WorldActorPrototype prototype, ulong id, Tran
 
         DebugLayoutSubclass(type.BaseType!);
 
-        if (ImGui.CollapsingHeader(type.Name))
-        {
-            ObjectViewer.ReflectionLayoutObjectFields(this, type);
-        }
+        ImGui.SeparatorText(type.Name);
+        ObjectViewer.ReflectionLayoutObjectFields(this, type);
     }
 
     public override string ToString()

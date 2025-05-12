@@ -5,15 +5,12 @@ using SpaceGame.Networking;
 using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
-using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Numerics;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace SpaceGame;
 internal static class DebugMenu
@@ -287,339 +284,67 @@ internal static class DebugMenu
     {
         objectViewer.View(obj);
     }
-}
 
-class DebugSearch<T>
-{
-    private string query = "";
-    private int pruneIndex = 0;
-    private Func<T, string[]>? stringProvider;
-    private Func<List<T>> allItems;
 
-    public List<T> QueryItems { get; private set; }
-
-    public string Query 
-    { 
-        get => query; 
-        set
-        {
-            query = value;
-            pruneIndex = 0;
-        }
-    }
-
-    public DebugSearch(Func<List<T>> allItems, Func<T, string[]>? stringProvider = null)
+    class DebugSearch<T>
     {
-        this.allItems = allItems;
-        this.stringProvider = stringProvider;
+        private string query = "";
+        private int pruneIndex = 0;
+        private Func<T, string[]>? stringProvider;
+        private Func<List<T>> allItems;
 
-        this.QueryItems = this.allItems();
-    }
+        public List<T> QueryItems { get; private set; }
 
-    public void Layout()
-    {
-        string prevQuery = query;
-        if (ImGui.InputTextWithHint("##search", "search", ref query, 128))
+        public string Query
         {
-            pruneIndex = 0;
-            if (!query.Contains(prevQuery))
+            get => query;
+            set
             {
-                QueryItems = allItems();
+                query = value;
+                pruneIndex = 0;
             }
         }
-    }
 
-    public void Prune(int count = 10)
-    {
-        for (int i = 0; i < count; i++)
+        public DebugSearch(Func<List<T>> allItems, Func<T, string[]>? stringProvider = null)
         {
-            if (QueryItems.Count > pruneIndex)
-            {
-                T item = QueryItems[pruneIndex];
-                string[] strings = stringProvider?.Invoke(item) ?? [item?.ToString() ?? ""];
+            this.allItems = allItems;
+            this.stringProvider = stringProvider;
 
-                if (strings.Any(s => s != null && s.Contains(query, StringComparison.InvariantCultureIgnoreCase)))
+            this.QueryItems = this.allItems();
+        }
+
+        public void Layout()
+        {
+            string prevQuery = query;
+            if (ImGui.InputTextWithHint("##search", "search", ref query, 128))
+            {
+                pruneIndex = 0;
+                if (!query.Contains(prevQuery))
                 {
-                    pruneIndex++;
-                }
-                else
-                {
-                    QueryItems.RemoveAt(pruneIndex);
+                    QueryItems = allItems();
                 }
             }
         }
-    }
-}
 
-class ObjectViewer
-{
-    public bool Open = false;
-    public bool WantsFocus = false;
-
-    private object? focusObject = null;
-    private HashSet<object> targets = [];
-    public void Layout()
-    {
-        if (ImGui.BeginMenuBar())
+        public void Prune(int count = 10)
         {
-            ImGui.EndMenuBar();
-        }
-
-        if (ImGui.BeginTabBar("tabbar"))
-        {
-            foreach (var target in targets.ToArray())
+            for (int i = 0; i < count; i++)
             {
-                bool open = true;
-                ImGuiTabItemFlags flags = 0;
-                if (target == focusObject)
+                if (QueryItems.Count > pruneIndex)
                 {
-                    focusObject = null;
-                    flags = ImGuiTabItemFlags.SetSelected;
-                }
-                if (ImGui.BeginTabItem(target.ToString(), ref open, flags))
-                {
-                    if (target is IInspectable inspectable)
+                    T item = QueryItems[pruneIndex];
+                    string[] strings = stringProvider?.Invoke(item) ?? [item?.ToString() ?? ""];
+
+                    if (strings.Any(s => s != null && s.Contains(query, StringComparison.InvariantCultureIgnoreCase)))
                     {
-                        inspectable.DebugLayout();
+                        pruneIndex++;
                     }
                     else
                     {
-                        ReflectionLayoutObjectFields(target);
-                    }
-                    ImGui.EndTabItem();
-                }
-                if (!open)
-                {
-                    targets.Remove(target);
-
-                    if (targets.Count == 0)
-                    {
-                        this.Open = false;
+                        QueryItems.RemoveAt(pruneIndex);
                     }
                 }
             }
-
-            ImGui.EndTabBar();
         }
     }
-
-    public static object? ReflectionLayoutObject(string label, object? obj, bool isReadonly)
-    {
-        if ((obj?.GetType()?.IsConstructedGenericType ?? false) && obj.GetType().GetGenericTypeDefinition() == typeof(ActorReference<>))
-        {
-            ReflectionLayoutObject(label, obj.GetType().GetField("actor", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(obj), isReadonly);
-            return obj;
-        }
-
-        if (obj != null)
-        {
-            label += $" ({FormatTypeName(obj.GetType())})";
-        }
-
-        switch (obj)
-        {
-            case Prototype proto:
-                if (ImGui.Selectable($"{label}: {proto.Name} ({proto.GetType().Name})"))
-                {
-                    DebugMenu.ViewObject(proto);
-                }
-                return proto;
-            case WorldActor actor:
-                bool missing = !World.Actors.ContainsKey(actor.ID);
-                if (missing)
-                {
-                    ImGui.PushStyleColor(ImGuiCol.Text, 0xFF0000FF);
-                }
-                if (ImGui.Selectable(label + (missing ? " (not registered)" : "")))
-                {
-                    DebugMenu.ViewObject(actor);
-                }
-                if (missing)
-                {
-                    ImGui.PopStyleColor();
-                }
-                return actor;
-            case IInspectable inspectable:
-                if (ImGui.TreeNode(label))
-                {
-                    inspectable.DebugLayout();
-                    ImGui.TreePop();
-                }
-                return inspectable;
-            case IEnumerable enumerable:
-                if (ImGui.TreeNode(label))
-                {
-                    int i = 0;
-                    foreach (var element in enumerable)
-                    {
-                        ReflectionLayoutObject(i++.ToString(), element, element.GetType().IsValueType);
-                    }
-
-                    if (i == 0)
-                    {
-                        ImGui.TextDisabled("(empty)");
-                    }
-                    ImGui.TreePop();
-                }
-                return enumerable;
-            case float or Vector2 or DoubleVector or int or bool or string or Enum:
-            case object when obj.GetType().IsPrimitive:
-                if (isReadonly)
-                {
-                    ImGui.BeginDisabled();
-                }
-                object? result = LayoutPrimitiveObject(label, obj); 
-                if (isReadonly)
-                {
-                    ImGui.EndDisabled();
-                }
-                return result;
-            case null:
-            case object:
-                if (ImGui.TreeNode(label))
-                {
-                    if (obj == null)
-                    {
-                        ImGui.TextDisabled("(null)");
-                    }
-                    else
-                    {
-                        ReflectionLayoutObjectFields(obj);
-                    }
-                    ImGui.TreePop();
-                }
-                return obj;
-        }
-    }
-
-    private static string FormatTypeName(Type type)
-    {
-        if (type.IsConstructedGenericType)
-        {
-            return $"{type.Name.Split('`')[0]}<{string.Join(", ", type.GetGenericArguments().Select(FormatTypeName))}>";
-        }
-
-        return type.Name;
-    }
-
-    private static object? LayoutPrimitiveObject(string label, object? obj)
-    {
-        switch (obj)
-        {
-            case float f:
-                ImGui.DragFloat(label, ref f);
-                return f;
-            case Vector2 v2:
-                ImGui.DragFloat2(label, ref v2);
-                return v2;
-            case DoubleVector d2:
-                Vector2 vec = d2.ToVector2();
-                ImGui.DragFloat2(label, ref vec);
-                return DoubleVector.FromVector2(vec);
-            case int i:
-                ImGui.DragInt(label, ref i);
-                return i;
-            case bool b:
-                ImGui.Checkbox(label, ref b);
-                return b;
-            case string s:
-                ImGui.InputText(label, ref s, 256);
-                return s;
-            case Enum e:
-                Array values = Enum.GetValues(e.GetType());
-                int current = Array.IndexOf(values, e);
-                string opts = (string)values.Cast<object>().Aggregate((a, b) => a.ToString() + "\0" + b.ToString());
-
-                if (ImGui.Combo(label, ref current, opts))
-                {
-                    return values.GetValue(current);
-                }
-                return e;
-            case object when obj.GetType().IsPrimitive:
-                string objValue = obj?.ToString() ?? "null";
-                ImGui.InputText(label, ref objValue, (uint)objValue.Length);
-                return obj;
-            default:
-                throw new UnreachableException();
-        }
-    }
-
-    public static void ReflectionLayoutObjectFields(object obj, Type? type = null)
-    {
-        BindingFlags bindFlags = BindingFlags.Public | BindingFlags.Instance;
-        if (type == null) 
-        {
-            type = obj.GetType();
-        }
-        else
-        {
-            bindFlags |= BindingFlags.DeclaredOnly;
-        }
-        foreach (var member in type.GetMembers(bindFlags))
-        {
-            object? value;
-            switch (member)
-            {
-                case FieldInfo field when !field.Name.Contains('<'):
-                    value = field.GetValue(obj);
-                    value = ReflectionLayoutObject(field.Name, value, !field.Attributes.HasFlag(FieldAttributes.InitOnly));
-                    if (!field.Attributes.HasFlag(FieldAttributes.InitOnly))
-                    {
-                        field.SetValue(obj, value);
-                    }
-                    break;
-                case PropertyInfo prop:
-                    if (prop.CanRead && prop.GetIndexParameters().Length == 0)
-                    {
-                        value = prop.GetValue(obj);
-                        bool isReadonly = !prop.CanWrite;
-
-                        if (isReadonly)
-                        {
-                            ImGui.BeginDisabled();
-                        }
-
-                        value = ReflectionLayoutObject(prop.Name, value, isReadonly);
-                        if (isReadonly)
-                        {
-                            ImGui.EndDisabled();
-                        }
-                        else
-                        {
-                            prop.SetValue(obj, value);
-                        }
-                    }
-                    break;
-                case MethodInfo method when method.GetCustomAttribute<DebugButtonAttribute>() != null:
-                    if (ImGui.Button(method.Name))
-                    {
-                        method.Invoke(obj, null);
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        //foreach (var field in obj.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance))
-        //{
-        //}
-    }
-
-    public void View(object? obj)
-    {
-        if (obj != null && !targets.Contains(obj))
-        {
-            targets.Add(obj);
-        }
-
-        focusObject = obj;
-        WantsFocus = true;
-        Open = true;
-    }
-}
-
-[AttributeUsage(AttributeTargets.Method)]
-class DebugButtonAttribute : Attribute
-{
 }

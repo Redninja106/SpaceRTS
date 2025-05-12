@@ -19,8 +19,10 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, ulong i
     {
         foreach (var proto in Prototypes.GetAll<StructurePrototype>())
         {
-            window.Text(proto.Title);
-            if (window.LastItemClicked(MouseButton.Left))
+            bool canAfford = World.PlayerTeam.Actor!.Money >= proto.Cost;
+
+            window.Text(proto.Title, color: canAfford ? null : Color.Red);
+            if (window.LastItemClicked(MouseButton.Left) && canAfford)
             {
                 World.ConstructionInteractionContext.BeginPlacing(proto, Ship.Actor!);
             }
