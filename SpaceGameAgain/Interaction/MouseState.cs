@@ -2,6 +2,8 @@
 
 internal class MouseState(MouseButton button)
 {
+    public float DragThreshold = 10f;
+
     public bool Holding;
     public bool Dragging;
     public bool Pressed;
@@ -29,7 +31,7 @@ internal class MouseState(MouseButton button)
             }
             Dragging = false;
         }
-        if (Holding && DoubleVector.Distance(DragStart, World.MousePosition) > World.Camera.ScreenDistanceToWorldDistance(25f))
+        if (Holding && DoubleVector.Distance(DragStart, World.MousePosition) > World.Camera.ScreenDistanceToWorldDistance(DragThreshold))
         {
             Dragging = true;
         }

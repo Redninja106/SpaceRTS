@@ -7,5 +7,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Combat;
 internal abstract class WeaponSystemPrototype : WorldActorPrototype
 {
+    public float Range { get; set; } = 1;
+
     public abstract WeaponSystem CreateWeapon(ulong id, ActorReference<Unit> unit);
 }

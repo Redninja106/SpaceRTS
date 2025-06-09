@@ -1,0 +1,8 @@
+{
+    "prototype": "NormalMappedSpriteModel",
+    "name": "radar_model",
+    "width": 5.196152422706632,
+    "height": 5.196152422706632,
+    "sprites_folder": "radar",
+    "sprite_count": 6
+}

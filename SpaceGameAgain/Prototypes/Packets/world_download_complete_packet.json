@@ -1,0 +1,4 @@
+{
+  "prototype": "WorldDownloadCompletePacketPrototype",
+  "name": "world_download_complete_packet"
+}

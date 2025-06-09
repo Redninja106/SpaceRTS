@@ -20,5 +20,9 @@
   ],
   "max_health": 10,
   "ship_prototype": "medium_ship",
-  "power_consumed": 5
+  "required_power_level": "medium",
+  "production_time": 15000,
+  "cost": 50,
+  "category": "Shipbuilding"
+
 }

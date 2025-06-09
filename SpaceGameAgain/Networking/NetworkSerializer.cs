@@ -24,7 +24,10 @@ internal class NetworkSerializer
         // uint sig = reader.ReadUInt32();
         // DebugLog.Assert(sig == 0xDDBBCCAA);
         string prototypeName = reader.ReadString();
-        DebugLog.Assert(!string.IsNullOrEmpty(prototypeName));
+        if (string.IsNullOrWhiteSpace(prototypeName))
+        {
+            throw new Exception("invalid prototype name");
+        }
         Prototype prototype = Prototypes.Get(prototypeName);
         return prototype.Deserialize(reader);
     }

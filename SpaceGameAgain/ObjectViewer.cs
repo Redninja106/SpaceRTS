@@ -32,14 +32,22 @@ class ObjectViewer
                 }
                 if (ImGui.BeginTabItem(target.ToString(), ref open, flags))
                 {
-                    if (target is IInspectable inspectable)
+                    try
                     {
-                        inspectable.DebugLayout();
+                        if (target is IInspectable inspectable)
+                        {
+                            inspectable.DebugLayout();
+                        }
+                        else
+                        {
+                            ReflectionLayoutObjectFields(target);
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        ReflectionLayoutObjectFields(target);
+                        ImGui.Text(ex.ToString());
                     }
+
                     ImGui.EndTabItem();
                 }
                 if (!open)

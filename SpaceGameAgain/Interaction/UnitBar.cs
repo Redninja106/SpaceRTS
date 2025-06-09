@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SpaceGame.Commands;
+using SpaceGame.Ships.Fleets;
 
 namespace SpaceGame.Interaction;
 internal class UnitBar : GUIWindow
@@ -98,28 +100,14 @@ internal class UnitBar : GUIWindow
     {
         if (World.SelectionHandler.SelectedCount == 1)
         {
-            var unit = World.SelectionHandler.GetSelectedUnit()!;
-
-            LayoutMode = LayoutMode.Horizontal;
-            Image(unit.Icon);
-            LayoutMode = LayoutMode.Vertical;
-            Text(unit.Prototype.Title, 24);
-
-            string healthDescription = (unit.Health / (float)unit.Prototype.MaxHealth) switch
-            {
-                1 => "operational",
-                >= .5f => "damaged",
-                _ => "critial"
-            };
-
-            Text(healthDescription);
-            if (LastItemHovered())
-            {
-                World.tooltipWindow.Text($"{unit.Health}/{unit.Prototype.MaxHealth}hp");
-            }
-
-            unit.Layout(this);
+            LayoutSingleUnitMenu();
         }
+        else if (World.SelectionHandler.SelectedCount > 1)
+        {
+            LayoutMultiUnitMenu();
+        }
+
+
 
         return;
 
@@ -138,7 +126,7 @@ internal class UnitBar : GUIWindow
 
         if (selectedCount == 1)
         {
-            switch (World.SelectionHandler.GetSelectedUnit())
+            switch (World.SelectionHandler.GetSingleUnit())
             {
                 case Ship s:
                     Image(Icons.Ship);
@@ -184,6 +172,110 @@ internal class UnitBar : GUIWindow
         }
 
         base.Layout();
+    }
+
+    private void LayoutMultiUnitMenu()
+    {
+        Unit[] units = World.SelectionHandler.GetSelectedUnits().ToArray();
+
+        LayoutMode = LayoutMode.Horizontal;
+        Text("Selected Units");
+        PushState();
+        if (TextButton("Create Fleet", 12))
+        {
+            PlayerCommandProcessor playerCommandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor.GetCommandProcessor();
+            ActorReference<Ship>[] ships = units.OfType<Ship>().Select(u => u.AsReference()).ToArray();
+            playerCommandProcessor.AddCommand(new CreateFleetCommand(Prototypes.Get<CreateFleetCommandPrototype>("create_fleet_command"), "fleet", World.PlayerTeam, ships));
+        }
+        PopState();
+
+        LayoutMode = LayoutMode.Vertical;
+
+        for (int i = 0; i < units.Length; i++)
+        {
+            var unit = units[i];
+            Image(unit.Icon, new(24, 24));
+            if (LastItemClicked(MouseButton.Left))
+            {
+                World.SelectionHandler.ClearSelection();
+                World.SelectionHandler.Select(unit);
+            }
+            else if (LastItemClicked(MouseButton.Right))
+            {
+                World.SelectionHandler.Deselect(unit);
+            }
+            else if (LastItemHovered())
+            {
+                World.SelectionHandler.VisualFocus = unit;
+                World.SetTooltip(window => window.Text(unit.Prototype.Title));
+            }
+            LayoutMode = LayoutMode.Horizontal;
+
+        }
+    }
+
+    private void LayoutSingleUnitMenu()
+    {
+        var unit = World.SelectionHandler.GetSingleUnit()!;
+
+        LayoutMode = LayoutMode.Horizontal;
+        Image(unit.Icon);
+        Text(unit.Prototype.Title, 24);
+        if (unit is Ship s1 && s1.Fleet is Fleet fleet)
+        {
+            PushState();
+            Text("(fleet 1)", color: Color.Gray);
+            PopState();
+        }
+        LayoutMode = LayoutMode.Vertical;
+
+        PushState();
+        LayoutMode = LayoutMode.Horizontal;
+        if (unit is Ship s)
+        {
+            Cursor += new Vector2(0, 4);
+            foreach (var module in s.modules)
+            {
+                Image(module.Actor!.Icon, new(24, 24));
+                if (LastItemHovered())
+                {
+                    World.SetTooltip(w =>
+                    {
+                        w.Text(module.Actor.Prototype.Name);
+                    });
+                }
+            }
+        }
+        PopState();
+
+        LayoutMode = LayoutMode.Vertical;
+        string status = (unit.Health / (float)unit.Prototype.MaxHealth) switch
+        {
+            1 => "operational",
+            >= .5f => "damaged",
+            _ => "critical"
+        };
+
+        if (unit is Structure str && !str.Powered)
+        {
+            status = "unpowered";
+        }
+
+        if (unit.Team.Actor != World.PlayerTeam.Actor)
+        {
+            Text(unit.Team.Actor!.Name, color: Color.Gray);
+        }
+        else
+        {
+            Text(status, color: Color.Gray);
+            if (LastItemHovered())
+            {
+                World.SetTooltip(w => w.Text($"{unit.Health}/{unit.Prototype.MaxHealth}hp"));
+            }
+        }
+
+        LayoutMode = LayoutMode.Vertical;
+        unit.Layout(this);
     }
 
     public override void Update(GUIViewport viewport)

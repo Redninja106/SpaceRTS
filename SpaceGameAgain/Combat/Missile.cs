@@ -10,7 +10,7 @@ internal class Missile : WorldActor, IDestructable
 {
     public override MissilePrototype Prototype => (MissilePrototype)base.Prototype;
 
-    public ActorReference<Unit> Target { get; }
+    public ActorReference<Unit> Target { get; set; }
     public DoubleVector TargetOffset { get; set; }
 
     public DoubleVector Velocity { get; set; }
@@ -50,11 +50,25 @@ internal class Missile : WorldActor, IDestructable
             return;
         }
 
-        var positionDelta = (Target.Actor!.Transform.Position + TargetOffset - Transform.Position).Normalized() * Prototype.MaxSpeed;
-        if (DoubleVector.Distance(Target.Actor!.Transform.Position + TargetOffset, Transform.Position) < .05f)
+        if (((IDestructable?)Target.Actor)?.IsDestroyed ?? false)
         {
-            TargetOffset = DoubleVector.Zero;
+            Target = ActorReference<Unit>.Null;
         }
+
+        DoubleVector positionDelta;
+        if (!Target.IsNull)
+        {
+            positionDelta = (Target.Actor!.Transform.Position + TargetOffset - Transform.Position).Normalized() * Prototype.MaxSpeed;
+            if (DoubleVector.Distance(Target.Actor!.Transform.Position + TargetOffset, Transform.Position) < .05f)
+            {
+                TargetOffset = DoubleVector.Zero;
+            }
+        }
+        else
+        {
+            positionDelta = this.Velocity;
+        }
+
 
         var lastVelocity = Velocity;
         Velocity = Util.Step(Velocity, positionDelta, Prototype.Acceleration * Program.Timestep);
@@ -62,10 +76,13 @@ internal class Missile : WorldActor, IDestructable
 
         Transform.Position += Velocity * Program.Timestep;
 
-        if (age > 1 && Target.Actor!.TestPoint(Transform.Position))
+        if (!Target.IsNull)
         {
-            Detonate();
-            Target.Actor!.Health--;
+            if (age > 1 && Target.Actor!.TestPoint(Transform.Position))
+            {
+                Detonate();
+                Target.Actor!.Health--;
+            }
         }
 
         age += Program.Timestep;

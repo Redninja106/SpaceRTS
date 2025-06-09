@@ -22,13 +22,10 @@ internal class Grid : WorldActor
         Angle.ToVector(5 * MathF.Tau / 6),
     ];
 
-    public double CollisionRadius { get; set; }
-
     public Dictionary<HexCoordinate, GridCell> cells = [];
-    public List<ActorReference<Structure>> structures = [];
     private ActorReference<WorldActor> parent;
 
-    public PowerLevel PowerLevel { get; private set; }
+    //public PowerLevel PowerLevel { get; private set; }
     public WorldActor Parent => parent.Actor!;
 
     public override ref Transform Transform => ref parent.Actor!.Transform;
@@ -41,8 +38,8 @@ internal class Grid : WorldActor
 
     public void AddCell(HexCoordinate location)
     {
-        CollisionRadius = Math.Max(CollisionRadius, location.ToCartesian().Length());
-        cells.Add(location, new(new Tile(Prototypes.Get<TilePrototype>("ground_tile"))));
+        // CollisionRadius = Math.Max(CollisionRadius, location.ToCartesian().Length());
+        cells.Add(location, new(Prototypes.Get<TilePrototype>("ground_tile")));
     }
 
     public void RemoveCell(HexCoordinate location)
@@ -76,7 +73,7 @@ internal class Grid : WorldActor
         {
             canvas.PushState();
             canvas.Translate(coord.ToCartesian());
-            cell.Tile.RenderTile(canvas, this, coord);
+            cell.Tile.RenderTile(canvas, this, cell, coord);
 
             if (World.CurrentInteractionContext == World.ConstructionInteractionContext)
             {
@@ -118,12 +115,12 @@ internal class Grid : WorldActor
                 HexCoordinate coord = new(q, r);
                 Vector2 cartesian = coord.ToCartesian();
 
-                if ((cartesian + Angle.ToVector(0 * MathF.Tau / 6)).Length() > radius) continue;
-                if ((cartesian + Angle.ToVector(1 * MathF.Tau / 6)).Length() > radius) continue;
-                if ((cartesian + Angle.ToVector(2 * MathF.Tau / 6)).Length() > radius) continue;
-                if ((cartesian + Angle.ToVector(3 * MathF.Tau / 6)).Length() > radius) continue;
-                if ((cartesian + Angle.ToVector(4 * MathF.Tau / 6)).Length() > radius) continue;
-                if ((cartesian + Angle.ToVector(5 * MathF.Tau / 6)).Length() > radius) continue;
+                if ((cartesian + Angle.ToVector(0 * MathF.Tau / 6)).LengthSquared() > radius * radius) continue;
+                if ((cartesian + Angle.ToVector(1 * MathF.Tau / 6)).LengthSquared() > radius * radius) continue;
+                if ((cartesian + Angle.ToVector(2 * MathF.Tau / 6)).LengthSquared() > radius * radius) continue;
+                if ((cartesian + Angle.ToVector(3 * MathF.Tau / 6)).LengthSquared() > radius * radius) continue;
+                if ((cartesian + Angle.ToVector(4 * MathF.Tau / 6)).LengthSquared() > radius * radius) continue;
+                if ((cartesian + Angle.ToVector(5 * MathF.Tau / 6)).LengthSquared() > radius * radius) continue;
 
                 grid.AddCell(new(q, r));
             }
@@ -159,7 +156,7 @@ internal class Grid : WorldActor
             }
         }
 
-        UpdatePowerLevel();
+        // UpdatePowerLevel();
     }
 
     public GridCell? GetCellFromPoint(DoubleVector point)
@@ -169,15 +166,18 @@ internal class Grid : WorldActor
         return GetCell(coord);
     }
 
-    public void UpdatePowerLevel()
-    {
-        PowerLevel maxPowerLevel = PowerLevel.None;
-        foreach (var structure in structures)
-        {
-             maxPowerLevel = (PowerLevel)Math.Max((int)maxPowerLevel, (int)structure.Actor!.Prototype.ProvidedPowerLevel);
-        }
-        this.PowerLevel = maxPowerLevel;
-    }
+    //public void UpdatePowerLevel()
+    //{
+    //    PowerLevel maxPowerLevel = PowerLevel.None;
+    //    foreach (var cell in this.cells)
+    //    {
+    //        if (cell.Value.Structure.Actor is Structure s)
+    //        {
+    //            maxPowerLevel = (PowerLevel)Math.Max((int)maxPowerLevel, (int)s.Prototype.ProvidedPowerLevel);
+    //        }
+    //    }
+    //    this.PowerLevel = maxPowerLevel;
+    //}
 
     public override void Tick()
     {
@@ -201,20 +201,13 @@ internal class Grid : WorldActor
             }
         }
 
-        UpdatePowerLevel();
+        // UpdatePowerLevel();
     }
 
     public override void Serialize(BinaryWriter writer)
     {
         writer.Write(ID);
         writer.Write(parent);
-        writer.Write(CollisionRadius);
-
-        writer.Write(structures.Count);
-        foreach (var actor in structures)
-        {
-            writer.Write(actor);
-        }
 
         writer.Write(cells.Count);
         foreach (var (coordinate, cell) in cells)
@@ -237,14 +230,6 @@ class GridPrototype : WorldActorPrototype
     {
         ulong id = reader.ReadUInt64();
         ActorReference<WorldActor> parent = reader.ReadActorReference<WorldActor>();
-        double collisionRadius = reader.ReadDouble();
-
-        List<ActorReference<Structure>> structures = new();
-        int structureCount = reader.ReadInt32();
-        for (int i = 0; i < structureCount; i++)
-        {
-            structures.Add(reader.ReadActorReference<Structure>());
-        }
 
         Dictionary<HexCoordinate, GridCell> cells = new();
         int cellCount = reader.ReadInt32();
@@ -252,14 +237,12 @@ class GridPrototype : WorldActorPrototype
         {
             HexCoordinate coordinate = reader.ReadHexCoordinate();
             ActorReference<Structure> cell = reader.ReadActorReference<Structure>();
-            cells.Add(coordinate, new(new Tile(Prototypes.Get<TilePrototype>("ground_tile"))) { Structure = cell });
+            cells.Add(coordinate, new(Prototypes.Get<TilePrototype>("ground_tile")) { Structure = cell });
         }
 
         return new Grid(this, id, parent)
         {
             cells = cells,
-            structures = structures,
-            CollisionRadius = collisionRadius,
         };
 
     }

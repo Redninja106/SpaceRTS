@@ -1,4 +1,5 @@
 {
   "prototype": "ChaingunSystemPrototype",
-  "name": "chaingun_system"
+  "name": "chaingun_system",
+  "range": 6
 }

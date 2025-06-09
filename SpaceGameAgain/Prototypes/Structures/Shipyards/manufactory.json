@@ -11,9 +11,8 @@
   "price": 100,
   "can_be_rotated": true,
   "max_health": 10,
-  "power_consumed": 3,
-  "center": {
-    "x": 0.5,
-    "y": 0.866
-  }
+  "required_power_level": "low",
+  "cost": 25,
+  "category": "Shipbuilding"
+
 }

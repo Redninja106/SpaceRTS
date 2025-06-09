@@ -1,14 +1,16 @@
 ﻿using SpaceGame.Bots;
+using SpaceGame.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpaceGame.AI;
+namespace SpaceGame.Bots;
 internal abstract class Strategy
 {
     protected BotCommandProcessor Processor { get; private set; }
+    public List<Command> Commands = [];
 
     public Strategy(BotCommandProcessor processor)
     {
@@ -36,3 +38,4 @@ class ScoutingStrategy : Strategy
         //          find closest safe planet & move there
     }
 }
+

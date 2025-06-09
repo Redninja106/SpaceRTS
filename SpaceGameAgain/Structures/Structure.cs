@@ -21,12 +21,12 @@ internal class Structure : Unit
     public Grid Grid => grid.Actor!;
     public List<HexCoordinate>? Footprint { get; set; }
 
-    private Vector2[]? outline;
     private ActorReference<Grid> grid;
 
     public HashSet<Structure> neighbors = [];
 
-    public bool Enabled { get; set; } = true;
+    public bool Enabled { get; set; }
+    public bool Powered { get; set; }
     public override ITexture Icon => Icons.Structure;
 
     public Structure(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid.Actor!.Transform.Translated(DoubleVector.FromVector2(location.ToCartesian())).Rotated(rotation * (MathF.Tau / 6f)), team)
@@ -34,10 +34,7 @@ internal class Structure : Unit
         Location = location;
         Rotation = rotation;
         this.grid = grid;
-
-        // var planet = (Planet)Grid.Parent;
-        // planet.PowerProduced += Prototype.PowerProduced;
-        // planet.PowerConsumed += Prototype.PowerConsumed;
+        UpdateStatus();
     }
 
     //public override ref Transform Transform 
@@ -64,12 +61,9 @@ internal class Structure : Unit
     //        Behavior = (StructureBehavior)Activator.CreateInstance(behaviorType, this)!;
     //}
 
-    public void ComputeOutline()
+    public override DoubleVector GetCenter()
     {
-        if (Footprint != null)
-        {
-            outline = StructurePrototype.CreateOutline(Footprint.ToArray());
-        }
+        return this.Transform.Position + DoubleVector.FromVector2(this.Prototype.Center.Rotated(this.Rotation * MathF.PI / 6f));
     }
 
     public IEnumerable<HexCoordinate> GetAdjacentCells()
@@ -102,41 +96,19 @@ internal class Structure : Unit
 
     public override void Render(ICanvas canvas)
     {
-        bool isSelected = World.SelectionHandler.IsSelected(this);
-        if (isSelected)
-        {
-            var outline = this.outline ?? Prototype.Outline;
-
-            for (int i = 0; i < outline.Length; i += 2)
-            {
-                canvas.Stroke(Team.Actor?.GetRelationColor(World.PlayerTeam.Actor!) ?? Teams.Team.NeutralColor);
-                canvas.StrokeWidth(0);
-                canvas.DrawLine(outline[i], outline[i + 1]);
-            }
-        }
-
-        //if (((Planet)Grid.Parent).NetPower < 0 && Prototype.PowerConsumed > 0)
-        //{
-        //    Prototype.Model.Render(canvas);
-        //    Prototype.Model.Render(canvas, new RenderParameters() { colorOverride = Color.Black with { A = 100 } });
-        //    canvas.Fill(Color.Red);
-        //    canvas.DrawAlignedText("no power", .25f, Prototype.Center, Alignment.Center);
-        //    return;
-        //}
-
         if (Prototype is ZonedStructurePrototype zone)
         {
-            if (!isSelected && ((World.SelectionHandler.GetSelectedUnit() as Ship)?.modules?.Any(m => m is ConstructionModule) ?? false))
-            {
-                canvas.Fill((zone.Color with { A = .5f }));
-                foreach (var cell in Prototype.Footprint)
-                {
-                    canvas.PushState();
-                    canvas.Translate(cell.ToCartesian());
-                    canvas.DrawPolygon(Grid.hexagon);
-                    canvas.PopState();
-                }
-            }
+            //if (!isSelected && ((World.SelectionHandler.GetSelectedUnit() as Ship)?.modules?.Any(m => m is ConstructionModule) ?? false))
+            //{
+            //    canvas.Fill((zone.Color with { A = .5f }));
+            //    foreach (var cell in Prototype.Footprint)
+            //    {
+            //        canvas.PushState();
+            //        canvas.Translate(cell.ToCartesian());
+            //        canvas.DrawPolygon(Grid.hexagon);
+            //        canvas.PopState();
+            //    }
+            //}
 
             //if (Behavior != null)
             //{
@@ -158,6 +130,12 @@ internal class Structure : Unit
             canvas.Translate(Prototype.Center);
             canvas.Rotate(-(this.Rotation * MathF.Tau / 6f));
             Prototype.Model.Render(canvas, this.InterpolatedTransform, ColorF.White);
+
+            if (!Powered)
+            {
+                Prototype.Model.Render(canvas, this.InterpolatedTransform, ColorF.Black with { A = .5f });
+                canvas.DrawTexture(Icons.Economic, new Rectangle(0, 0, 2, 2, Alignment.Center), ColorF.Red);
+            }
         }
     }
 
@@ -204,9 +182,23 @@ internal class Structure : Unit
     {
         base.Tick();
         this.Transform = Grid.Transform.Translated(DoubleVector.FromVector2(Location.ToCartesian())).Rotated(Rotation * (MathF.Tau / 6f));
+        UpdateStatus();
 
-        // Enabled = ((Planet)Grid.Parent).NetPower >= 0;
+        //Enabled = ((Planet)Grid.Parent).NetPower >= 0;
         // Behavior?.Update();
+    }
+
+    private void UpdateStatus()
+    {
+        if (Prototype.RequiredPowerLevel > Economy.PowerLevel.None)
+        {
+            Powered = neighbors.Any(n => n.Team == this.Team && n.Prototype.ProvidedPowerLevel >= this.Prototype.RequiredPowerLevel);
+        }
+        else
+        {
+            Powered = true;
+        }
+        Enabled = Powered;
     }
 
     public override void OnDestroyed()
@@ -226,8 +218,7 @@ internal class Structure : Unit
         writer.Write(Team);
         writer.Write(grid);
 
-        writer.Write(Location.Q);
-        writer.Write(Location.R);
+        writer.Write(Location);
         writer.Write(Rotation);
     }
 
@@ -237,11 +228,66 @@ internal class Structure : Unit
 
     public virtual void OnNeighborRemoved(Structure neighbor)
     {
-
     }
 
     public override void Layout(GUIWindow window)
     {
         // window.Text(Prototype.Title);
     }
+
+    public override void DrawHighlightAbove(ICanvas canvas, Camera camera, bool selected)
+    {
+        for (int i = 0; i < Prototype.Outline.Length; i += 2)
+        {
+            Vector2 from = Prototype.Outline[i];
+            Vector2 to = Prototype.Outline[i + 1];
+
+            Vector2 edgeCenter = (to + from) / 2f;
+
+            Vector2 delta = to - from;
+            Vector2 side1 = this.Location.ToCartesian() + edgeCenter + new Vector2(delta.Y, -delta.X);
+            Vector2 side2 = this.Location.ToCartesian() + edgeCenter + new Vector2(-delta.Y, delta.X);
+
+            var structure1 = this.grid.Actor!.GetCell(HexCoordinate.FromCartesian(side1))?.Structure.Actor;
+            var structure2 = this.grid.Actor!.GetCell(HexCoordinate.FromCartesian(side2))?.Structure.Actor;
+
+            if (structure1 != null && structure2 != null && structure1.Team == structure2.Team)
+            {
+                canvas.PushState();
+                this.InterpolatedTransform.WithRotation(0).ApplyTo(canvas, camera);
+                structure1.Prototype.RenderAdjacencyOverlay(canvas, edgeCenter, structure2.Prototype);
+                structure2.Prototype.RenderAdjacencyOverlay(canvas, edgeCenter, structure1.Prototype);
+                canvas.PopState();
+            }
+        }
+
+        //foreach (var neighbor in neighbors)
+        //{
+        //    canvas.PushState();
+        //    Transform transform = Transform.Default with
+        //    {
+        //        Position = (this.GetCenter() + neighbor.GetCenter()) / 2
+        //    }; 
+        //    transform.ApplyTo(canvas, camera);
+        //    neighbor.Prototype.RenderAdjacencyOverlay(canvas, Vector2.Zero, this.Prototype);
+        //    this.Prototype.RenderAdjacencyOverlay(canvas, Vector2.Zero, neighbor.Prototype);
+        //    canvas.PopState();
+        //}
+
+
+        base.DrawHighlightAbove(canvas, camera, selected);
+    }
+
+    public override void DrawHighlightBelow(ICanvas canvas, Camera camera, bool selected)
+    {
+        canvas.Transform(World.Camera.CreateRelativeMatrix(InterpolatedTransform));
+        canvas.Stroke(World.PlayerTeam.Actor!.GetRelationColor(Team.Actor!) with { A = (byte)(selected ? 255 : 100) });
+        for (int i = 0; i < Prototype.Outline.Length; i += 2)
+        {
+            canvas.DrawLine(Prototype.Outline[i], Prototype.Outline[i + 1]);
+        }
+
+        base.DrawHighlightBelow(canvas, camera, selected);
+    }
+
 }

@@ -1,9 +1,0 @@
-{
-  "prototype": "StructurePrototype",
-  "name": "generator",
-  "title": "Generator",
-  "max_health": 10,
-  "can_be_rotated": true,
-  "provided_power_level": "low",
-  "required_power_level": "none"
-}

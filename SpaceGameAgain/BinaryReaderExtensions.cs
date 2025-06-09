@@ -30,7 +30,9 @@ internal static class BinaryReaderExtensions
 
     public static HexCoordinate ReadHexCoordinate(this BinaryReader reader)
     {
-        return new(reader.ReadInt32(), reader.ReadInt32());
+        int q = reader.ReadInt32();
+        int r = reader.ReadInt32();
+        return new(q, r);
     }
 
     public static ActorReference<TActor> ReadActorReference<TActor>(this BinaryReader reader)

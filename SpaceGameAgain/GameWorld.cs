@@ -8,6 +8,7 @@ using SpaceGame.GUI;
 using ImGuiNET;
 using System.Diagnostics;
 using SpaceGame.Economy;
+using SimulationFramework.Drawing.Shaders;
 
 namespace SpaceGame;
 internal class GameWorld
@@ -18,17 +19,19 @@ internal class GameWorld
 
     public Dictionary<ulong, WorldActor> Actors = [];
 
-    public List<Ship> Ships { get; } = [];
-    public List<Planet> Planets { get; } = [];
-    public List<Team> Teams { get; } = [];
-    public List<Missile> Missiles { get; } = [];
-    public List<Bullet> Bullets { get; } = [];
-    public List<Structure> Structures { get; } = [];
-    public List<Grid> Grids { get; } = [];
-    public List<WeaponSystem> WeaponSystems { get; } = [];
-
+    public WorldActorList<Ship> Ships { get; } = [];
+    public WorldActorList<Planet> Planets { get; } = [];
+    public WorldActorList<Team> Teams { get; } = [];
+    public WorldActorList<Missile> Missiles { get; } = [];
+    public WorldActorList<Bullet> Bullets { get; } = [];
+    public WorldActorList<Structure> Structures { get; } = [];
+    public WorldActorList<Grid> Grids { get; } = [];
+    public WorldActorList<WeaponSystem> WeaponSystems { get; } = [];
+    
     //public List<Station> Stations { get; } = [];
     // public List<Asteroid> Asteroids { get; } = [];
+    
+    public TextWidgetManager TextWidgets = new();
 
     public UnitCollision Collision { get; } = new();
 
@@ -47,8 +50,6 @@ internal class GameWorld
     public ulong idleTicks;
 
     // HANDLERS
-
-
     public SelectionHandler SelectionHandler { get; } = new();
     public MouseDragHandler MouseDragHandler { get; } = new();
     public SelectInteractionHandler SelectInteractionContext { get; } = new();
@@ -64,13 +65,15 @@ internal class GameWorld
 
     private StarShader backgroundShader = new();
 
-
     // GUI
     // public ContextMenuWindow ContextMenu = new();
 
     public UnitBar UnitBar = new();
     public ResourceBar ResourceBar = new();
-    public TooltipWindow tooltipWindow = new();
+    
+    private TooltipWindow tooltipWindow = new();
+    private Action<GUIWindow>? onLayoutTooltip = null;
+
     public PopupWindow structureSelectWindow = new();
 
     // public WindowManager WindowManager = new WindowManager();
@@ -80,6 +83,7 @@ internal class GameWorld
     // public StructureList Structures { get; } = new();
 
     public IMask WorldShadowMask { get; private set; }
+    public IMask FogOfWarMask { get; private set; }
 
     // public ElementWindow InfoWindow { get; set; } = new()
     // {
@@ -111,13 +115,16 @@ internal class GameWorld
 
     public void Update(Vector2 viewportMousePosition, float tickProgress)
     {
+        onLayoutTooltip = null;
+
         MousePosition = Camera.SmoothTransform.Position + DoubleVector.FromVector2(Camera.ScreenToLocal(viewportMousePosition));
 
-        UpdateActorList(Planets, tickProgress);
+        Planets.Update(tickProgress);
 
         var soi = World.GetSphereOfInfluence(Camera.Transform.Position);
         soi?.ApplyUpdateTo(ref Camera.Transform);
         soi?.ApplyUpdateTo(ref Camera.SmoothTransform);
+
 
         leftMouse.Update();
         rightMouse.Update();
@@ -128,13 +135,13 @@ internal class GameWorld
         CurrentInteractionContext ??= SelectInteractionContext;
         CurrentInteractionContext.Update(leftMouse, rightMouse);
 
-        UpdateActorList(Grids, tickProgress);
-        UpdateActorList(Structures, tickProgress);
+        Grids.Update(tickProgress);
+        Structures.Update(tickProgress);
         //UpdateActorList(Stations);
-        UpdateActorList(WeaponSystems, tickProgress);
-        UpdateActorList(Ships, tickProgress);
-        UpdateActorList(Bullets, tickProgress);
-        UpdateActorList(Missiles, tickProgress);
+        WeaponSystems.Update(tickProgress);
+        Ships.Update(tickProgress);
+        Bullets.Update(tickProgress);
+        Missiles.Update(tickProgress);
         
         foreach (var planet in Planets)
         {
@@ -145,10 +152,19 @@ internal class GameWorld
         {
             window.Layout();
         }
+        tooltipWindow.Visible = onLayoutTooltip != null;
+        onLayoutTooltip?.Invoke(tooltipWindow);
     }
 
     public void Tick(Vector2 viewportMousePosition)
     {
+        DebugMenu.PushMetric();
+
+        if (Program.Lobby?.IsDownloadingWorld ?? false)
+        {
+            return;
+        }
+
         if (TurnProcessor.RemainingTicks == 0)
         {
             if (!TurnProcessor.TryPerformTurn())
@@ -168,8 +184,9 @@ internal class GameWorld
 
         TickRandom = new(unchecked((int)tick));
 
+        World.SelectionHandler.Tick();
 
-        TickActorList(Planets); 
+        Planets.Tick(); 
         
         foreach (var planet in Planets)
         {
@@ -180,17 +197,20 @@ internal class GameWorld
         rightMouse.Tick();
         middleMouse.Tick();
 
-        Collision.ClearBins();
+        // Collision.ClearBins();
         Collision.Update();
         
 
-        TickActorList(Structures);
-        TickActorList(Grids);
+        Structures.Tick();
+        Grids.Tick();
         //UpdateActorList(Stations);
-        TickActorList(WeaponSystems);
-        TickActorList(Ships);
-        TickActorList(Bullets);
-        TickActorList(Missiles);
+        WeaponSystems.Tick();
+        Ships.Tick();
+        Bullets.Tick();
+        Missiles.Tick();
+
+        TextWidgets.Tick();
+
         //UpdateActorList(Asteroids);
 
         foreach (var planet in Planets)
@@ -198,6 +218,7 @@ internal class GameWorld
             planet.SphereOfInfluence.Tick();
         }
 
+        DebugOverlays.Tick();
 
         // MapWindow.Stack.Clear();
         // foreach (var (name, count) in PlayerTeam.Actor!.Resources)
@@ -206,7 +227,11 @@ internal class GameWorld
         // }
 
         tick++;
+
+        DebugMenu.PopMetric();
     }
+
+    NoiseShader ns = new();
 
     public void Render(ICanvas canvas)
     {
@@ -220,10 +245,10 @@ internal class GameWorld
 
         backgroundShader.Render(canvas, Camera);
 
-        RenderActorList(Planets, canvas);
+        Planets.Render(canvas, Camera);
         //RenderActorList(Stations, canvas);
 
-        RenderActorList(Grids, canvas);
+        Grids.Render(canvas, Camera);
 
         foreach (var structure in Structures)
         {
@@ -239,14 +264,8 @@ internal class GameWorld
             canvas.PopState();
         }
 
-        Structures.Sort((a, b) => -a.Location.Q.CompareTo(b.Location.Q));
-        foreach (var structure in Structures)
-        {
-            canvas.PushState();
-            structure.InterpolatedTransform.ApplyTo(canvas, Camera);
-            structure.Render(canvas);
-            canvas.PopState();
-        }
+        Structures.Sort((a, b) => a.GetCenter().Y.CompareTo(b.GetCenter().Y));
+        Structures.Render(canvas, Camera);
 
         foreach (var ship in Ships)
         {
@@ -256,14 +275,15 @@ internal class GameWorld
             ship.RenderShadow(canvas, 0);
             canvas.PopState();
         }
-
-        RenderActorList(Ships, canvas);
-        RenderActorList(Missiles, canvas);
-        RenderActorList(Bullets, canvas);
-        RenderActorList(WeaponSystems, canvas);
+        
+        Ships.Render(canvas, Camera);
+        Missiles.Render(canvas, Camera);
+        Bullets.Render(canvas, Camera);
+        WeaponSystems.Render(canvas, Camera);
         //RenderActorList(Asteroids, canvas);
         CurrentInteractionContext ??= SelectInteractionContext;
-        CurrentInteractionContext.Render(canvas, leftMouse, rightMouse);
+        CurrentInteractionContext.RenderBackgroundOverlay(canvas, leftMouse, rightMouse);
+
 
         // render objects - true->mask
         // render shadows - false->mask
@@ -279,41 +299,124 @@ internal class GameWorld
         // blend based on fog buffer
     }
 
-    private void UpdateActorList<TActor>(List<TActor> actors, float tickProgress)
-        where TActor : WorldActor
+    public void RenderVisibility(ICanvas canvas)
     {
-        for (int i = 0; i < actors.Count; i++)
+        canvas.Clear(Color.Transparent);
+        VisibilityShader vs = new VisibilityShader();
+        foreach (var ship in Ships)
         {
-            actors[i].Update(tickProgress);
-        }
-    }
-
-    private void TickActorList<TActor>(List<TActor> actors)
-        where TActor : WorldActor
-    {
-        for (int i = 0; i < actors.Count; i++)
-        {
-            actors[i].Tick();
-
-            if (actors[i] is IDestructable destructable && destructable.IsDestroyed)
+            if (ship.Team == this.PlayerTeam)
             {
-                destructable.OnDestroyed();
-                actors.RemoveAt(i);
-                i--;
+                canvas.PushState();
+                ship.InterpolatedTransform.ApplyTo(canvas, Camera);
+                vs.RevealRadius = (float)ship.GetRevealRadius();
+                canvas.Fill(vs);
+                canvas.DrawCircle(Vector2.Zero, vs.RevealRadius);
+                canvas.PopState();
+            }
+        }
+
+        foreach (var structure in Structures)
+        {
+            if (structure.Team == this.PlayerTeam)
+            {
+                canvas.PushState();
+                structure.InterpolatedTransform.ApplyTo(canvas, Camera);
+                vs.RevealRadius = (float)structure.GetRevealRadius();
+                canvas.Fill(vs);
+                canvas.DrawCircle(structure.Prototype.Center, vs.RevealRadius);
+                canvas.PopState();
             }
         }
     }
 
-    private void RenderActorList<TActor>(List<TActor> actors, ICanvas canvas)
-        where TActor : WorldActor
+    class VisibilityShader : CanvasShader
     {
-        foreach (var actor in actors)
+        public float RevealRadius = 5;
+
+        public override ColorF GetPixelColor(Vector2 position)
         {
-            canvas.PushState();
-            actor.InterpolatedTransform.ApplyTo(canvas, Camera);
-            actor.Render(canvas);
-            canvas.PopState();
+            //float d = RevealRadius - position.Length();
+            return new ColorF(0, 0, 0, 1);
         }
+    }
+
+    public void RenderGroundLayer(ICanvas canvas)
+    {
+        canvas.PushState();
+        
+        Structures.Sort((a, b) => a.GetCenter().Y.CompareTo(b.GetCenter().Y));
+        Structures.Render(canvas, Camera);
+
+        canvas.PopState();
+    }
+
+    public void RenderSkyLayer(ICanvas canvas)
+    {
+        canvas.PushState();
+        
+        Ships.Sort((a, b) => a.Prototype.Scale.CompareTo(b.Prototype.Scale));
+        Ships.Render(canvas, Camera);
+
+        Missiles.Render(canvas, Camera);
+        Bullets.Render(canvas, Camera);
+        WeaponSystems.Render(canvas, Camera);
+
+        TextWidgets.RenderEventWidgets(canvas, Camera);
+
+        canvas.PopState();
+    }
+
+    public void RenderBackgroundLayer(ICanvas canvas)
+    {
+        canvas.PushState();
+        
+        backgroundShader.Render(canvas, Camera);
+        Planets.Render(canvas, Camera);
+        Grids.Render(canvas, Camera);
+
+        SelectionHandler.RenderBackgroundOverlay(canvas, Camera);
+
+        canvas.PopState();
+    }
+
+    public void RenderGroundOverlayLayer(ICanvas canvas)
+    {
+        canvas.PushState();
+
+        SelectionHandler.RenderGroundOverlay(canvas, Camera);
+
+        CurrentInteractionContext ??= SelectInteractionContext;
+        CurrentInteractionContext.RenderGroundOverlay(canvas, leftMouse, rightMouse);
+
+        canvas.PopState();
+    }
+
+    public void RenderSkyOverlayLayer(ICanvas canvas)
+    {
+        canvas.PushState();
+        
+
+        SelectionHandler.RenderSkyOverlay(canvas, Camera);
+
+        CurrentInteractionContext ??= SelectInteractionContext;
+        CurrentInteractionContext.RenderSkyOverlay(canvas, leftMouse, rightMouse);
+
+        TextWidgets.RenderNotificationWidgets(canvas, Camera);
+
+        canvas.PopState();
+    }
+
+    public void RenderBackgroundOverlayLayer(ICanvas canvas)
+    {
+        canvas.PushState();
+        
+        SelectionHandler.RenderBackgroundOverlay(canvas, Camera);
+        
+        CurrentInteractionContext ??= SelectInteractionContext;
+        CurrentInteractionContext.RenderBackgroundOverlay(canvas, leftMouse, rightMouse);
+       
+        canvas.PopState();
     }
 
     public SphereOfInfluence? GetSphereOfInfluence(DoubleVector point)
@@ -347,32 +450,28 @@ internal class GameWorld
     {
         Actors.Add(actor.ID, actor);
 
-        if (actor is Ship s) Ships.Add(s);
-        if (actor is Structure t) Structures.Add(t);
-        if (actor is Planet p) Planets.Add(p);
-        if (actor is Team e) Teams.Add(e);
-        if (actor is Bullet b) Bullets.Add(b);
-        if (actor is Missile m) Missiles.Add(m);
-        if (actor is Grid g) Grids.Add(g);
-        if (actor is WeaponSystem w) WeaponSystems.Add(w);
-
+        Ships.AddIfApplicable(actor);
+        Structures.AddIfApplicable(actor);
+        Planets.AddIfApplicable(actor);
+        Teams.AddIfApplicable(actor);
+        Bullets.AddIfApplicable(actor);
+        Missiles.AddIfApplicable(actor);
+        Grids.AddIfApplicable(actor);
+        WeaponSystems.AddIfApplicable(actor);
     }
 
+    /// <summary>
+    /// Allocates a new actor ID by incrementing the world's nextId counter.
+    /// MUST ONLY BE CALLED IN SYNC (NEVER ON ONE CLIENT).
+    /// </summary>
     public ulong NewID()
     {
         return NextID++;
     }
 
-    public void ClientInitialize(Team playerTeam)
+    public void SetTooltip(Action<GUIWindow> onLayoutTooltip)
     {
-        this.PlayerTeam = playerTeam.AsReference();
-
-        this.Camera = new FreeCamera();
-
+        this.onLayoutTooltip = onLayoutTooltip;
     }
-}
 
-class CollisionManager
-{
-    private Dictionary<(int, int), HashSet<Unit>> bins = [];
 }

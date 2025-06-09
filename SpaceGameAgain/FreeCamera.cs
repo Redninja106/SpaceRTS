@@ -22,7 +22,7 @@ internal class FreeCamera : Camera
     {
         base.Update(width, height, tickProgress);
 
-        zoom -= Mouse.ScrollWheelDelta;
+        zoom -= 1.5f * Mouse.ScrollWheelDelta;
         if (Keyboard.IsKeyDown(Key.Plus))
             zoom -= Time.DeltaTime;
         if (Keyboard.IsKeyDown(Key.Minus))
@@ -31,7 +31,12 @@ internal class FreeCamera : Camera
         DoubleVector delta = DoubleVector.Zero;
         DoubleVector zoomTarget = DoubleVector.FromVector2(this.ScreenToWorld(Program.ViewportMousePosition, false));
 
-        float zoomFac = MathF.Pow(1.1f, zoom);
+        float minZoom = float.Log(2 * float.Min(this.DisplayWidth, this.DisplayHeight) / (128 * float.Sqrt(3)), 1.1f);
+
+        if (zoom < minZoom)
+            zoom = minZoom;
+
+        float zoomFac = float.Pow(1.1f, zoom);
         VerticalSize = zoomFac;
             
         DoubleVector newZoomTarget = DoubleVector.FromVector2(this.ScreenToWorld(Program.ViewportMousePosition, false));

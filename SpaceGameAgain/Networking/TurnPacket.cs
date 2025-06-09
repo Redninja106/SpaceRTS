@@ -44,7 +44,7 @@ internal class TurnPacket : Packet
 
     public void Process()
     {
-        if (team.Actor!.CommandProcessor is not NetworkCommandProcessor commandProcessor)
+        if (team.Actor!.GetCommandProcessor() is not NetworkCommandProcessor commandProcessor)
         {
             // Debug.Assert(false);
             DebugLog.Warning($"Received commands for player controlled team {team.ID}. Dropping commands.");

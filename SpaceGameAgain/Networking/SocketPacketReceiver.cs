@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Diagnostics;
+using System.Net.Sockets;
 
 namespace SpaceGame.Networking;
 
@@ -24,7 +25,8 @@ class SocketPacketReceiver
             int received = socket.Receive(recvbuf);
             ringBuffer.Write(recvbuf.AsSpan(0, received));
 
-            while (ringBuffer.PeakInt32() < ringBuffer.Length)
+            int packetSize = ringBuffer.PeakInt32();
+            while (ringBuffer.Length >= 4 && packetSize <= ringBuffer.Length)
             {
                 byte[]? readBuf = null;
                 if (NetworkSettings.LogIncomingPackets)
@@ -36,14 +38,20 @@ class SocketPacketReceiver
                     ringBuffer.Back = b;
                 }
 
-                int packetSize = reader.ReadInt32();
+                long prevLength = ringBuffer.Length;
+                // read packet size
+                _ = reader.ReadInt32();
+
                 Packet packet = (Packet)Program.NetworkSerializer.Deserialize(reader);
                 packets.Add(packet);
 
+                DebugLog.Assert(packetSize == prevLength - ringBuffer.Length);
                 if (NetworkSettings.LogIncomingPackets)
                 {
                     DebugLog.Message($"got packet {packet.Prototype.Name}, data [{string.Join(',', readBuf)}]");
                 }
+
+                packetSize = ringBuffer.PeakInt32();
             }
         }
         return packets;

@@ -1,0 +1,8 @@
+{
+    "prototype": "NormalMappedSpriteModel",
+    "name": "normal_orb_model",
+    "width": 3.4641016151377544,
+    "height": 3.4641016151377544,
+    "sprites_folder": "normal_orb",
+    "sprite_count": 1
+}

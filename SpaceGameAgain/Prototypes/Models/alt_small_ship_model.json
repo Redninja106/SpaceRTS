@@ -1,0 +1,8 @@
+{
+    "prototype": "NormalMappedSpriteModel",
+    "name": "alt_small_ship_model",
+    "width": 3.4641016151377544,
+    "height": 3.4641016151377544,
+    "sprites_folder": "alt_small_ship",
+    "sprite_count": 32
+}

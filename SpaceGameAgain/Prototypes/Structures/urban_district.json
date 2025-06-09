@@ -7,5 +7,9 @@
     [ 0, 0 ]
   ],
   "payout_amount": 5,
-  "payout_interval": 250
+  "payout_interval": 250,
+  "cost": 15,
+  "category": "Economy",
+  "reveal_radius": 1,
+  "can_be_rotated": false
 }

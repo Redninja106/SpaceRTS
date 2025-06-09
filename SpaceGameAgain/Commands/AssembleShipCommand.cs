@@ -29,19 +29,10 @@ internal class AssembleShipCommand : Command
 
 class AssembleShipCommandPrototype : CommandPrototype
 {
-    public override Actor Deserialize(BinaryReader reader)
+    public override Command Deserialize(BinaryReader reader)
     {
         ActorReference<AssemblyBay> assemblyBay = reader.ReadActorReference<AssemblyBay>();
 
         return new AssembleShipCommand(this, assemblyBay.Actor!);
-    }
-
-    public override bool Applies(Unit? target, HashSet<Unit> selected)
-    {
-        throw new NotImplementedException();
-    }
-    public override void Issue(Unit? target, HashSet<Unit> selected, PlayerCommandProcessor processor)
-    {
-        throw new NotImplementedException();
     }
 }

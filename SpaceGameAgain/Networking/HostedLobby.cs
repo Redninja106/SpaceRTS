@@ -13,6 +13,9 @@ class HostedLobby : Lobby
 {
     public SocketServer server;
     public Dictionary<Team, Socket> associations = [];
+    private List<Socket> currentWorldDownloads = [];
+
+    public override bool IsDownloadingWorld => currentWorldDownloads.Count > 0;
 
     public HostedLobby(SocketServer server)
     {
@@ -27,7 +30,7 @@ class HostedLobby : Lobby
         {
             foreach (var team in World.Teams)
             {
-                if (!team.CommandProcessor.HasCommands(World.TurnProcessor.turn))
+                if (!team.GetCommandProcessor().HasCommands(World.TurnProcessor.turn))
                 {
                     var prototype = Prototypes.Get<TurnRequestPacketPrototype>("turn_request");
                     server.Send(new TurnRequestPacket(prototype, World.TurnProcessor.turn, World.TurnProcessor.history), associations[team]);
@@ -43,19 +46,47 @@ class HostedLobby : Lobby
             
             Planet startingPlanet = (Planet)Random.Shared.GetItems(World.GetActorsByPrototype(Prototypes.Get<PlanetPrototype>("generic_planet")).ToArray(), 1).Single();
 
-            Team team = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
-            associations[team] = connection;
-            team.CommandProcessor = new NetworkCommandProcessor();
+            CreateTeamPacket createTeamPacket = new CreateTeamPacket(
+                Prototypes.Get<CreateTeamPacketPrototype>("create_team_packet"),
+                hello.ClientName,
+                Prototypes.Get<TeamPrototype>("player_team"),
+                1000
+                );
 
-            Ship startingShip = new Ship(Prototypes.Get<ShipPrototype>("small_ship"), World.NewID(), startingPlanet.Transform, team.AsReference());
-            ConstructionModule constMod = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), startingShip.AsReference());
-            startingShip.modules.Add(constMod.AsReference<Module>());
+            // Team team = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
+            // team.Money = 1000;
+            // associations[team] = connection;
+            // team.CommandProcessor = new NetworkCommandProcessor();
 
+            // Ship startingShip = new Ship(Prototypes.Get<ShipPrototype>("small_ship"), World.NewID(), startingPlanet.Transform, team.AsReference());
+            // ConstructionModule constMod = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), startingShip.AsReference());
+            // startingShip.modules.Add(constMod.AsReference<Module>());
+
+            // World.Add(team);
+            // World.Add(startingShip);
+            // World.Add(constMod);
+
+            server.SendAll(createTeamPacket, s => s != connection);
+
+            Team team = createTeamPacket.CreateTeam();
             World.Add(team);
-            World.Add(startingShip);
-            World.Add(constMod);
+            associations[team] = connection;
+            SendWorld(connection, team.AsReference());
 
-            SendWorld(connection, team);
+            SummonShipCommand summonShipCommand = new SummonShipCommand(
+                Prototypes.Get<SummonShipCommandPrototype>("summon_ship_command"),
+                team.AsReference(),
+                Prototypes.Get<ShipPrototype>("small_ship"),
+                [Prototypes.Get<ModulePrototype>("construction_module")],
+                startingPlanet.Transform
+                );
+
+            ((PlayerCommandProcessor)World.PlayerTeam.Actor.GetCommandProcessor()).AddCommand(summonShipCommand);
+        }
+
+        if (server.ReceivePacket<WorldDownloadCompletePacket>(out var _, out connection))
+        {
+            currentWorldDownloads.Remove(connection);
         }
 
         if (server.ReceivePacket<TurnPacket>(out var turn, out connection))
@@ -72,7 +103,7 @@ class HostedLobby : Lobby
         }
     }
 
-    private void SendWorld(Socket connection, Team teamToPlayAs)
+    private void SendWorld(Socket connection, ActorReference<Team> teamToPlayAs)
     {
         DebugLog.Message("sending world to " + (connection.RemoteEndPoint!.ToString()));
         var prototype = Prototypes.Get<WorldDownloadPacketPrototype>("world_download_packet");
@@ -94,7 +125,7 @@ class HostedLobby : Lobby
             index++;
         }
 
-        WorldDownloadPacket worldPacket = new(prototype, teamToPlayAs.AsReference(), chunks.Count);
+        WorldDownloadPacket worldPacket = new(prototype, teamToPlayAs, chunks.Count);
 
         World.TurnProcessor.startingTurn = World.TurnProcessor.turn;
         server.Send(worldPacket, connection);
@@ -103,5 +134,7 @@ class HostedLobby : Lobby
         {
             server.Send(chunks[i], connection);
         }
+
+        currentWorldDownloads.Add(connection);
     }
 }

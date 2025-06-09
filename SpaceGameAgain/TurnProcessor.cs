@@ -48,7 +48,7 @@ internal class TurnProcessor
 
         foreach (var team in World.Teams)
         {
-            if (!team.CommandProcessor.HasCommands(turn))
+            if (!team.GetCommandProcessor().HasCommands(turn))
             {
                 return false;
             }
@@ -59,7 +59,7 @@ internal class TurnProcessor
         Dictionary<Team, Command[]> capture = [];
         foreach (var team in World.Teams)
         {
-            var commands = team.CommandProcessor.GetCommands(turn);
+            var commands = team.GetCommandProcessor().GetCommands(turn);
             capture[team] = commands;
             foreach (var command in commands)
             {
@@ -75,7 +75,7 @@ internal class TurnProcessor
 
         foreach (var team in World.Teams)
         {
-            team.CommandProcessor.RemoveCommands(turn);
+            team.GetCommandProcessor().RemoveCommands(turn);
         }
 
 
@@ -87,7 +87,7 @@ internal class TurnProcessor
 
     public void BroadcastCommands()
     {
-        PlayerCommandProcessor playerCommandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+        PlayerCommandProcessor playerCommandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.GetCommandProcessor();
         playerCommandProcessor.BroadcastCommands(turn + TurnDelay);
 
         // history.AddCommands(turn, team)

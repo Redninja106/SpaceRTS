@@ -1,5 +1,7 @@
 ﻿using SimulationFramework.Desktop;
+using SimulationFramework.Drawing.Shaders;
 using SpaceGame;
+using SpaceGame.Bots;
 using SpaceGame.Commands;
 using SpaceGame.GUI;
 using SpaceGame.Interaction;
@@ -9,6 +11,7 @@ using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 //using SpaceGame.Stations;
 using SpaceGame.Structures;
+using SpaceGame.Structures.Shipyards;
 using SpaceGame.Teams;
 using SpaceGame.Tiles;
 using System.Diagnostics;
@@ -57,7 +60,7 @@ else
 
 partial class Program : Simulation
 {
-    ITexture view;
+    
     public static IFont font;
     public static Vector2 ViewportMousePosition;
     public static float uiscale = 2f;
@@ -65,7 +68,8 @@ partial class Program : Simulation
 
     public static float actualGUIScale = 0;
 
-    public const float Timestep = 1 / 50f;
+    public const float TickRate = 50f;
+    public const float Timestep = 1 / TickRate;
     public static float GameSpeed = 1f;
     public static bool forceTickThisFrame = false;
 
@@ -75,6 +79,12 @@ partial class Program : Simulation
     public static NetworkSerializer NetworkSerializer = new();
 
     public static float ViewportScale;
+
+    private ITexture viewTexture;
+    private ITexture groundTexture;
+    private ITexture skyTexture;
+    private ITexture visibilityTexture;
+    private CompositingShader compositingShader = new CompositingShader();
 
     public override void OnInitialize()
     {
@@ -87,9 +97,9 @@ partial class Program : Simulation
 
         World = new();
         
-        var playerTeam = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
+        var playerTeam = new Team(Prototypes.Get<PlayerTeamPrototype>("player_team"), World.NewID(), Transform.Default);
         playerTeam.Money += 1000;
-        playerTeam.CommandProcessor = new PlayerCommandProcessor();
+        // playerTeam.CommandProcessor = new PlayerCommandProcessor();
         World.PlayerTeam = playerTeam.AsReference();
         World.Add(playerTeam);
 
@@ -99,14 +109,16 @@ partial class Program : Simulation
         World.Add(starterShip);
         World.Add(module);
 
+        var spacePirates = new Team(Prototypes.Get<TeamPrototype>("null_team"), World.NewID(), Transform.Default, name: "Space Pirates");
+        // spacePirates.CommandProcessor = new NullCommandProcessor();
+        World.Add(spacePirates);
+
         // var enemies = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
         // enemies.CommandProcessor = new PlayerCommandProcessor();
-
 
         // playerTeam.MakeEnemies(enemies);
         // World.Add(playerTeam);
         // World.Add(enemies);
-
 
         // World.Add(new Ship((ShipPrototype)Prototypes.Get("small_ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(playerTeam)));
         // var constMod = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), World.Ships[0].AsReference());
@@ -118,13 +130,19 @@ partial class Program : Simulation
         // World.Ships[1].modules.Add(((Module)constMod2).AsReference());
         // World.Add(constMod2);
 
-        PlanetPrototype planetProto = Prototypes.Get<PlanetPrototype>("generic_planet");
+        PlanetPrototype planetProto = Prototypes.Get<PlanetPrototype>("star");
         StarSystemGenerator generator = new(planetProto, Random.Shared);
         generator.GenerateSystem();
 
         Planet starterPlanet = World.Planets[Random.Shared.Next(1, World.Planets.Count)];
         starterShip.Teleport(starterPlanet.Transform);
         World.Camera.Transform = World.Camera.SmoothTransform = starterPlanet.Transform;
+
+        // Planet tradeUnionPlanet = World.Planets[Random.Shared.Next(1, World.Planets.Count)];
+        // Team tradeUnion = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default, money: 1000);
+        // tradeUnionPlanet.Grid.PlaceStructure(Prototypes.Get<AssemblyBayPrototype>("small_assembly_bay"), HexCoordinate.Zero, 0, tradeUnion);
+        // tradeUnionPlanet.Grid.PlaceStructure(Prototypes.Get<ManufactoryPrototype>("manufactory"), HexCoordinate.UnitQ, 0, tradeUnion);
+        // tradeUnionPlanet.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("generator"), new HexCoordinate(0, 2), 0, tradeUnion);
 
         // var sun = new Planet(planetProto, World.NewID(), Transform.Default, null)
         // {
@@ -189,7 +207,7 @@ partial class Program : Simulation
         //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(3, 1), 0, enemies);
         //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(0, 5), 0, enemies);
         //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(-1, 2), 0, enemies);
-        
+
         //// planet1.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("rare_metals_deposit"), new(0, 0), 0, null);
 
         //World.Ships.First().Transform.Position = planet1.Transform.Position;
@@ -226,10 +244,19 @@ partial class Program : Simulation
         float aspectRatio = canvas.Width / (float)canvas.Height;
         int targetViewWidth = (int)(480 * aspectRatio);
 
-        if (view is null || view.Width != targetViewWidth)
+        if (viewTexture is null || viewTexture.Width != targetViewWidth)
         {
-            view?.Dispose();
-            view = Graphics.CreateTexture(targetViewWidth, 480);
+            viewTexture?.Dispose();
+            viewTexture = Graphics.CreateTexture(targetViewWidth, 480);
+
+            visibilityTexture?.Dispose();
+            visibilityTexture = Graphics.CreateTexture(targetViewWidth, 480);
+
+            groundTexture?.Dispose();
+            groundTexture = Graphics.CreateTexture(targetViewWidth, 480);
+
+            skyTexture?.Dispose();
+            skyTexture = Graphics.CreateTexture(targetViewWidth, 480);
         }
 
         // if (vpScaleY < vpScaleX)
@@ -248,27 +275,29 @@ partial class Program : Simulation
 
         DebugMenu.Layout();
 
-        float vpScaleY = canvas.Height / (float)view.Height;
-        float vpScaleX = canvas.Width / (float)view.Width;
+        float vpScaleY = canvas.Height / (float)viewTexture.Height;
+        float vpScaleX = canvas.Width / (float)viewTexture.Width;
         ViewportScale = MathF.Min(vpScaleX, vpScaleY);
 
         MatrixBuilder viewMatrix = new MatrixBuilder()
             .Translate(canvas.Width / 2f, canvas.Height / 2f)
             .Scale(ViewportScale)
-            .Translate(-view.Width / 2f, -view.Height / 2f);
+            .Translate(-viewTexture.Width / 2f, -viewTexture.Height / 2f);
 
         Update(canvas, viewMatrix);
 
         if (canvas.Width is 0 && canvas.Height is 0)
             return;
 
-        RenderView();
+        RenderViewTexture();
 
         canvas.Clear(Color.FromHSV(0, 0, .1f));
 
         canvas.PushState();
         canvas.Transform(viewMatrix.Matrix);
-        canvas.DrawTexture(view);
+        //canvas.DrawTexture(background);
+        //canvas.DrawTexture(foreground);
+        canvas.DrawTexture(this.viewTexture);
         canvas.PopState();
 
         World.GUIViewport.Render(canvas);
@@ -295,8 +324,8 @@ partial class Program : Simulation
             tickProgress = 1;
         }
 
-        World.Camera.Update(view.Width, view.Height, tickProgress);
-        Rectangle vp = new(0, 0, view.Width, view.Height);
+        World.Camera.Update(viewTexture.Width, viewTexture.Height, tickProgress);
+        Rectangle vp = new(0, 0, viewTexture.Width, viewTexture.Height);
 
         actualGUIScale = uiscale * Math.Clamp(canvas.Width * uiscaleResolutionFactor, 1 / uiscale, 1);
 
@@ -313,8 +342,8 @@ partial class Program : Simulation
             forceTickThisFrame = false;
             DebugDraw.Clear();
 
+            DebugMenu.ClearMetrics();
             World.Tick(ViewportMousePosition);
-            DebugOverlays.Tick();
 
             timeAccumulated = 0;
             tickProgress = 0;
@@ -322,19 +351,74 @@ partial class Program : Simulation
 
         World.GUIViewport.Update(canvas.Width, canvas.Height);
         World.Update(ViewportMousePosition, tickProgress);
-        
-        World.SelectionHandler.Update();
     }
 
-    private void RenderView()
+    private void RenderViewTexture()
     {
-        var canvas = view.GetCanvas();
+        var canvas = viewTexture.GetCanvas();
         canvas.ResetState();
+        canvas.Clear(Color.Black);
+
+        var visibilityCanvas = visibilityTexture.GetCanvas();
+        visibilityCanvas.ResetState();
+        visibilityCanvas.Clear(Color.Transparent);
+
+        var groundCanvas = groundTexture.GetCanvas();
+        groundCanvas.ResetState();
+        groundCanvas.Clear(Color.Transparent);
+
+        var skyCanvas = skyTexture.GetCanvas();
+        skyCanvas.ResetState();
+        skyCanvas.Clear(Color.Transparent);
 
         canvas.PushState();
         canvas.Antialias(true);
         World.Camera.RenderSetup(canvas);
-        World.Render(canvas);
+
+        // prep visibility texture for compositing the layers
+        World.RenderVisibility(visibilityCanvas);
+        visibilityCanvas.Flush();
+
+        // BACKGROUND LAYER
+        World.RenderBackgroundLayer(canvas);
+        World.RenderBackgroundOverlayLayer(canvas);
+
+        // GROUND LAYER
+        World.RenderGroundLayer(groundCanvas);
+        groundCanvas.Flush();
+        compositingShader.Composite(canvas, groundTexture, visibilityTexture, false);
+        World.RenderGroundOverlayLayer(canvas);
+
+        // SKY LAYER
+        World.RenderSkyLayer(skyCanvas);
+        skyCanvas.Flush();
+        compositingShader.Composite(canvas, skyTexture, visibilityTexture, true);
+        World.RenderSkyOverlayLayer(canvas);
+
+        //canvas.PushState();
+        //canvas.ResetState();
+        //groundCanvas.Flush();
+        //visibilityCanvas.Flush();
+        //compositingShader.foregroundTexture = this.groundTexture;
+        //compositingShader.visibiltyTexture = this.visibilityTexture;
+        //compositingShader.Time = Time.TotalTime;
+        //canvas.Fill(compositingShader);
+        //canvas.DrawRect(0, 0, canvas.Width, canvas.Height);
+        //canvas.PopState();
+
+
+        // var backgroundCanvas = background.GetCanvas();
+        // backgroundCanvas.ResetState();
+        // backgroundCanvas.Clear(Color.Black);
+        // World.RenderBackgroundLayer(backgroundCanvas);
+        // 
+        // var foregroundCanvas = foreground.GetCanvas();
+        // foregroundCanvas.ResetState();
+        // foregroundCanvas.Clear(Color.Transparent);
+        // World.RenderForegroundLayer(foregroundCanvas);
+
+        // World.RenderOverlayLayer(foregroundCanvas);
+
         DebugDraw.Draw(canvas, World.Camera);
 
         // canvas.ResetState();
@@ -347,7 +431,59 @@ partial class Program : Simulation
         // canvas.PushState();
         // World.MapWindow.Render(canvas);
         // canvas.PopState();
+        
+        // canvas.PopState();
+    }
+}
 
-        canvas.PopState();
+class CompositingShader : CanvasShader
+{
+    public ITexture foregroundTexture;
+    public ITexture visibiltyTexture;
+
+    public CompositingShader()
+    {
+        noise = new int[1024];
+        for (int i = 0; i < noise.Length; i++)
+        {
+            noise[i] = Random.Shared.Next();
+        }
+    }
+
+    private int[] noise;
+    public float Time = 0;
+    public float Brightness = .45f;
+    public float Noisiness = .15f;
+    public bool renderNoise = false;
+
+    public override ColorF GetPixelColor(Vector2 position)
+    {
+        float a = visibiltyTexture.Sample(position).A;
+        ColorF fg = foregroundTexture.Sample(position) * a;
+        ColorF noise = renderNoise ? new ColorF(0, 0, 0, CalcNoise(position) * (1 - a)) : ColorF.Transparent;
+        return fg + noise;
+    }
+
+    private float CalcNoise(Vector2 position)
+    {
+        int seed = (int)(position.X * 17) ^ (int)(position.Y * 14);
+        int offset = noise[(int)(seed + Time * 25) % noise.Length];
+        float b = noise[offset % noise.Length] / (float)int.MaxValue;
+        return 1 - (Brightness + (b * Noisiness));
+    }
+
+    public void Composite(ICanvas targetCanvas, ITexture texture, ITexture visibilityTexture, bool renderNoise)
+    {
+        this.foregroundTexture = texture;
+
+        targetCanvas.PushState();
+        targetCanvas.ResetState();
+        this.foregroundTexture = texture;
+        this.visibiltyTexture = visibilityTexture;
+        this.Time = SimulationFramework.Time.TotalTime;
+        this.renderNoise = renderNoise;
+        targetCanvas.Fill(this);
+        targetCanvas.DrawRect(0, 0, targetCanvas.Width, targetCanvas.Height);
+        targetCanvas.PopState();
     }
 }

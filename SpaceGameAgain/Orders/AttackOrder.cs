@@ -18,6 +18,7 @@ internal class AttackOrder : Order
     public override void Render(ICanvas canvas)
     {
         canvas.Stroke(Color.Red);
+        canvas.DrawRect(0, 0, 1, 1, Alignment.Center);
         canvas.DrawLine(Unit.Actor!.Transform.Position.ToVector2(), target.Actor!.Transform.Position.ToVector2());
 
         base.Render(canvas);

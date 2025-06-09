@@ -16,7 +16,7 @@ internal class ResourceMine : Structure
 
     public ResourceMine(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
     {
-        resource = Grid.GetCell(location)!.Tile?.Prototype?.Resource;
+        resource = Grid.GetCell(location)!.Tile?.Resource;
         
         if (resource != null)
         {

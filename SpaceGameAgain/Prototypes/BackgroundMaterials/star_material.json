@@ -1,0 +1,5 @@
+{
+  "prototype": "BackgroundMaterial",
+  "name": "star_material",
+  "texture_file": "Texturelabs_Atmosphere_126M.jpg"
+}

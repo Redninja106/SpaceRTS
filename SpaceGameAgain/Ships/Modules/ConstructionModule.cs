@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships.Modules;
 internal class ConstructionModule(ConstructionModulePrototype prototype, ulong id, ActorReference<Ship> ship) : Module(prototype, id, ship)
 {
+    public override ConstructionModulePrototype Prototype => (ConstructionModulePrototype)base.Prototype;
     public override ITexture Icon => Icons.Construction;
 
     static ConstructionModule()
@@ -17,20 +18,39 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, ulong i
 
     public override void Layout(GUIWindow window)
     {
-        foreach (var proto in Prototypes.GetAll<StructurePrototype>())
+        foreach (var group in Prototype.BuildableStructuresByCategory)
         {
-            bool canAfford = World.PlayerTeam.Actor!.Money >= proto.Cost;
-
-            window.Text(proto.Title, color: canAfford ? null : Color.Red);
-            if (window.LastItemClicked(MouseButton.Left) && canAfford)
+            window.Text(group.Key, size: 20);
+            window.Separator();
+            foreach (var proto in group)
             {
-                World.ConstructionInteractionContext.BeginPlacing(proto, Ship.Actor!);
-            }
-            if (window.LastItemHovered())
-            {
-                proto.Layout(World.tooltipWindow);
+                bool canAfford = World.PlayerTeam.Actor!.Money >= proto.Cost;
+                window.Text(proto.Title, size: 16, color: canAfford ? Color.Gray : Color.Red);
+                if (window.LastItemHovered())
+                {
+                    World.SetTooltip(proto.Layout);
+                }
+                if (window.LastItemClicked(MouseButton.Left) && canAfford)
+                {
+                    World.ConstructionInteractionContext.BeginPlacing(proto, Ship.Actor!);
+                }
             }
         }
+
+        //foreach (var proto in Prototype.BuildableStructures)
+        //{
+        //    bool canAfford = World.PlayerTeam.Actor!.Money >= proto.Cost;
+
+        //    window.Text(proto.Title, color: canAfford ? null : Color.Red);
+        //    if (window.LastItemClicked(MouseButton.Left) && canAfford)
+        //    {
+        //        World.ConstructionInteractionContext.BeginPlacing(proto, Ship.Actor!);
+        //    }
+        //    if (window.LastItemHovered())
+        //    {
+        //        World.SetTooltip(w => proto.Layout(w));
+        //    }
+        //}
 
     }
 
@@ -87,6 +107,14 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, ulong i
 
 class ConstructionModulePrototype : ModulePrototype
 {
+    public StructurePrototype[] BuildableStructures { get; set; } = [];
+    public IGrouping<string, StructurePrototype>[] BuildableStructuresByCategory { get; set; } = [];
+
+    public override void InitializePrototype()
+    {
+        BuildableStructuresByCategory = BuildableStructures.OrderBy(s => s.Title).GroupBy(s => s.Category).ToArray();
+        base.InitializePrototype();
+    }
 
     public override WorldActor Deserialize(BinaryReader reader)
     {

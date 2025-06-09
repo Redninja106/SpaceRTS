@@ -7,5 +7,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Networking;
 internal abstract class Lobby
 {
+    public abstract bool IsDownloadingWorld { get; }
+    
     public abstract void Update();
 }

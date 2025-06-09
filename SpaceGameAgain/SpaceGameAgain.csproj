@@ -7,6 +7,8 @@
     <Nullable>enable</Nullable>
     <RootNamespace>SpaceGame</RootNamespace>
 	  <PublishNativeAOT>true</PublishNativeAOT>
+	  <DefineConstants>LOGGING</DefineConstants>
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,7 +37,8 @@
 
 	<ItemGroup>
 	  <Folder Include="Assets\Icons\" />
-	  <Folder Include="Prototypes\Widgets\" />
+	  <Folder Include="Bots\EnemyPlayer\" />
+	  <Folder Include="Bots\Insurgents\" />
 	</ItemGroup>
 
 	<ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

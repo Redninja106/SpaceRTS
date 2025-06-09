@@ -3,5 +3,16 @@
   "name": "construction_module",
   "commands": [
     "build_command"
+  ],
+  "buildable_structures": [
+    "small_assembly_bay",
+    "urban_district",
+    "construction_module_factory",
+    "manufactory",
+    "missile_turret",
+    "chaingun_turret",
+    "missile_module_factory",
+    "chaingun_module_factory",
+    "power_plant"
   ]
 }

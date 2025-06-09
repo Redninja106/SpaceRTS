@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 namespace SpaceGame.Planets;
 internal class PlanetPrototype : WorldActorPrototype
 {
+    public BackgroundMaterial Material { get; set; }
+
     public override WorldActor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();

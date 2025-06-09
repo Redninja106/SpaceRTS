@@ -1,4 +1,7 @@
 {
   "prototype": "MissileSystemPrototype",
   "name": "missile_system",
+  "range": 12,
+  "salvo_size": 5,
+  "fire_rate": 2
 }

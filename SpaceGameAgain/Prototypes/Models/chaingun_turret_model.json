@@ -1,8 +1,8 @@
 {
-    "prototype": "SpriteModel",
+    "prototype": "NormalMappedSpriteModel",
     "name": "chaingun_turret_model",
     "width": 3.4641016151377544,
     "height": 3.4641016151377544,
     "sprites_folder": "chaingun_turret",
-    "sprite_count": 6
+    "sprite_count": 16
 }

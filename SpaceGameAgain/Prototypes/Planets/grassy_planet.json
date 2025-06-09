@@ -1,0 +1,5 @@
+{
+  "prototype": "PlanetPrototype",
+  "name": "grassy_planet",
+  "material": "grassy_material"
+}

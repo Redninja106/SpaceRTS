@@ -1,0 +1,6 @@
+{
+  "prototype": "BackgroundMaterial",
+  "name": "rocky_material",
+  "texture_file": "rock_face_03_diff_4k.jpg",
+  "normal_map_file": "rock_face_03_nor_gl_4k.jpg"
+}

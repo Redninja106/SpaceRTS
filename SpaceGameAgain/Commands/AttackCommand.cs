@@ -42,7 +42,7 @@ internal class AttackCommand : Command
 
 class AttackCommandPrototype : CommandPrototype
 {
-    public override Actor Deserialize(BinaryReader reader)
+    public override AttackCommand Deserialize(BinaryReader reader)
     {
         var unit = reader.ReadActorReference<Unit>();
         var target = reader.ReadActorReference<Unit>();
@@ -57,12 +57,4 @@ class AttackCommandPrototype : CommandPrototype
     //    }
     //}
 
-    public override void Issue(Unit? target, HashSet<Unit> selected, PlayerCommandProcessor processor)
-    {
-        throw new NotImplementedException();
-    }
-    public override bool Applies(Unit? target, HashSet<Unit> selected)
-    {
-        throw new NotImplementedException();
-    }
 }

@@ -24,13 +24,14 @@ internal class ConstructionOrder : Order
 
     public override void Tick()
     {
-        if (!MoveToOld(DoubleVector.FromVector2(Grid.Actor!.Transform.LocalToWorld(Location.ToCartesian()))))
+        if (!MoveTo(DoubleVector.FromVector2(Grid.Actor!.Transform.LocalToWorld(Location.ToCartesian()) + Structure.Center.Rotated(Rotation * MathF.Tau / 6f))))
         {
             return;
         }
 
         if (!Grid.Actor!.IsStructureObstructed(Structure, Location, Rotation))
         {
+            Unit.Actor!.Team.Actor!.Money -= Structure.Cost;
             Grid.Actor!.PlaceStructure(Structure, Location, Rotation, Unit.Actor!.Team.Actor!);
             // Unit.Actor!.Team.Actor!.Resources["metals"] -= Structure.Price;
             Complete();
@@ -39,10 +40,9 @@ internal class ConstructionOrder : Order
 
     public override void Render(ICanvas canvas)
     {
-        Grid.Actor!.Transform.ApplyTo(canvas, World.Camera);
-        canvas.Translate(Location.ToCartesian());
+        //Grid.Actor!.Transform.ApplyTo(canvas, World.Camera);
         // canvas.Rotate(Rotation * (MathF.Tau / 6f));
-        Structure.Model.Render(canvas, this.InterpolatedTransform, ColorF.White with { A = 100 });
+        //Structure.Model.Render(canvas, this.InterpolatedTransform with { Rotation = 0 }, ColorF.White with { A = 100 });
 
         base.Render(canvas);
     }

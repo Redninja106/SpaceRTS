@@ -3,9 +3,14 @@
   "name": "chaingun_turret",
   "title": "Chaingun Turret",
   "max_health": 15,
-  "price": 100,
+  "cost": 10,
   "footprint": [
     [ 0, 0 ]
   ],
-  "weapon_system_prototype": "chaingun_system"
+  "weapon_system_prototype": "chaingun_system",
+  "turret_model": "chaingun_turret_model",
+  "model": "chaingun_turret_base_model",
+  "category": "Defense",
+  "reveal_radius": 6
+
 }

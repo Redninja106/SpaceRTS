@@ -1,5 +1,4 @@
-﻿using SpaceGame.AI;
-using SpaceGame.Commands;
+﻿using SpaceGame.Commands;
 using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
@@ -12,11 +11,13 @@ internal class BotCommandProcessor : ICommandProcessor
 {
     public Team Team { get; }
 
-
     private List<Strategy> Strategies = [];
 
     public FriendlyUnitIndex UnitIndex { get; }
     public Dictionary<Team, EnemyUnitIndex> Enemies { get; }
+
+    private List<Command> commands = [];
+    private bool hasCommands = false;
 
     public BotCommandProcessor(Team team)
     {
@@ -26,30 +27,35 @@ internal class BotCommandProcessor : ICommandProcessor
         this.Enemies = new();
     }
 
-    public void Think()
+    public virtual void Think()
     {
         foreach (var strategy in Strategies)
         {
             strategy.Think();
+            commands.AddRange(strategy.Commands);
+            strategy.Commands.Clear();
         }
+
+        hasCommands = true;
     }
 
     public void AddStrategy(Strategy strategy)
     {
+        Strategies.Add(strategy);
     }
 
     public bool HasCommands(ulong turn)
     {
-        throw new NotImplementedException();
+        return hasCommands;
     }
 
     public Command[] GetCommands(ulong turn)
     {
-        throw new NotImplementedException();
+        return commands.ToArray();
     }
 
     public void RemoveCommands(ulong turn)
     {
-        throw new NotImplementedException();
+        hasCommands = false;
     }
 }

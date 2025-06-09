@@ -33,16 +33,34 @@ internal class SocketServer
     {
         if (listeningSocket.Poll(10, SelectMode.SelectRead))
         {
-            var client = listeningSocket.Accept();
-            client.NoDelay = true;
-            clients.Add(new SocketClientInterface(client));
+            try
+            {
+                var client = listeningSocket.Accept();
+                client.NoDelay = true;
+                clients.Add(new SocketClientInterface(client));
 
-            DebugLog.Message("accepted connection from " + client.RemoteEndPoint!.ToString());
+                DebugLog.Message("accepted connection from " + client.RemoteEndPoint!.ToString());
+            }
+            catch (Exception e)
+            {
+                DebugLog.Warning(e.Message);
+            }
         }
 
-        foreach (var client in clients)
+        for (int i = 0; i < clients.Count; i++)
         {
-            client.Update();
+            var client = clients[i];
+            try
+            {
+                client.Update();
+            }
+            catch (Exception ex)
+            {
+                DebugLog.Warning($"dropping {client.socket.RemoteEndPoint} for invalid packet ({ex.Message})");
+                clients.RemoveAt(i);
+                i--;
+                continue;
+            }
         }
     }
 
@@ -90,13 +108,16 @@ internal class SocketServer
         return false;
     }
 
-    public void SendAll(Packet packet)
+    public void SendAll(Packet packet, Predicate<Socket>? predicate = null)
     {
         byte[] data = Program.NetworkSerializer.SerializeWithLengthPrefix(packet);
 
         foreach (var client in clients)
         {
-            client.socket.Send(data);
+            if (predicate == null || predicate(client.socket))
+            {
+                client.socket.Send(data);
+            }
         }
     }
 

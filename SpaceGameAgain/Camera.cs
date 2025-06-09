@@ -23,7 +23,7 @@ public abstract class Camera : IInspectable
 
     public float InterpolationFactor { get; set; } = 0.000001f;
 
-    public float AspectRatio => DisplayWidth / DisplayHeight;
+    public float AspectRatio => DisplayWidth / (float)DisplayHeight;
 
     public virtual void Update(int width, int height, float tickProgress)
     {

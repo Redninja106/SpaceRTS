@@ -1,0 +1,18 @@
+{
+  "prototype": "RadarPrototype",
+  "name": "radar",
+  "title": "Radar",
+  "max_health": 10,
+  "price": 100,
+  "powered_reveal_radius": 100,
+  "required_power_level": "low",
+  "footprint": [
+    [ 0, 0 ],
+    [ 0, 1 ],
+    [ 0, -1 ],
+    [ 1, 0 ],
+    [ -1, 0 ],
+    [ -1, 1 ],
+    [ 1, -1 ]
+  ]
+}

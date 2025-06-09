@@ -1,4 +1,5 @@
-﻿using SpaceGame.GUI;
+﻿using Silk.NET.OpenGL;
+using SpaceGame.GUI;
 using SpaceGame.Orders;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
@@ -13,11 +14,11 @@ using System.Threading.Tasks;
 namespace SpaceGame.Combat;
 internal class MissileSystem(MissileSystemPrototype prototype, ulong id, ActorReference<Unit> unit) : WeaponSystem(prototype, id, unit)
 {
-    public int SalvoSize { get; } = 5;
-    public int MissilesRemaining { get; set; } = 5;
-    public float FireRate { get; } = 2f;
+    public override MissileSystemPrototype Prototype => (MissileSystemPrototype)base.Prototype;
 
-    public float timeSinceMissile;
+    public int MissilesRemaining { get; set; } = prototype.SalvoSize;
+
+    public int timeSinceMissile;
     public ActorReference<Unit> target;
 
     public override void Tick()
@@ -32,7 +33,7 @@ internal class MissileSystem(MissileSystemPrototype prototype, ulong id, ActorRe
             // TODO: replace this awful, no good, terrible way of doing this with some kind of bin system
             foreach (var s in World.Ships)
             {
-                if (unit.Actor!.Team.Actor!.GetRelation(s.Team.Actor!) is TeamRelation.Enemies && unit.Actor!.Transform.Distance(s.Transform) < 12)
+                if (unit.Actor!.Team.Actor!.GetRelation(s.Team.Actor!) is TeamRelation.Enemies && unit.Actor!.Transform.Distance(s.Transform) < Prototype.Range)
                 {
                     target = ActorReference<Unit>.Create(s);
                     break;
@@ -40,7 +41,7 @@ internal class MissileSystem(MissileSystemPrototype prototype, ulong id, ActorRe
             }
             foreach (var s in World.Structures)
             {
-                if (unit.Actor!.Team.Actor!.GetRelation(s.Team.Actor!) is TeamRelation.Enemies && unit.Actor!.Transform.Distance(s.Transform) < 12)
+                if (unit.Actor!.Team.Actor!.GetRelation(s.Team.Actor!) is TeamRelation.Enemies && unit.Actor!.Transform.Distance(s.Transform) < Prototype.Range)
                 {
                     target = ActorReference<Unit>.Create(s);
                     break;
@@ -51,22 +52,24 @@ internal class MissileSystem(MissileSystemPrototype prototype, ulong id, ActorRe
 
         if (!target.IsNull)
         {
-            if (MissilesRemaining > 0 && timeSinceMissile > 1f / FireRate)
+            this.Transform.Rotation = MathHelper.Step(this.Transform.Rotation, Angle.FromVector((target.Actor!.Transform.Position - this.unit.Actor!.Transform.Position).ToVector2()), .1f);
+            
+            if (MissilesRemaining > 0 && timeSinceMissile > Prototype.FireInterval)
             {
                 Fire(target.Actor);
             }
-            if (target.Actor.Health <= 0)
+            if (target.Actor.Health <= 0 || target.Actor.Transform.Distance(this.Transform) > Prototype.Range)
             {
                 target = ActorReference<Unit>.Null;
             }
         }
 
-        if (MissilesRemaining <= 0 && timeSinceMissile > 2.5f)
+        if (MissilesRemaining <= 0 && timeSinceMissile > Prototype.SalvoInterval)
         {
-            MissilesRemaining = SalvoSize;
+            MissilesRemaining = Prototype.SalvoSize;
         }
 
-        timeSinceMissile += Program.Timestep;
+        timeSinceMissile++;
     }
 
     private void Fire(Unit target)
@@ -74,20 +77,13 @@ internal class MissileSystem(MissileSystemPrototype prototype, ulong id, ActorRe
         World.Add(new Missile(
             Prototypes.Get<MissilePrototype>("missile"),
             World.NewID(),
-            unit.Actor!.Transform.Rotated((World.TickRandom.NextSingle() - .5f) * MathF.PI / 10f),
+            Transform.Create(this.unit.Actor!.GetCenter(), this.Transform.Rotation + (World.TickRandom.NextSingle() - .5f) * MathF.PI / 10f),
             ActorReference<Unit>.Create(target),
             DoubleVector.FromVector2(World.TickRandom.NextUnitVector2() * World.TickRandom.NextSingle() * 1.5f)
             ));
 
         MissilesRemaining--;
         timeSinceMissile = 0;
-    }
-
-
-    public void RenderSelected(ICanvas canvas)
-    {
-        canvas.Stroke(Color.Red);
-        canvas.DrawCircle(0, 0, 12);
     }
 
     public override void Serialize(BinaryWriter writer)

@@ -1,5 +1,5 @@
 {
-    "prototype": "SpriteModel",
+    "prototype": "NormalMappedSpriteModel",
     "name": "small_ship_model",
     "width": 1.7320508075688772,
     "height": 1.7320508075688772,

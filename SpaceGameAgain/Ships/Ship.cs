@@ -8,6 +8,7 @@ using SpaceGame.Interaction;
 using SpaceGame.Orders;
 using SpaceGame.Planets;
 using SpaceGame.Ships;
+using SpaceGame.Ships.Fleets;
 using SpaceGame.Ships.Modules;
 using SpaceGame.Teams;
 using System;
@@ -40,24 +41,26 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
     public Queue<ActorReference<Order>> orders = [];
     public List<ActorReference<Module>> modules = [];
 
-    
-    // PER CLIENT -- order the player submitted that hasn't been processed yet
+    public Fleet? Fleet;
+
+    public override bool CanAttack => modules.Any(m => m.Actor is WeaponModule);
+
+    // PER CLIENT -- an order the player submitted that hasn't been processed yet
     public Order? potentialOrder = null;
 
     public override void Render(ICanvas canvas)
     {
-        bool selected = World.SelectionHandler.IsSelected(this);
-
         canvas.PushState();
-        canvas.Scale(Prototype.Scale);
 
-        if (selected)
-        {
-            Team playerTeam = World.PlayerTeam.Actor!;
-            canvas.Stroke(playerTeam.GetRelationColor(Team.Actor!));
-            canvas.StrokeWidth(0);
-            canvas.DrawCircle(0, 0, MathF.Max((float)GetCollisionRadius(), World.Camera.ScreenDistanceToWorldDistance(2.5f/2f)));
-        }
+        //if (selected)
+        //{
+        //    Team playerTeam = World.PlayerTeam.Actor!;
+        //    canvas.Stroke(playerTeam.GetRelationColor(Team.Actor!));
+        //    canvas.StrokeWidth(0);
+        //    canvas.DrawCircle(0, 0, MathF.Max((float)GetCollisionRadius(), World.Camera.ScreenDistanceToWorldDistance(2.5f/2f)));
+        //}
+
+        canvas.Scale(Prototype.Scale);
 
         if (Prototype.Model == null)
         {
@@ -72,8 +75,11 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
         }
 
         canvas.PopState();
+    }
 
-        if (selected)
+    public override void DrawHighlightAbove(ICanvas canvas, Camera camera, bool selected)
+    {
+        if (this.Team == World.PlayerTeam)
         {
             if (potentialOrder != null)
             {
@@ -88,8 +94,18 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
                 order.Actor!.Render(canvas);
                 canvas.PopState();
             }
-            //canvas.Flush();
         }
+
+        base.DrawHighlightAbove(canvas, camera, selected);
+    }
+
+    public override void DrawHighlightBelow(ICanvas canvas, Camera camera, bool selected)
+    {
+        canvas.Transform(World.Camera.CreateRelativeMatrix(InterpolatedTransform));
+        canvas.Stroke(World.PlayerTeam.Actor!.GetRelationColor(Team.Actor!) with { A = (byte)(selected ? 255 : 100) });
+        canvas.DrawCircle(0, 0, (float)GetCollisionRadius());
+
+        base.DrawHighlightBelow(canvas, camera, selected);
     }
 
     public override void Tick()
@@ -142,7 +158,7 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
     public override bool TestPoint(DoubleVector point)
     {
-        return Util.TestPoint(verts.Select(v => v *= Prototype.Scale).ToArray(), this.Transform, point.ToVector2(), Transform.Default);
+        return Util.TestPoint(verts.Select(v => v *= Prototype.Scale * 2).ToArray(), this.Transform, point.ToVector2(), Transform.Default);
     }
 
     public void RenderShadow(ICanvas canvas, float floorHeight)
@@ -191,10 +207,8 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
     public override void Layout(GUIWindow window)
     {
-        window.LayoutMode = LayoutMode.Horizontal;
-        //window.Image(Icons.Construction, new(20, 20));
-        //window.Image(Icons.Defensive, new(20, 20));
-        if (this.modules.FirstOrDefault(m => m.Actor is ConstructionModule) is ActorReference<Module> m && !m.IsNull)
+        window.LayoutMode = LayoutMode.Vertical;
+        if (this.Team == World.PlayerTeam && this.modules.FirstOrDefault(m => m.Actor is ConstructionModule) is ActorReference<Module> m && !m.IsNull)
         {
             if (window.TextButton("build"))
             {
@@ -203,24 +217,24 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
             }
         }
 
-        if (window.TextButton(stance.ToString().ToLower()))
-        {
-            stance = (Stance)(((int)stance + 1) % (int)Stance.StanceCount);
-        }
-        if (window.LastItemHovered())
-        {
-            World.tooltipWindow.Text(stanceDescs[(int)stance]);
-        }
+        // if (window.TextButton(stance.ToString().ToLower()))
+        // {
+        //     stance = (Stance)(((int)stance + 1) % (int)Stance.StanceCount);
+        // }
+        // if (window.LastItemHovered())
+        // {
+        //     World.SetTooltip(w => w.Text(stanceDescs[(int)stance]));
+        // }
 
-        window.LayoutMode = LayoutMode.Horizontal;
-        foreach (var mod in modules)
-        {
-            window.Image(mod.Actor!.Icon, new(16));
-            if (window.LastItemHovered())
-            {
-                World.tooltipWindow.Text(mod.Actor.Prototype.Name);
-            }
-        }
+        //window.LayoutMode = LayoutMode.Horizontal;
+        //foreach (var mod in modules)
+        //{
+        //    window.Image(mod.Actor!.Icon, new(16));
+        //    if (window.LastItemHovered())
+        //    {
+        //        World.SetTooltip(w => w.Text(mod.Actor.Prototype.Name));
+        //    }
+        //}
     }
 
     public void Rotate(float throttle)

@@ -1,4 +1,5 @@
-﻿using SpaceGame.Economy;
+﻿using SpaceGame.Commands;
+using SpaceGame.Economy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,8 +7,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Teams;
-internal class TeamPrototype : WorldActorPrototype
+internal abstract class TeamPrototype : WorldActorPrototype
 {
+    public abstract ICommandProcessor CreateCommandProcessor(Team team);
+
     public override WorldActor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();

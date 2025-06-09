@@ -7,13 +7,17 @@ using System.Threading.Tasks;
 namespace SpaceGame.Combat;
 internal class MissileSystemPrototype : WeaponSystemPrototype
 {
+    public int SalvoSize { get; set; } = 5;
+    public int FireInterval { get; set; } = 25;
+    public int SalvoInterval { get; set; } = 125;
+
     public override WorldActor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
         ActorReference<Unit> unit = reader.ReadActorReference<Unit>();
         ActorReference<Unit> target = reader.ReadActorReference<Unit>();
         int missilesRemaining = reader.ReadInt32();
-        float timeSinceMissile = reader.ReadSingle();
+        int timeSinceMissile = reader.ReadInt32();
 
         return new MissileSystem(this, id, unit)
         {

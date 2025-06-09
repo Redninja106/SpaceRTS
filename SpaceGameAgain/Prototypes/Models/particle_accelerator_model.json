@@ -1,5 +1,5 @@
 {
-    "prototype": "SpriteModel",
+    "prototype": "NormalMappedSpriteModel",
     "name": "particle_accelerator_model",
     "width": 8.660254037844386,
     "height": 8.660254037844386,

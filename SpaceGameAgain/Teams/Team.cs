@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 namespace SpaceGame.Teams;
 internal class Team : WorldActor
 {
+    public override TeamPrototype Prototype => (TeamPrototype)base.Prototype;
+
     public static readonly Color PlayerColor = Color.SkyBlue;
     public static readonly Color AllyColor = Color.LawnGreen;
     public static readonly Color NeutralColor = Color.LightGray;
@@ -19,13 +21,15 @@ internal class Team : WorldActor
     private Dictionary<ActorReference<Team>, TeamRelation> relationships = [];
     internal Dictionary<ResourcePrototype, ResourceValues> resources = [];
 
+    public string Name { get; set; }
     public int Money { get; set; }
 
-    public ICommandProcessor CommandProcessor;
+    private ICommandProcessor CommandProcessor;
 
-    public Team(TeamPrototype prototype, ulong id, Transform transform, Dictionary<ActorReference<Team>, TeamRelation>? relationships = null, int money = 0) : base(prototype, id, transform)
+    public Team(TeamPrototype prototype, ulong id, Transform transform, Dictionary<ActorReference<Team>, TeamRelation>? relationships = null, int money = 0, string? name = null) : base(prototype, id, transform)
     {
         this.Money = money;
+        this.Name = name ?? "Player " + ID;
 
         if (relationships != null)
         {
@@ -48,6 +52,16 @@ internal class Team : WorldActor
                 Consumption = 0,
             };
         }
+    }
+
+    public ICommandProcessor GetCommandProcessor()
+    {
+        if (CommandProcessor == null)
+        {
+            CommandProcessor = this.Prototype.CreateCommandProcessor(this);
+        }
+
+        return CommandProcessor;
     }
 
     public void MakeEnemies(Team other)

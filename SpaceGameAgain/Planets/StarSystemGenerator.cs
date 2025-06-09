@@ -9,18 +9,24 @@ using System.Threading.Tasks;
 namespace SpaceGame.Planets;
 internal class StarSystemGenerator
 {
-    private PlanetPrototype planetPrototype;
+    private PlanetPrototype[] planetPrototypes;
     private Random random;
 
     public StarSystemGenerator(PlanetPrototype planetPrototype, Random random)
     {
-        this.planetPrototype = planetPrototype;
+        this.planetPrototypes = [
+                Prototypes.Get<PlanetPrototype>("mars"),
+                Prototypes.Get<PlanetPrototype>("sandy_planet"),
+                Prototypes.Get<PlanetPrototype>("mud_planet"),
+                Prototypes.Get<PlanetPrototype>("grassy_planet"),
+                Prototypes.Get<PlanetPrototype>("rocky_planet"),
+            ];
         this.random = random;
     }
 
     public void GenerateSystem()
     {
-        var star = new Planet(planetPrototype, World.NewID(), Transform.Default, null)
+        var star = new Planet(Prototypes.Get<PlanetPrototype>("star"), World.NewID(), Transform.Default, null)
         {
             Radius = random.NextSingle(75, 125),
             Color = Color.Yellow,
@@ -36,7 +42,7 @@ internal class StarSystemGenerator
             orbitDistance += planetRadius * 10;
 
             var planet = new Planet(
-                planetPrototype,
+                random.GetItems(planetPrototypes, 1)[0],
                 World.NewID(),
                 Transform.Default,
                 new Orbit(

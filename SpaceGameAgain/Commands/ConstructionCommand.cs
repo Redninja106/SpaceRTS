@@ -44,7 +44,7 @@ internal class ConstructionCommand : Command
 
 class ConstructionCommandPrototype : CommandPrototype
 {
-    public override Actor Deserialize(BinaryReader reader)
+    public override ConstructionCommand Deserialize(BinaryReader reader)
     {
         var ship = reader.ReadActorReference<Ship>();
         var grid = reader.ReadActorReference<Grid>();
@@ -56,12 +56,4 @@ class ConstructionCommandPrototype : CommandPrototype
         return new ConstructionCommand(this, ship.Actor!, grid, location, rotation, structure);
     }
 
-    public override void Issue(Unit? target, HashSet<Unit> selected, PlayerCommandProcessor processor)
-    {
-        throw new NotImplementedException();
-    }
-    public override bool Applies(Unit? target, HashSet<Unit> selected)
-    {
-        throw new NotImplementedException();
-    }
 }

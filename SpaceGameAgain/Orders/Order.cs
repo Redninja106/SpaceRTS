@@ -38,23 +38,21 @@ internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference
         //    return false;
         //}
 
-        if (!TurnTo(Angle.FromVector(delta.ToVector2())))
+        float targetAngle = Angle.FromVector(delta.ToVector2());
+        if (!TurnTo(targetAngle))
         {
             return false;
         }
+        this.Transform.Rotation = targetAngle;
 
         float timeToTarget = (float)delta.Length() / (float)s.velocity.Length();
         float timeToStop = (float)s.velocity.Length() / prototype.FlySpeed;
 
         DoubleVector targetVelocity;
-        if (timeToTarget <= timeToStop + Program.Timestep * 5)
+        if (timeToTarget <= timeToStop + Program.Timestep * 10 || perp.LengthSquared() > 0.0001)
         {
             targetVelocity = DoubleVector.Zero;
         }
-        else if (perp.LengthSquared() > 0.01)
-        {
-            targetVelocity = parallel;
-        }   
         else 
         {
             targetVelocity = delta.Normalized() * 1_000_000;
@@ -107,7 +105,7 @@ internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference
             //    return false;
             //}
 
-        return DoubleVector.Distance(s.Transform.Position, targetPosition) < 0.01 && s.velocity.Length() <= 0.01;
+        return DoubleVector.Distance(s.Transform.Position, targetPosition) < 0.05 && s.velocity.Length() <= 0.01;
     }
 
     [DebugOverlay]
@@ -141,7 +139,7 @@ internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference
             DebugDraw.Ray(Vector2.Zero, Vector2.UnitX, s.Transform, c);
         }
 
-        return Angle.Distance(s.Transform.Rotation, rotation) < 0.01 && float.Abs(s.angularVelocity) <= 0.01;
+        return Angle.Distance(s.Transform.Rotation, rotation) < 0.1 && float.Abs(s.angularVelocity) <= 0.01;
     }
 
     public bool MoveToOld(DoubleVector targetPosition, float? targetRotation = null)

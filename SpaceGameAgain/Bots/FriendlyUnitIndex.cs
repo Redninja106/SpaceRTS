@@ -1,4 +1,5 @@
-﻿using SpaceGame.AI;
+﻿using SpaceGame.Ships;
+using SpaceGame.Structures.Shipyards;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,18 @@ internal class FriendlyUnitIndex
     // small fast ships belong to scouting strategies etc
     private Dictionary<Unit, Strategy> unitStrategies = [];
 
+    public List<AssemblyBay> assemblyBays = [];
+    public List<Ship> constructionShips = [];
 
+    public void UnitAdded(Unit unit)
+    {
+
+    }
+
+    public void UnitRemoved(Unit unit)
+    {
+
+    }
 }
 
 // index of enemy units on a single team

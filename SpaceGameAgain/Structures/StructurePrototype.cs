@@ -20,6 +20,7 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
     public Vector2 Center { get; set; }
     public bool CanBeRotated { get; set; } = true;
     public Vector2[] Outline { get; private set; } = [];
+    public HexCoordinate[] AdjacentCells { get; private set; } = [];
     public Dictionary<ResourcePrototype, int> ResourceCosts { get; set; } = [];
     public SpriteModel Model { get; set; } = Prototypes.Get<SpriteModel>("default_model");
 
@@ -31,6 +32,7 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
     public ITexture Icon = Icons.Structure;
     public string? Description { get; set; }
     public int Cost { get; set; }
+    public string Category { get; set; } = "Other";
 
     public StructurePrototype()
     {
@@ -41,14 +43,39 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
         base.InitializePrototype();
         this.Center = ComputeCenter(this.Footprint);
         this.Outline = CreateOutline(this.Footprint);
+        this.AdjacentCells = CreateAdjacentCells(this.Footprint);
+        this.CollisionRadius = MathF.Sqrt(this.Outline.Max(p => (p - Center).LengthSquared()));
+
+        if (RevealRadius < CollisionRadius + .5f)
+        {
+            RevealRadius = CollisionRadius + .5f;
+        }
+
+        this.CanBeRotated = this.Model.SpriteCount > 1;
 
         // this.Model ??= PresetModels.presetModels[this.PresetModel!];
+    }
+
+    private HexCoordinate[] CreateAdjacentCells(HexCoordinate[] footprint)
+    {
+        List<HexCoordinate> adjacents = [];
+        foreach (var cell in footprint)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                HexCoordinate adjacent = cell + HexCoordinate.UnitQ.Rotated(i);
+                if (!footprint.Contains(cell))
+                {
+                    adjacents.Add(adjacent);
+                }
+            }
+        }
+        return adjacents.ToArray();
     }
 
     private Vector2 ComputeCenter(HexCoordinate[] footprint)
     {
         return footprint.Select(h => h.ToCartesian()).Aggregate((a, b) => a + b) * (1f / footprint.Length);
-
     }
 
     public static Vector2[] CreateOutline(HexCoordinate[] footprint)
@@ -105,9 +132,34 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
     {
         window.LayoutMode = LayoutMode.Horizontal;
         window.Image(this.Icon);
-        window.LayoutMode = LayoutMode.Vertical;
         window.Text(this.Title, 24);
+        window.LayoutMode = LayoutMode.Vertical;
         window.Text("$" + this.Cost + "k");
-        window.Text(this.Description ?? string.Empty);
+        window.LayoutMode = LayoutMode.Horizontal;
+
+        if (RequiredPowerLevel != PowerLevel.None)
+        {
+            window.Image(Icons.Economic, new(22, 22));
+            window.Text(RequiredPowerLevel.ToString());
+        }
+
+        window.LayoutMode = LayoutMode.Vertical;
+        if (!string.IsNullOrWhiteSpace(this.Description))
+        {
+            window.Text(this.Description);
+        }
+
+        if (ProvidedPowerLevel != PowerLevel.None)
+        {
+            window.Text("provides '" + ProvidedPowerLevel.ToString() + "' power");
+        }
+    }
+
+    public virtual void RenderAdjacencyOverlay(ICanvas canvas, Vector2 position, StructurePrototype otherPrototype)
+    {
+        if (this.RequiredPowerLevel != Economy.PowerLevel.None && otherPrototype.ProvidedPowerLevel >= this.RequiredPowerLevel)
+        {
+            canvas.DrawTexture(Icons.Economic, position, new Vector2(1f, 1f), Alignment.Center);
+        }
     }
 }

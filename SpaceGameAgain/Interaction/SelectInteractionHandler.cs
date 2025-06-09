@@ -1,7 +1,9 @@
-﻿using SpaceGame.Commands;
+﻿using ImGuiNET;
+using SpaceGame.Commands;
 using SpaceGame.Interaction;
 using SpaceGame.Orders;
 using SpaceGame.Ships;
+using SpaceGame.Ships.Fleets;
 using SpaceGame.Ships.Formations;
 using SpaceGame.Structures;
 using SpaceGame.Teams;
@@ -15,27 +17,42 @@ using System.Threading.Tasks;
 namespace SpaceGame.Interaction;
 internal class SelectInteractionHandler : IInteractionContext
 {
-    private Unit? target;
+    public Unit? target;
 
     public void Update(MouseState leftMouse, MouseState rightMouse)
     {
-        target = PickUnit();
+        World.SelectionHandler.VisualFocus = null;
+        if (World.Collision.IsClientVisible(World.MousePosition))
+        {
+            target = World.Collision.TestPoint(World.MousePosition).FirstOrDefault();
+        }
+        else
+        {
+            target = null;
+        }
 
         if (leftMouse.Released)
         {
             if (leftMouse.Dragged)
             {
                 World.SelectionHandler.ClearSelection();
-                foreach (var ship in PickArea(leftMouse.DragStart, World.MousePosition))
+                foreach (var ship in TestRegion(leftMouse.DragStart, World.MousePosition))
                 {
-                    World.SelectionHandler.Select(ship);
+                    if (ship.Fleet == null)
+                    {
+                        World.SelectionHandler.Select(ship);
+                    }
                 }
             }
             else
             {
                 if (target != null)
                 {
-                    if (World.SelectionHandler.IsSelected(target))
+                    if (Keyboard.IsKeyDown(Key.LeftShift))
+                    {
+                        World.SelectionHandler.Select(target);
+                    }
+                    else if (World.SelectionHandler.SelectedCount == 1 && World.SelectionHandler.IsSelected(target))
                     {
                         World.SelectionHandler.Deselect(target);
                     }
@@ -58,10 +75,10 @@ internal class SelectInteractionHandler : IInteractionContext
             {
                 foreach (var selectedObject in World.SelectionHandler.GetSelectedUnits())
                 {
-                    if (selectedObject is Ship ship && ship.Team == World.PlayerTeam)
+                    if (selectedObject is Ship ship && ship.Team == World.PlayerTeam && ship.CanAttack)
                     {
                         // IssueOrder(target, order.AsReference().Cast<Order>(), ship.orders.ToList());
-                        var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+                        var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.GetCommandProcessor();
 
                         if (!Keyboard.IsKeyDown(Key.LeftShift))
                         {
@@ -103,7 +120,7 @@ internal class SelectInteractionHandler : IInteractionContext
                     }
                     else
                     {
-                        var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+                        var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.GetCommandProcessor();
                         // MoveOrder moveOrder = new MoveOrder(Prototypes.Get<MoveOrderPrototype>("move_order"), World.NewID(), ships[i].AsReference().Cast<Unit>(), World.MousePosition + positions[i]);
 
                         if (!Keyboard.IsKeyDown(Key.LeftShift))
@@ -259,14 +276,41 @@ internal class SelectInteractionHandler : IInteractionContext
     //    cmdProc.AddCommand(new MoveCommand(prototype, World.NewID(), target.AsReference(), orders));
     //}
 
-    public void Render(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)
+    public void RenderBackgroundOverlay(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)
+    {
+        if (target != null && !World.SelectionHandler.IsSelected(target) && target is Structure structure)
+        {
+            canvas.PushState();
+            structure.DrawHighlightBelow(canvas, World.Camera, false);
+            canvas.PopState();
+        }
+    }
+
+    public void RenderGroundOverlay(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)
     {
         if (target != null && !World.SelectionHandler.IsSelected(target))
         {
+            if (target is Ship ship)
+            {
+                canvas.PushState();
+                ship.DrawHighlightBelow(canvas, World.Camera, false);
+                canvas.PopState();
+            }
+            else if (target is Structure structure)
+            {
+                canvas.PushState();
+                structure.DrawHighlightAbove(canvas, World.Camera, false);
+                canvas.PopState();
+            }
+        }
+    }
+
+    public void RenderSkyOverlay(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)
+    {
+        if (target != null && !World.SelectionHandler.IsSelected(target) && target is Ship ship)
+        {
             canvas.PushState();
-            canvas.Transform(World.Camera.CreateRelativeMatrix(target.InterpolatedTransform));
-            canvas.Stroke(World.PlayerTeam.Actor!.GetRelationColor(target.Team.Actor!) with { A = 100 });
-            canvas.DrawCircle(0, 0, (float)target.GetCollisionRadius());
+            ship.DrawHighlightAbove(canvas, World.Camera, false);
             canvas.PopState();
         }
 
@@ -279,83 +323,27 @@ internal class SelectInteractionHandler : IInteractionContext
         }
     }
 
-    private Unit? PickUnit()
-    {
-        Unit? unit = World.Collision.TestPoint(World.MousePosition);
-        return unit;
-    }
-
-    private Structure? PickStructure()
-    {
-        foreach (var planet in World.Planets)
-        {
-            var mp = planet.Grid.Transform.WorldToLocal(World.MousePosition.ToVector2());
-            var cell = planet.Grid.GetCell(HexCoordinate.FromCartesian(mp));
-            if (cell is not null && !cell.Structure.IsNull)
-            {
-                return cell.Structure.Actor!;
-            }
-        }
-        return null;
-    }
-
-    [DebugOverlay]
-    public static void ShowPickArea()
-    {
-        if (!World.leftMouse.Dragging)
-            return;
-
-        DoubleVector from = World.leftMouse.DragStart;
-        DoubleVector to = World.MousePosition;
-
-        int minX = (int)(Math.Floor(Math.Min(from.X, to.X) / UnitCollision.BinSize));
-        int minY = (int)(Math.Floor(Math.Min(from.Y, to.Y) / UnitCollision.BinSize));
-
-        int maxX = (int)(Math.Floor(Math.Max(from.X, to.X) / UnitCollision.BinSize));
-        int maxY = (int)(Math.Floor(Math.Max(from.Y, to.Y) / UnitCollision.BinSize));
-
-        for (int x = minX; x <= maxX; x++)
-        {
-            for (int y = minY; y <= maxY; y++)
-            {
-                DebugDraw.Rectangle(new(
-                    (float)(x * UnitCollision.BinSize),
-                    (float)(y * UnitCollision.BinSize),
-                    (float)UnitCollision.BinSize,
-                    (float)UnitCollision.BinSize
-                    ));
-            }
-        }
-    }
-
-    private IEnumerable<Unit> PickArea(DoubleVector from, DoubleVector to)
+    public IEnumerable<Ship> TestRegion(DoubleVector from, DoubleVector to)
     {
         DoubleVector min = new(Math.Min(from.X, to.X), Math.Min(from.Y, to.Y));
         DoubleVector max = new(Math.Max(from.X, to.X), Math.Max(from.Y, to.Y));
 
-        int minX = (int)(Math.Floor(min.X / UnitCollision.BinSize));
-        int minY = (int)(Math.Floor(min.Y / UnitCollision.BinSize));
-
-        int maxX = (int)(Math.Floor(max.X / UnitCollision.BinSize));
-        int maxY = (int)(Math.Floor(max.Y / UnitCollision.BinSize));
-
-        for (int x = minX; x <= maxX; x++)
+        foreach (var ship in World.Ships)
         {
-            for (int y = minY; y <= maxY; y++)
+            if (ship.Team == World.PlayerTeam)
             {
-                foreach (var unit in World.Collision.GetBin(x, y))
+                DoubleVector pos = ship.Transform.Position;
+                if (pos.X > min.X && pos.Y > min.Y && pos.X < max.X && pos.Y < max.Y)
                 {
-                    if (unit is Ship s)
-                    {
-                        DoubleVector p = unit.Transform.Position;
-                        if (p.X > min.X && p.Y > min.Y && p.X < max.X && p.Y < max.Y)
-                        {
-                            yield return s;
-                        }
-                    }
+                    yield return ship;
                 }
             }
         }
     }
 
+}
+
+interface ISelectable
+{
+    ITexture Icon { get; }
 }

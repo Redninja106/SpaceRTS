@@ -1,4 +1,5 @@
-﻿using SpaceGame.Teams;
+﻿using SpaceGame.GUI;
+using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +14,12 @@ internal class UrbanDistrict : Structure
     int nearbyTradeHubs = 0;
     int payoutCooldown;
 
+    float widgetHeight = 0;
+    string widgetText = "";
 
-    public UrbanDistrict(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
+    public UrbanDistrict(UrbanDistrictPrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
     {
+        this.payoutCooldown = prototype.PayoutInterval;
     }
 
     public override void Tick()
@@ -34,10 +38,15 @@ internal class UrbanDistrict : Structure
             this.Team.Actor!.Money += payout;
             payoutCooldown = Prototype.PayoutInterval;
 
-            // World.Add(new TextWidget(Prototypes.Get<TextWidgetPrototype>("income_text_widget"), World.NewID(), this.Transform, $"${payout}k"));
+            World.TextWidgets.AddEventWidget(new TextWidget(this.Transform, $"${payout}k"));
         }
 
         base.Tick();
+    }
+
+    public override void Render(ICanvas canvas)
+    {
+        base.Render(canvas);
     }
 
     public override void OnNeighborAdded(Structure neighbor)

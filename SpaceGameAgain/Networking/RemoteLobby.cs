@@ -9,6 +9,8 @@ class RemoteLobby : Lobby
     private WorldDataPacket?[]? chunks;
     private WorldDownloadPacket? currentDownload;
 
+    public override bool IsDownloadingWorld => currentDownload != null;
+
     public RemoteLobby(SocketClient client)
     {
         this.client = client;
@@ -32,6 +34,7 @@ class RemoteLobby : Lobby
             // receive ALL chunks
             while (client.ReceivePacket(out WorldDataPacket? data))
             {
+                DebugLog.Message("got chunk " + data.packetIndex);
                 chunks[data.packetIndex] = data;
             }
 
@@ -49,39 +52,40 @@ class RemoteLobby : Lobby
                 WorldSerializer serializer = new();
                 using var ms = new MemoryStream(combinedData.ToArray());
                 using var reader = new BinaryReader(ms);
-                World = serializer.Deserialize(reader);
+                serializer.Deserialize(reader);
                 World.PlayerTeam = currentDownload!.teamToPlayAs;
-                foreach (var team in World.Teams)
-                {
-                    if (team == currentDownload.teamToPlayAs.Actor)
-                    {
-                        team.CommandProcessor = new PlayerCommandProcessor();
-                    }
-                    else
-                    {
-                        team.CommandProcessor = new NetworkCommandProcessor();
-                    }
-                }
+                //foreach (var team in World.Teams)
+                //{
+                //    if (team == currentDownload.teamToPlayAs.Actor)
+                //    {
+                //        team.CommandProcessor = new PlayerCommandProcessor();
+                //    }
+                //    else
+                //    {
+                //        team.CommandProcessor = new NetworkCommandProcessor();
+                //    }
+                //}
 
                 chunks = null;
                 currentDownload = null;
 
                 DebugLog.Message("downloaded world!");
+
+                client.SendPacket(new WorldDownloadCompletePacket(Prototypes.Get<WorldDownloadCompletePacketPrototype>("world_download_complete_packet")));
             }
         }
-
 
         if (client.ReceivePacket(out TurnRequestPacket? turnRequest))
         {
             DebugLog.Message($"got a request for turn {turnRequest.turn}");
 
-            var cmdProc = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+            var cmdProc = (PlayerCommandProcessor)World.PlayerTeam.Actor!.GetCommandProcessor();
             for (ulong t = World.TurnProcessor.turn; t < turnRequest.turn; t++)
             {
                 var turnHistory = turnRequest.history.GetTurn(t);
                 foreach (var (team, commands) in turnHistory)
                 {
-                    if (team.CommandProcessor is NetworkCommandProcessor proc && !proc.HasCommands(t))
+                    if (team.GetCommandProcessor() is NetworkCommandProcessor proc && !proc.HasCommands(t))
                     {
                         proc.AddCommands(t, commands);
                     }
@@ -109,6 +113,11 @@ class RemoteLobby : Lobby
         if (client.ReceivePacket(out TurnPacket? turn))
         {
             turn.Process();
+        }
+
+        if (client.ReceivePacket(out CreateTeamPacket? createTeam))
+        {
+            World.Add(createTeam.CreateTeam());
         }
 
     }

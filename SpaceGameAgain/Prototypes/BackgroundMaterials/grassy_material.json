@@ -1,0 +1,6 @@
+{
+  "prototype": "BackgroundMaterial",
+  "name": "grassy_material",
+  "texture_file": "rocky_terrain_02_diff_4k.jpg",
+  "normal_map_file": "rocky_terrain_02_nor_gl_4k.jpg"
+}

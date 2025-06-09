@@ -9,15 +9,14 @@ using System.Threading.Tasks;
 namespace SpaceGame;
 internal class WorldSerializer
 {
-    public GameWorld Deserialize(BinaryReader reader)
+    public void Deserialize(BinaryReader reader)
     {
-        GameWorld world = new();
-
-        world.NextID = reader.ReadUInt64();
-        world.PlayerTeam = reader.ReadActorReference<Team>();
-        world.TurnProcessor.startingTurn = world.TurnProcessor.turn = reader.ReadUInt64();
-        world.TurnProcessor.RemainingTicks = reader.ReadInt32();
-        world.tick = reader.ReadUInt64();
+        World = new();
+        World.NextID = reader.ReadUInt64();
+        World.PlayerTeam = reader.ReadActorReference<Team>();
+        World.TurnProcessor.startingTurn = World.TurnProcessor.turn = reader.ReadUInt64();
+        World.TurnProcessor.RemainingTicks = reader.ReadInt32();
+        World.tick = reader.ReadUInt64();
 
         int prototypeCount = reader.ReadInt32();
 
@@ -30,7 +29,7 @@ internal class WorldSerializer
 
             for (int j = 0; j < actorCount; j++)
             {
-                world.Add(prototype.Deserialize(reader)); 
+                World.Add(prototype.Deserialize(reader)); 
                 
                 if (reader.ReadInt32() != 0)
                 {
@@ -44,17 +43,15 @@ internal class WorldSerializer
             }
         }
 
-        foreach (var (id, actor) in world.Actors)
+        foreach (var (id, actor) in World.Actors)
         {
             actor.FinalizeDeserialization();
         }
 
-        foreach (var team in world.Teams)
-        {
-            team.CommandProcessor = new PlayerCommandProcessor();
-        }
-
-        return world;
+        // foreach (var team in World.Teams)
+        // {
+        //     team.CommandProcessor = new PlayerCommandProcessor();
+        // }
     }
 
     public void Serialize(GameWorld world, BinaryWriter writer)

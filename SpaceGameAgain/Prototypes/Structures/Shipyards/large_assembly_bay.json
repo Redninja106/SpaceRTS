@@ -37,9 +37,13 @@
     [ 2, -2 ],
     [ 2, -1 ],
     [ 2, 0 ],
-    [ 2, 1 ],
+    [ 2, 1 ]
   ],
   "max_health": 10,
   "ship_prototype": "large_ship",
-  "power_consumed": 5
+  "required_power_level": "high",
+  "production_time": 30000,
+  "cost": 75,
+  "category": "Shipbuilding"
+
 }

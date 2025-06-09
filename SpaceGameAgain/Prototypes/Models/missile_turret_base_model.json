@@ -1,5 +1,5 @@
 {
-    "prototype": "SpriteModel",
+    "prototype": "NormalMappedSpriteModel",
     "name": "missile_turret_base_model",
     "width": 3.4641016151377544,
     "height": 3.4641016151377544,

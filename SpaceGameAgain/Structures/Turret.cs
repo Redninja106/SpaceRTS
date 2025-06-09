@@ -12,6 +12,7 @@ internal class Turret : Structure
     public override TurretPrototype Prototype => (TurretPrototype)base.Prototype;
 
     public ActorReference<WeaponSystem> weaponSystem;
+    public override bool CanAttack => true;
 
     public Turret(TurretPrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
     {
@@ -20,7 +21,18 @@ internal class Turret : Structure
     public override void Render(ICanvas canvas)
     {
         base.Render(canvas);
-        Prototype.TurretModel.Render(canvas, this.InterpolatedTransform, ColorF.White);
+        Prototype.TurretModel?.Render(canvas, this.InterpolatedTransform with { Rotation = weaponSystem.Actor!.InterpolatedTransform.Rotation }, ColorF.White);
+    }
+
+    public override void DrawHighlightAbove(ICanvas canvas, Camera camera, bool selected)
+    {
+        base.DrawHighlightAbove(canvas, camera, selected);
+
+        canvas.PushState();
+        Transform.Create(GetCenter(), 0).ApplyTo(canvas, camera);
+        canvas.Stroke(Color.White with { A = 40 });
+        canvas.DrawCircle(0, 0, weaponSystem.Actor!.Prototype.Range);
+        canvas.PopState();
     }
 
     public override void Tick()

@@ -12,6 +12,7 @@ public static class DebugDraw
     private static List<(Circle, Color color, Transform transform)> circles = [];
     private static List<(Rectangle, Color color, Transform transform)> rectangles = [];
     private static List<(string text, float size, Vector2 position, Color color, Transform transform)> texts = [];
+    private static List<(ITexture texture, Rectangle destination, ColorF tint, Transform transform)> textures = [];
 
     public static void Polygon(Vector2[] polygon, Transform? transform = null, Color? color = null)
     {
@@ -26,6 +27,11 @@ public static class DebugDraw
     public static void Rectangle(Rectangle rect, Transform? transform = null, Color? color = null)
     {
         rectangles.Add((rect, color ?? Color.Red, transform ?? Transform.Default));
+    }
+
+    public static void Texture(ITexture texture, Rectangle destination, Transform? transform = null, ColorF? tint = null)
+    {
+        textures.Add((texture, destination, tint ?? ColorF.White, transform ?? Transform.Default));
     }
 
     public static void Clear()
@@ -98,6 +104,16 @@ public static class DebugDraw
             canvas.PopState();
         }
 
+        foreach (var (texture, destination, tint, t) in textures)
+        {
+            canvas.PushState();
+            t.ApplyTo(canvas, camera);
+
+            canvas.DrawTexture(texture, destination, tint);
+
+            canvas.PopState();
+        }
+
         canvas.PopState();
     }
 
@@ -113,7 +129,10 @@ public static class DebugDraw
 
     public static void Ray(Vector2 origin, Vector2 direction, Transform? transform = null, Color? color = null)
     {
+
         Line(origin, origin + direction, transform, color);
+        Line(origin + direction, origin + direction - (direction * .1f).Rotated(-float.Pi / 4), transform, color);
+        Line(origin + direction, origin + direction - (direction * .1f).Rotated(+float.Pi / 4), transform, color);
     }
 
     public static void Text(string text, float size, Vector2 position, Transform? transform = null, Color? color = null)

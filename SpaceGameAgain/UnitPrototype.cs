@@ -5,9 +5,10 @@ namespace SpaceGame;
 
 abstract class UnitPrototype : WorldActorPrototype
 {
-    public int MaxHealth { get; set; }
+    public int MaxHealth { get; set; } = 1;
     public string Title { get; set; } = "";
-    public double CollisionRadius { get; set; }
+    public double CollisionRadius { get; set; } = .5f;
+    public double RevealRadius { get; set; } = 1;
 
     public void DeserializeArgs(BinaryReader reader, out ulong id, out Transform transform, out ActorReference<Team> team, out int health)
     {

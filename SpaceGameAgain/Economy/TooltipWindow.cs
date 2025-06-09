@@ -22,6 +22,8 @@ internal class TooltipWindow : GUIWindow
 
     public override void Render(ICanvas canvas, float displayWidth, float displayHeight)
     {
+        UpdateLayout();
+
         this.Offset = World.GUIViewport.MousePosition;
         if (this.CalculatedBounds.Size != Vector2.Zero)
         {

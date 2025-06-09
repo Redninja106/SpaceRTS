@@ -16,6 +16,7 @@ internal class SocketClient
     private List<Packet> receivedPackets = [];
     private SocketPacketReceiver packetReceiver;
 
+
     public SocketClient(string host, int port)
     {
         connection = new Socket(AddressFamily.InterNetwork, SocketType.Stream, 0);
@@ -29,6 +30,11 @@ internal class SocketClient
         DebugLog.Message("connected to " + connection.RemoteEndPoint?.ToString());
 
         packetReceiver = new(connection);
+    }
+
+    public string GetEndPoint() 
+    {
+        return connection.RemoteEndPoint?.ToString() ?? "";
     }
 
     public void Update()

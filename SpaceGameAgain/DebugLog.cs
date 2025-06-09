@@ -13,7 +13,7 @@ internal static class DebugLog
     private static FileStream? logFile;
     private static TextWriter? writer;
 
-    [Conditional("DEBUG")]
+    [Conditional("LOGGING")]
     public static void Initialize()
     {
         try
@@ -66,7 +66,7 @@ internal static class DebugLog
         }
     }
 
-    [Conditional("DEBUG")]
+    [Conditional("LOGGING")]
     public static void Message(string message, [CallerFilePath] string callerFile = "", [CallerLineNumber] int callerLine = 0, [CallerMemberName] string memberName = "")
     {
         ConsoleColor prevCol = Console.ForegroundColor;
@@ -75,7 +75,7 @@ internal static class DebugLog
         Console.ForegroundColor = prevCol;
     }
 
-    [Conditional("DEBUG")]
+    [Conditional("LOGGING")]
     public static void Error(string message, [CallerFilePath] string callerFile = "", [CallerLineNumber] int callerLine = 0, [CallerMemberName] string memberName = "")
     {
         ConsoleColor prevCol = Console.ForegroundColor;
@@ -84,7 +84,7 @@ internal static class DebugLog
         Console.ForegroundColor = prevCol;
     }
 
-    [Conditional("DEBUG")]
+    [Conditional("LOGGING")]
     public static void Warning(string message, [CallerFilePath] string callerFile = "", [CallerLineNumber] int callerLine = 0, [CallerMemberName] string memberName = "")
     {
         ConsoleColor prevCol = Console.ForegroundColor;

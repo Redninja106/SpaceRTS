@@ -9,7 +9,7 @@ namespace SpaceGame.GUI;
 internal class GUIViewport
 {
     public Vector2 MousePosition;
-    public float Scale = 1;
+    public float Scale = 1.5f;
     public bool IsAnyWindowHovered;
 
     public float EffectiveWidth;

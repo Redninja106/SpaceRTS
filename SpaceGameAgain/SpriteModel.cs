@@ -1,5 +1,8 @@
 ﻿using ImGuiNET;
+using Silk.NET.OpenGL;
 using SimulationFramework.Desktop;
+using SimulationFramework.Drawing.Shaders;
+using SpaceGame.Planets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,19 +13,14 @@ namespace SpaceGame;
 internal class SpriteModel : ModelPrototype, IInspectable
 {
 
-    private ITexture[] sprites;
+    protected ITexture[] sprites;
     public string SpritesFolder { get; set; }
     public int SpriteCount { get; set; }
 
     public override void InitializePrototype()
     {
         sprites = new ITexture[SpriteCount];
-        for (int i = 0; i < SpriteCount; i++)
-        {
-            sprites[i] = Graphics.LoadTexture($"./Assets/Sprites/{SpritesFolder}/{i}.png");
-            sprites[i].Filter = TextureFilter.MipmapPoint;
-            Graphics.GenerateMipmaps(sprites[i]);
-        }
+        Load();
 
         base.InitializePrototype();
     }
@@ -31,25 +29,48 @@ internal class SpriteModel : ModelPrototype, IInspectable
     {
         throw new NotSupportedException();
     }
-
+    
     public virtual void Render(ICanvas canvas, Transform transform, ColorF tint)
     {
         int sprite = (int)MathF.Round((Angle.Normalize(transform.Rotation) / MathF.Tau) * SpriteCount) % SpriteCount;
         canvas.DrawTexture(sprites[sprite], new Rectangle(0, 0, Width, Height, Alignment.Center), tint);
     }
 
-    public void DebugLayout()
+    public virtual void DebugLayout()
     {
         ImGui.Text(this.SpritesFolder);
-        int sprite = (int)(Time.TotalTime * .5f * SpriteCount) % SpriteCount;
-        ImGui.Image(this.sprites[sprite].GetImGuiID(), new(this.sprites[sprite].Width, this.sprites[sprite].Height), new(0, 0), new(1, 1), new(1,1,1,1), new(1,1,1,1));
+        if (ImGui.Button("Reload"))
+        {
+            Load();
+        }
+        LayoutSpriteArray(this.sprites, "Sprites");
+    }
 
-        for (int i = 0; i < sprites.Length; i++)
+    public virtual void Load()
+    {
+        for (int i = 0; i < SpriteCount; i++)
+        {
+            sprites[i]?.Dispose();
+            sprites[i] = Graphics.LoadTexture($"./Assets/Sprites/{SpritesFolder}/{i}.png");
+            sprites[i].Filter = TextureFilter.Point;
+            Graphics.GenerateMipmaps(sprites[i]);
+        }
+    }
+
+    protected void LayoutSpriteArray(ITexture[] spriteArray, string name)
+    {
+        ImGui.SeparatorText(name);
+        ImGui.PushID(name);
+
+        int sprite = (int)(Time.TotalTime * .5f * SpriteCount) % SpriteCount;
+        ImGui.Image(spriteArray[sprite].GetImGuiID(), new(spriteArray[sprite].Width, spriteArray[sprite].Height), new(0, 0), new(1, 1), new(1, 1, 1, 1), new(1, 1, 1, 1));
+
+        for (int i = 0; i < spriteArray.Length; i++)
         {
             ImGui.TextDisabled(i.ToString());
             if (ImGui.BeginItemTooltip())
             {
-                ImGui.Image(this.sprites[i].GetImGuiID(), new(this.sprites[i].Width, this.sprites[i].Height));
+                ImGui.Image(spriteArray[i].GetImGuiID(), new(spriteArray[i].Width, spriteArray[i].Height));
                 ImGui.EndTooltip();
             }
 
@@ -57,5 +78,88 @@ internal class SpriteModel : ModelPrototype, IInspectable
             if (ImGui.GetContentRegionAvail().X < 5)
                 ImGui.NewLine();
         }
+        ImGui.NewLine();
+        ImGui.PopID();
+    }
+}
+
+class NormalMappedSpriteModel : SpriteModel
+{
+    NormalMappedShader shader = new();
+    protected ITexture[] spriteNormalMaps;
+
+    public override void InitializePrototype()
+    {
+        spriteNormalMaps = new ITexture[SpriteCount];
+        base.InitializePrototype();
+    }
+
+    public override void Load()
+    {
+        for (int i = 0; i < SpriteCount; i++)
+        {
+            spriteNormalMaps[i]?.Dispose();
+            spriteNormalMaps[i] = Graphics.LoadTexture($"./Assets/Sprites/{SpritesFolder}/{i}_normal.png");
+            spriteNormalMaps[i].Filter = TextureFilter.Point;
+            Graphics.GenerateMipmaps(spriteNormalMaps[i]);
+        }
+
+        base.Load();
+    }
+
+    public override void Render(ICanvas canvas, Transform transform, ColorF tint)
+    {
+        int sprite = (int)MathF.Round((Angle.Normalize(transform.Rotation) / MathF.Tau) * SpriteCount) % SpriteCount;
+
+        shader.texture = sprites[sprite];
+        shader.normalMap = spriteNormalMaps[sprite];
+        shader.tint = tint;
+
+        Vector2 lightDir2 = transform.Position.ToVector2().Normalized();
+        shader.lightDirection = new Vector3(0, -1, 0).Normalized();
+        Vector2 v = (transform.Position).ToVector2().Normalized();
+        shader.lightDirection = new Vector3(v.X, -v.Y, -1).Normalized();
+        shader.size = new(Width, Height);
+        canvas.Fill(shader);
+        canvas.DrawRect(new Rectangle(0, 0, Width, Height, Alignment.Center));
+
+        //canvas.DrawTexture(sprites[sprite], new Rectangle(0, 0, Width, Height, Alignment.Center), tint);
+    }
+
+    public override void DebugLayout()
+    {
+        base.DebugLayout();
+        LayoutSpriteArray(this.spriteNormalMaps, "Normals");
+    }
+}
+
+class NormalMappedShader : CanvasShader
+{
+    public ITexture texture;
+    public ITexture normalMap;
+    public ColorF tint;
+    public Vector3 lightDirection;
+    public Vector2 size;
+    public float ambientLight = .25f;
+
+    public override ColorF GetPixelColor(Vector2 position)
+    {
+        Vector2 uv = (position / size) + new Vector2(.5f, .5f);
+        ColorF color = texture.SampleUV(uv);
+
+        if (color.A == 0)
+        {
+            ShaderIntrinsics.Discard();
+        }
+
+        Vector3 normal = NormalMapHelper.ExtractNormal(normalMap.SampleUV(uv));
+        float brightness = NormalMapHelper.CalcBrightness(normal, lightDirection);
+
+        // float a = color.A;
+        color *= new ColorF(brightness, brightness, brightness, 1);
+
+        //color *= tint;
+        
+        return color;
     }
 }

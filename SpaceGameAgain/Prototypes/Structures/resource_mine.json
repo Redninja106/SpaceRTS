@@ -5,5 +5,7 @@
   "mining_count": 1,
   "title": "Resource Mine",
   "max_health": 3,
-  "cost": 2
+  "cost": 5,
+  "reveal_radius": 1
+
 }

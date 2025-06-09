@@ -1,5 +1,5 @@
 {
-    "prototype": "SpriteModel",
+    "prototype": "NormalMappedSpriteModel",
     "name": "manufactory_model",
     "width": 6.928203230275509,
     "height": 6.928203230275509,

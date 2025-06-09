@@ -62,14 +62,19 @@ static class Prototypes
         };
         options.Converters.Add(new HexCoordinateConverter());
         options.Converters.Add(new ColorConverter());
+        options.Converters.Add(new ColorFConverter());
         options.Converters.Add(new PrototypeConverter(files));
         options = JsonPopulate.GetOptionsWithPopulateResolver(options);
 
         foreach (var (_, file) in files)
         {
             Prototype prototype = file.Load(options);
-            prototype.InitializePrototype();
             prototypes.Add(file.PrototypeName, prototype);
+        }
+
+        foreach (var prototype in prototypes)
+        {
+            prototype.Value.InitializePrototype();
         }
     }
 
@@ -322,6 +327,47 @@ internal class ColorConverter : JsonConverter<Color>
     }
 
     public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+internal class ColorFConverter : JsonConverter<ColorF>
+{
+    public override ColorF Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.StartArray)
+        {
+            reader.Read();
+            float r = reader.GetSingle();
+            reader.Read();
+            float g = reader.GetSingle();
+            reader.Read();
+            float b = reader.GetSingle();
+            reader.Read();
+            float a = 1.0f;
+            if (reader.TokenType != JsonTokenType.EndArray)
+            {
+                a = reader.GetSingle();
+                reader.Read();
+            }
+            return new ColorF(r, g, b, a);
+        }
+
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            string value = reader.GetString()!;
+
+            if (Color.TryParse(value, out Color result))
+            {
+                return result.ToColorF();
+            }
+        }
+
+        throw new Exception("invalid color");
+    }
+
+    public override void Write(Utf8JsonWriter writer, ColorF value, JsonSerializerOptions options)
     {
         throw new NotImplementedException();
     }

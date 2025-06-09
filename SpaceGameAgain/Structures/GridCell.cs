@@ -9,9 +9,10 @@ namespace SpaceGame.Structures;
 internal class GridCell
 {
     public ActorReference<Structure> Structure { get; set; }
-    public Tile Tile { get; set; }
+    public TilePrototype Tile { get; set; }
+    public ColorF Tint { get; set; }
 
-    public GridCell(Tile tile)
+    public GridCell(TilePrototype tile)
     {
         this.Tile = tile;
     }

@@ -12,14 +12,10 @@ using System.Threading.Tasks;
 namespace SpaceGame.Combat;
 internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, ActorReference<Unit> unit) : WeaponSystem(prototype, id, unit)
 {
-    public float fireRate = 17;
-    public float range = 6;
-    public int ammoCapacity = 150;
-    public float turnSpeed = MathF.Tau;
+    public override ChaingunSystemPrototype Prototype => (ChaingunSystemPrototype)base.Prototype;
 
     public int ammo = 150;
-    public float angle;
-    public float timeSinceShot;
+    public int timeSinceShot;
 
     public override void Tick()
     {
@@ -29,7 +25,10 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
         float minDistance = float.PositiveInfinity;
         foreach (var missile in World.Missiles)
         {
-            if (DoubleVector.Distance(missile.Transform.Position, unit.Actor!.Transform.Position) <= range && missile.Target.Actor!.Team.Actor!.GetRelation(unit.Actor!.Team.Actor!) is TeamRelation.Allies or TeamRelation.Self)
+            if (missile.Target.IsNull)
+                continue;
+
+            if (DoubleVector.Distance(missile.Transform.Position, unit.Actor!.Transform.Position) <= Prototype.Range && missile.Target.Actor!.Team.Actor!.GetRelation(unit.Actor!.Team.Actor!) is TeamRelation.Allies or TeamRelation.Self)
             {
                 if (missile.exploding)
                     continue;
@@ -45,7 +44,7 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
 
         if (target is not null)
         {
-            if (timeSinceShot > 1 / fireRate && ammo > 0)
+            if (timeSinceShot > Prototype.FireInterval && ammo > 0)
             {
                 var bulletProto = Prototypes.Get<BulletPrototype>("bullet");
                 DoubleVector targetPos = target.Transform.Position;
@@ -61,15 +60,15 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
                 }
 
                 float targetAngle = Angle.FromVector((targetPos - unit.Actor!.Transform.Position).ToVector2());
-                angle = Angle.Step(angle, targetAngle, turnSpeed * Program.Timestep);
+                this.Transform.Rotation = Angle.Step(this.Transform.Rotation, targetAngle, Prototype.TurnSpeed * MathF.Tau * Program.Timestep);
                 
-                if (Angle.Distance(angle, targetAngle) < 0.05f)
+                if (Angle.Distance(this.Transform.Rotation, targetAngle) < 0.05f)
                 {
                     var transform = unit.Actor!.Transform with 
                     { 
                         Rotation = Angle.FromVector((targetPos - unit.Actor!.Transform.Position).ToVector2()) + World.TickRandom.NextSingle() * 0.05f
                     };
-                    World.Add(new Bullet(bulletProto, World.NewID(), transform, target.AsReference(), range / bulletProto.Speed));
+                    World.Add(new Bullet(bulletProto, World.NewID(), transform, target.AsReference(), Prototype.Range / bulletProto.Speed));
 
                     timeSinceShot = 0;
                     ammo--;
@@ -77,20 +76,13 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
             }
         }
 
-        if (timeSinceShot > 3)
+        if (timeSinceShot > Prototype.ReloadTime)
         {
-            ammo = ammoCapacity;
+            ammo = Prototype.AmmoCapacity;
         }
 
-        timeSinceShot += Program.Timestep;
+        timeSinceShot++;
     }
-
-    public void RenderSelected(ICanvas canvas)
-    {
-        canvas.Stroke(Color.Green);
-        canvas.DrawCircle(0, 0, range);
-    }
-
 
     public override void Render(ICanvas canvas)
     {
@@ -102,13 +94,13 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
     private DoubleVector PredictBullet(DoubleVector turretPos, DoubleVector targetPos, float bulletSpeed, DoubleVector position, DoubleVector velocity, DoubleVector acceleration, DoubleVector jerk, float minTimeToHit)
     {
         DoubleVector delta = targetPos - turretPos;
-        double angle = (float)Angle.Distance(Angle.FromVector(delta.ToVector2()), this.angle);
+        // double angle = (float)Angle.Distance(Angle.FromVector(delta.ToVector2()), this.angle);
         double distance = delta.Length();
-        double t = Math.Min((distance / bulletSpeed + 0 * angle / turnSpeed), 1);
+        double t = Math.Min(distance / bulletSpeed /* + 0 * angle / (Prototype.TurnSpeed * float.Tau) */, 1);
         return Forecast(position, velocity, acceleration, jerk, t);
     }
 
-    public DoubleVector Forecast(DoubleVector p, DoubleVector v, DoubleVector a, DoubleVector j, double t)
+    public static DoubleVector Forecast(DoubleVector p, DoubleVector v, DoubleVector a, DoubleVector j, double t)
     {
         return p + v * t + (1 / 2f) * a * t * t + (1 / 6f) * j * t * t * t;
     }
@@ -118,7 +110,7 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
         writer.Write(ID);
         writer.Write(unit);
         writer.Write(ammo);
-        writer.Write(angle);
+        writer.Write(this.Transform.Rotation);
         writer.Write(timeSinceShot);
     }
 }

@@ -12,5 +12,10 @@
   "ship_prototype": "small_ship",
   "power_consumed": 1,
   "model": "small_assembly_bay_model",
-  "description": "Produces small ships. Requires an adjacent factory."
+  "description": "Produces small ships. Requires at least one adjacent manufactory.",
+  "production_time": 1000,
+  "production_cost": 20,
+  "cost": 10,
+  "reveal_radius": 1,
+  "category": "Shipbuilding",
 }

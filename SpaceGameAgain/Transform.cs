@@ -25,6 +25,15 @@ public struct Transform
     {
     }
 
+    public static Transform Create(DoubleVector position, float rotation)
+    {
+        return Default with
+        {
+            Position = position,
+            Rotation = rotation,
+        };
+    }
+
     public Matrix3x2 WorldToLocalMatrix()
     {
         return
@@ -95,6 +104,16 @@ public struct Transform
         result.Rotation = Angle.Lerp(a.Rotation, b.Rotation, t);
         result.Scale = Vector2.Lerp(a.Scale, b.Scale, t);
         return result;
+    }
+
+    public Transform WithRotation(float rotation)
+    {
+        return this with { Rotation = rotation };
+    }
+
+    public Transform WithPosition(DoubleVector position)
+    {
+        return this with { Position = position };
     }
 }
 

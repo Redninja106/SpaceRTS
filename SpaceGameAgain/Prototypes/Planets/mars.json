@@ -1,0 +1,5 @@
+{
+  "prototype": "PlanetPrototype",
+  "name": "mars",
+  "material": "mars_material"
+}

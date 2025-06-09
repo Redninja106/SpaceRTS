@@ -1,0 +1,5 @@
+{
+  "prototype": "PlanetPrototype",
+  "name": "mud_planet",
+  "material": "mud_material"
+}

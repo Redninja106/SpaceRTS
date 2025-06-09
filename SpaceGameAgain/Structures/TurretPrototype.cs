@@ -10,13 +10,13 @@ namespace SpaceGame.Structures;
 internal class TurretPrototype : StructurePrototype
 {
     public WeaponSystemPrototype WeaponSystemPrototype { get; set; }
-    public SpriteModel TurretModel { get; set; }
+    public SpriteModel? TurretModel { get; set; }
 
     public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
     {
         var turret = new Turret(this, id, grid, location, rotation, team);
-        var weaponSystem = WeaponSystemPrototype.CreateWeapon(World.NewID(), ((Unit)turret).AsReference());
-        World.Add(weaponSystem);
+        turret.weaponSystem = WeaponSystemPrototype.CreateWeapon(World.NewID(), ((Unit)turret).AsReference()).AsReference();
+        World.Add(turret.weaponSystem.Actor!);
 
         return turret;
     }
