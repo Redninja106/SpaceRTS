@@ -1,14 +1,13 @@
 ﻿using ImGuiNET;
 using Silk.NET.OpenGL;
 using SimulationFramework.Desktop;
-using SpaceGame.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpaceGame;
+namespace SpaceGame.Rendering;
 internal class SpriteModel : ModelPrototype, IInspectable
 {
 
@@ -28,21 +27,21 @@ internal class SpriteModel : ModelPrototype, IInspectable
     {
         throw new NotSupportedException();
     }
-    
+
     public virtual void Render(ICanvas canvas, Transform transform, ColorF tint)
     {
-        int sprite = (int)MathF.Round((Angle.Normalize(transform.Rotation) / MathF.Tau) * SpriteCount) % SpriteCount;
+        int sprite = (int)MathF.Round(Angle.Normalize(transform.Rotation) / MathF.Tau * SpriteCount) % SpriteCount;
         canvas.DrawTexture(sprites[sprite], new Rectangle(0, 0, Width, Height, Alignment.Center), tint);
     }
 
     public virtual void DebugLayout()
     {
-        ImGui.Text(this.SpritesFolder);
+        ImGui.Text(SpritesFolder);
         if (ImGui.Button("Reload"))
         {
             Load();
         }
-        LayoutSpriteArray(this.sprites, "Sprites");
+        LayoutSpriteArray(sprites, "Sprites");
     }
 
     public virtual void Load()
@@ -108,7 +107,7 @@ class NormalMappedSpriteModel : SpriteModel
 
     public override void Render(ICanvas canvas, Transform transform, ColorF tint)
     {
-        int sprite = (int)MathF.Round((Angle.Normalize(transform.Rotation) / MathF.Tau) * SpriteCount) % SpriteCount;
+        int sprite = (int)MathF.Round(Angle.Normalize(transform.Rotation) / MathF.Tau * SpriteCount) % SpriteCount;
 
         shader.texture = sprites[sprite];
         shader.normalMap = spriteNormalMaps[sprite];
@@ -116,7 +115,7 @@ class NormalMappedSpriteModel : SpriteModel
 
         Vector2 lightDir2 = transform.Position.ToVector2().Normalized();
         shader.lightDirection = new Vector3(0, -1, 0).Normalized();
-        Vector2 v = (transform.Position).ToVector2().Normalized();
+        Vector2 v = transform.Position.ToVector2().Normalized();
         shader.lightDirection = new Vector3(v.X, -v.Y, -1).Normalized();
         shader.size = new(Width, Height);
         canvas.Fill(shader);
@@ -128,6 +127,6 @@ class NormalMappedSpriteModel : SpriteModel
     public override void DebugLayout()
     {
         base.DebugLayout();
-        LayoutSpriteArray(this.spriteNormalMaps, "Normals");
+        LayoutSpriteArray(spriteNormalMaps, "Normals");
     }
 }

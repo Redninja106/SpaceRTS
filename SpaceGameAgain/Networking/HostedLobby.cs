@@ -1,6 +1,7 @@
 ﻿using SpaceGame.Commands;
 using SpaceGame.Debugging;
 using SpaceGame.Planets;
+using SpaceGame.Serialization;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 using SpaceGame.Teams;

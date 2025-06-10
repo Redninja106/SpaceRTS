@@ -1,7 +1,6 @@
 ﻿using SimulationFramework.Drawing.Shaders;
-using SpaceGame.Rendering;
 
-namespace SpaceGame;
+namespace SpaceGame.Rendering;
 
 class NormalMappedShader : CanvasShader
 {
@@ -13,7 +12,7 @@ class NormalMappedShader : CanvasShader
 
     public override ColorF GetPixelColor(Vector2 position)
     {
-        Vector2 uv = (position / size) + new Vector2(.5f, .5f);
+        Vector2 uv = position / size + new Vector2(.5f, .5f);
         ColorF color = texture.SampleUV(uv);
 
         if (color.A == 0)
@@ -27,7 +26,7 @@ class NormalMappedShader : CanvasShader
         // float a = color.A;
         color *= new ColorF(brightness, brightness, brightness, 1);
         color *= tint;
-        
+
         return color;
     }
 }

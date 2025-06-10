@@ -4,6 +4,7 @@ using Silk.NET.OpenGL;
 using SpaceGame.Commands;
 using SpaceGame.Data;
 using SpaceGame.Networking;
+using SpaceGame.Serialization;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 using SpaceGame.Structures;

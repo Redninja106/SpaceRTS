@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpaceGame;
+namespace SpaceGame.Serialization;
 internal class WorldSerializer
 {
     public void Deserialize(BinaryReader reader)
@@ -30,8 +30,8 @@ internal class WorldSerializer
 
             for (int j = 0; j < actorCount; j++)
             {
-                World.Add(prototype.Deserialize(reader)); 
-                
+                World.Add(prototype.Deserialize(reader));
+
                 if (reader.ReadInt32() != 0)
                 {
                     throw new("invalid save!");
@@ -83,4 +83,13 @@ internal class WorldSerializer
             writer.Write(0);
         }
     }
+}
+
+class ActorSerializer
+{
+}
+
+[AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
+class SerializeAttribute : Attribute
+{
 }
