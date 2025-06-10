@@ -1,5 +1,6 @@
 ﻿using Silk.NET.Input;
 using SimulationFramework.Input;
+using SpaceGame.Debugging;
 using SpaceGame.Ships;
 using SpaceGame.Structures;
 using SpaceGame.Teams;

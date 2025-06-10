@@ -9,6 +9,8 @@ using ImGuiNET;
 using System.Diagnostics;
 using SpaceGame.Economy;
 using SimulationFramework.Drawing.Shaders;
+using SpaceGame.Debugging;
+using SpaceGame.Rendering;
 
 namespace SpaceGame;
 internal class GameWorld
@@ -68,13 +70,11 @@ internal class GameWorld
     // GUI
     // public ContextMenuWindow ContextMenu = new();
 
-    public UnitBar UnitBar = new();
-    public ResourceBar ResourceBar = new();
-    
-    private TooltipWindow tooltipWindow = new();
-    private Action<GUIWindow>? onLayoutTooltip = null;
+    // public ResourceBar ResourceBar = new();
+    // public PopupWindow structureSelectWindow = new();
 
-    public PopupWindow structureSelectWindow = new();
+    // public TooltipManager Tooltip = new();
+
 
     // public WindowManager WindowManager = new WindowManager();
 
@@ -103,11 +103,11 @@ internal class GameWorld
     public GameWorld()
     {
         // WindowManager.RegisterWindow(ContextMenu);
-        GUIViewport.Register(UnitBar);
-        GUIViewport.Register(ResourceBar);
-        GUIViewport.Register(structureSelectWindow);
+        GUIViewport.Register(new GUIWindow(ResourceBar.Layout));
+        GUIViewport.Register(new GUIWindow(UnitBar.Layout));
+        // GUIViewport.Register(new GUIPopup(null));
 
-        GUIViewport.Register(tooltipWindow);
+        // GUIViewport.Register(Tooltip);
         // GUIViewport.Register(ConstructionMenu);
         // GUIViewport.Register(InfoMenu);
         // WindowManager.RegisterWindow(UtilityBar);
@@ -115,8 +115,6 @@ internal class GameWorld
 
     public void Update(Vector2 viewportMousePosition, float tickProgress)
     {
-        onLayoutTooltip = null;
-
         MousePosition = Camera.SmoothTransform.Position + DoubleVector.FromVector2(Camera.ScreenToLocal(viewportMousePosition));
 
         Planets.Update(tickProgress);
@@ -147,13 +145,6 @@ internal class GameWorld
         {
             planet.SphereOfInfluence.Update();
         }
-
-        foreach (var window in GUIViewport.windows)
-        {
-            window.Layout();
-        }
-        tooltipWindow.Visible = onLayoutTooltip != null;
-        onLayoutTooltip?.Invoke(tooltipWindow);
     }
 
     public void Tick(Vector2 viewportMousePosition)
@@ -347,6 +338,7 @@ internal class GameWorld
         
         Structures.Sort((a, b) => a.GetCenter().Y.CompareTo(b.GetCenter().Y));
         Structures.Render(canvas, Camera);
+        WeaponSystems.Render(canvas, Camera);
 
         canvas.PopState();
     }
@@ -360,7 +352,6 @@ internal class GameWorld
 
         Missiles.Render(canvas, Camera);
         Bullets.Render(canvas, Camera);
-        WeaponSystems.Render(canvas, Camera);
 
         TextWidgets.RenderEventWidgets(canvas, Camera);
 
@@ -467,11 +458,6 @@ internal class GameWorld
     public ulong NewID()
     {
         return NextID++;
-    }
-
-    public void SetTooltip(Action<GUIWindow> onLayoutTooltip)
-    {
-        this.onLayoutTooltip = onLayoutTooltip;
     }
 
 }

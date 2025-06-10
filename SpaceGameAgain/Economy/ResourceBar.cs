@@ -6,28 +6,18 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Economy;
-internal class ResourceBar : GUIWindow
+internal class ResourceBar
 {
-    public ResourceBar()
+    public static void Layout(GUIWindow window)
     {
-        Visible = true;
-        this.Anchor = Alignment.BottomLeft;
-    }
-
-    public override void Layout()
-    {
-        Text("$" + World.PlayerTeam.Actor!.Money.ToString() + "k");
+        window.Visible = true;
+        window.Anchor = Alignment.BottomLeft;
+        window.Alignment = Alignment.BottomLeft;
+        window.Text("$" + World.PlayerTeam.Actor!.Money.ToString() + "k");
 
         foreach (var (proto, values) in World.PlayerTeam.Actor!.resources)
         {
-            Text(proto.Name + ": " + values.Remaining);
+            window.Text(proto.Name + ": " + values.Remaining);
         }
-
-        base.Layout();
-    }
-
-    public override void Update(GUIViewport viewport)
-    {
-        base.Update(viewport);
     }
 }

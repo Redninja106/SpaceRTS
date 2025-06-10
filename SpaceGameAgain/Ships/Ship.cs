@@ -3,10 +3,13 @@ using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using SimulationFramework;
 using SimulationFramework.Drawing;
+using SpaceGame.Debugging;
+using SpaceGame.Extensions;
 using SpaceGame.GUI;
 using SpaceGame.Interaction;
 using SpaceGame.Orders;
 using SpaceGame.Planets;
+using SpaceGame.Rendering;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Fleets;
 using SpaceGame.Ships.Modules;
@@ -207,13 +210,11 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
     public override void Layout(GUIWindow window)
     {
-        window.LayoutMode = LayoutMode.Vertical;
         if (this.Team == World.PlayerTeam && this.modules.FirstOrDefault(m => m.Actor is ConstructionModule) is ActorReference<Module> m && !m.IsNull)
         {
             if (window.TextButton("build"))
             {
-                Vector2 offset = window.LastItemBounds.GetAlignedPoint(Alignment.TopCenter) - World.GUIViewport.Bounds.GetAlignedPoint(Alignment.BottomCenter);
-                World.structureSelectWindow.Show(m.Cast<ConstructionModule>().Actor!, offset);
+                World.GUIViewport.SetPopup(m.Cast<ConstructionModule>().Actor!.Layout, window.LastItemBounds.GetAlignedPoint(Alignment.TopCenter), Alignment.BottomCenter);
             }
         }
 

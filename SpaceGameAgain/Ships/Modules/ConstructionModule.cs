@@ -1,4 +1,6 @@
-﻿using SpaceGame.GUI;
+﻿using SpaceGame.Extensions;
+using SpaceGame.GUI;
+using SpaceGame.Rendering;
 using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
@@ -28,11 +30,12 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, ulong i
                 window.Text(proto.Title, size: 16, color: canAfford ? Color.Gray : Color.Red);
                 if (window.LastItemHovered())
                 {
-                    World.SetTooltip(proto.Layout);
+                    World.GUIViewport.SetTooltip(proto.Layout);
                 }
                 if (window.LastItemClicked(MouseButton.Left) && canAfford)
                 {
                     World.ConstructionInteractionContext.BeginPlacing(proto, Ship.Actor!);
+                    World.GUIViewport.ClosePopup();
                 }
             }
         }

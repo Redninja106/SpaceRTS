@@ -1,4 +1,6 @@
-﻿using SpaceGame.Structures;
+﻿using SpaceGame.Extensions;
+using SpaceGame.Rendering;
+using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
 using System.Linq;

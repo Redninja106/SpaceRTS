@@ -28,12 +28,12 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
             if (missile.Target.IsNull)
                 continue;
 
-            if (DoubleVector.Distance(missile.Transform.Position, unit.Actor!.Transform.Position) <= Prototype.Range && missile.Target.Actor!.Team.Actor!.GetRelation(unit.Actor!.Team.Actor!) is TeamRelation.Allies or TeamRelation.Self)
+            if (DoubleVector.Distance(missile.Transform.Position, this.Transform.Position) <= Prototype.Range && missile.Target.Actor!.Team.Actor!.GetRelation(unit.Actor!.Team.Actor!) is TeamRelation.Allies or TeamRelation.Self)
             {
                 if (missile.exploding)
                     continue;
 
-                float dist = DoubleVector.Distance(missile.Transform.Position, unit.Actor!.Transform.Position);
+                float dist = DoubleVector.Distance(missile.Transform.Position, this.Transform.Position);
                 if (dist < minDistance)
                 {
                     target = missile;
@@ -55,18 +55,18 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
 
                 for (int i = 0; i < 8; i++)
                 {
-                    targetPos = PredictBullet(unit.Actor!.Transform.Position, targetPos, bulletProto.Speed, position, velocity, acceleration, jerk, 1);
+                    targetPos = PredictBullet(this.Transform.Position, targetPos, bulletProto.Speed, position, velocity, acceleration, jerk, 1);
                     // DebugDraw.Circle(targetPos, 0.01f * (8f-i) / 10f, color: Color.FromHSV((this.ID * 123.45f) % 1f, 1, 1));
                 }
 
-                float targetAngle = Angle.FromVector((targetPos - unit.Actor!.Transform.Position).ToVector2());
+                float targetAngle = Angle.FromVector((targetPos - this.Transform.Position).ToVector2());
                 this.Transform.Rotation = Angle.Step(this.Transform.Rotation, targetAngle, Prototype.TurnSpeed * MathF.Tau * Program.Timestep);
                 
                 if (Angle.Distance(this.Transform.Rotation, targetAngle) < 0.05f)
                 {
-                    var transform = unit.Actor!.Transform with 
+                    var transform = this.Transform with 
                     { 
-                        Rotation = Angle.FromVector((targetPos - unit.Actor!.Transform.Position).ToVector2()) + World.TickRandom.NextSingle() * 0.05f
+                        Rotation = Angle.FromVector((targetPos - this.Transform.Position).ToVector2()) + World.TickRandom.NextSingle() * 0.05f
                     };
                     World.Add(new Bullet(bulletProto, World.NewID(), transform, target.AsReference(), Prototype.Range / bulletProto.Speed));
 

@@ -1,4 +1,6 @@
 ﻿using SpaceGame.Commands;
+using SpaceGame.Debugging;
+using SpaceGame.Extensions;
 using SpaceGame.Orders;
 using SpaceGame.Teams;
 using System;

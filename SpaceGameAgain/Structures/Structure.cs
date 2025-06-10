@@ -1,6 +1,8 @@
-﻿using SpaceGame.GUI;
+﻿using SpaceGame.Extensions;
+using SpaceGame.GUI;
 using SpaceGame.Interaction;
 using SpaceGame.Planets;
+using SpaceGame.Rendering;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 using SpaceGame.Structures.Zones;
@@ -133,7 +135,7 @@ internal class Structure : Unit
 
             if (!Powered)
             {
-                Prototype.Model.Render(canvas, this.InterpolatedTransform, ColorF.Black with { A = .5f });
+                Prototype.Model.Render(canvas, this.InterpolatedTransform, new ColorF(.5f, .5f, .5f, 1));
                 canvas.DrawTexture(Icons.Economic, new Rectangle(0, 0, 2, 2, Alignment.Center), ColorF.Red);
             }
         }

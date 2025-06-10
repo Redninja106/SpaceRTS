@@ -9,14 +9,19 @@ using System.Threading.Tasks;
 namespace SpaceGame.Structures;
 internal class TurretPrototype : StructurePrototype
 {
-    public WeaponSystemPrototype WeaponSystemPrototype { get; set; }
-    public SpriteModel? TurretModel { get; set; }
+    // public WeaponSystemPrototype WeaponSystemPrototype { get; set; }
+    public WeaponSystemMount[] WeaponSystems { get; set; }
 
     public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
     {
         var turret = new Turret(this, id, grid, location, rotation, team);
-        turret.weaponSystem = WeaponSystemPrototype.CreateWeapon(World.NewID(), ((Unit)turret).AsReference()).AsReference();
-        World.Add(turret.weaponSystem.Actor!);
+        turret.weaponSystems = new ActorReference<WeaponSystem>[WeaponSystems.Length];
+        for (int i = 0; i < turret.weaponSystems.Length; i++)
+        {
+            turret.weaponSystems[i] = WeaponSystems[i].Prototype.CreateWeapon(World.NewID(), turret.AsReference<Unit>()).AsReference();
+            turret.weaponSystems[i].Actor!.Offset = WeaponSystems[i].Offset;
+            World.Add(turret.weaponSystems[i].Actor!);
+        }
 
         return turret;
     }
@@ -24,11 +29,18 @@ internal class TurretPrototype : StructurePrototype
     public override WorldActor Deserialize(BinaryReader reader)
     {
         base.DeserializeArgs(reader, out var id, out var team, out var grid, out var location, out var rotation);
+        int weaponSystemCount = reader.ReadInt32();
+        ActorReference<WeaponSystem>[] weaponSystems = new ActorReference<WeaponSystem>[weaponSystemCount];
+        for (int i = 0; i < weaponSystemCount; i++)
+        {
+            weaponSystems[i] = reader.ReadActorReference<WeaponSystem>();
+        }
+
         ActorReference<WeaponSystem> weaponSystem = reader.ReadActorReference<WeaponSystem>();
 
         return new Turret(this, id, grid, location, rotation, team)
         {
-            weaponSystem = weaponSystem,
+            weaponSystems = weaponSystems,
         };
     }
 }

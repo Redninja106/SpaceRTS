@@ -1,5 +1,7 @@
 ﻿using Silk.NET.OpenGL;
 using SpaceGame.Commands;
+using SpaceGame.Data;
+using SpaceGame.Debugging;
 using System;
 using System.Collections.Generic;
 using System.Linq;

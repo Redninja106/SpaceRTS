@@ -1,4 +1,5 @@
-﻿using SpaceGame.Planets;
+﻿using SpaceGame.Extensions;
+using SpaceGame.Planets;
 using System;
 using System.Collections.Generic;
 using System.Linq;

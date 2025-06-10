@@ -1,4 +1,5 @@
 ﻿using SpaceGame.Commands;
+using SpaceGame.Debugging;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SpaceGame.Networking;

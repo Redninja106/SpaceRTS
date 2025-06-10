@@ -1,4 +1,5 @@
-﻿using SpaceGame.Interaction;
+﻿using SpaceGame.Extensions;
+using SpaceGame.Interaction;
 using System;
 using System.Collections.Generic;
 using System.Linq;

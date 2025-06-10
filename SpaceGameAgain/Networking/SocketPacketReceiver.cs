@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using SpaceGame.Debugging;
+using System.Diagnostics;
 using System.Net.Sockets;
 
 namespace SpaceGame.Networking;

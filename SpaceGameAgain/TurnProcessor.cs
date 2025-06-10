@@ -93,8 +93,3 @@ internal class TurnProcessor
         // history.AddCommands(turn, team)
     }
 }
-
-class TurnInfo
-{
-    public SortedDictionary<ulong, List<Command>> playerCommands = [];
-}

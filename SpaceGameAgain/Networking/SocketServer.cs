@@ -1,4 +1,5 @@
 ﻿using Silk.NET.OpenGL;
+using SpaceGame.Debugging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

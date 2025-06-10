@@ -1,0 +1,8 @@
+{
+    "prototype": "NormalMappedSpriteModel",
+    "name": "new_chaingun_turret_base_model",
+    "width": 1.7320508075688772,
+    "height": 1.7320508075688772,
+    "sprites_folder": "new_chaingun_turret_base",
+    "sprite_count": 6
+}

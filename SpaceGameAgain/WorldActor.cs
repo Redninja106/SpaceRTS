@@ -1,5 +1,6 @@
 ﻿using ImGuiNET;
 using SimulationFramework.Drawing;
+using SpaceGame.Debugging;
 using System;
 using System.Collections.Generic;
 using System.Linq;

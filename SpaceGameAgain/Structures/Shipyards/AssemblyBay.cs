@@ -2,6 +2,7 @@
 using SpaceGame.Economy;
 using SpaceGame.GUI;
 using SpaceGame.Planets;
+using SpaceGame.Rendering;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 using SpaceGame.Teams;
@@ -127,7 +128,7 @@ internal class AssemblyBay : Structure
 
                 if (window.LastItemHovered() && manufactoryCount == 0)
                 {
-                    World.SetTooltip(w => w.Text("requires at least one adjacent operational manufactory!"));
+                    World.GUIViewport.SetTooltip(w => w.Text("requires at least one adjacent operational manufactory!"));
                 }
             }
         }

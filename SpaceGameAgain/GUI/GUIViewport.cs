@@ -18,13 +18,20 @@ internal class GUIViewport
     public Rectangle Bounds => new(0, 0, EffectiveWidth, EffectiveHeight);
 
     public List<GUIWindow> windows = [];
+    public GUIWindow tooltipWindow = new(null)
+    {
+        Alignment = Alignment.BottomRight,
+        Anchor = Alignment.TopLeft,
+    };
+
+    public GUIWindow popupWindow = new(null);
 
     public void Register(GUIWindow window)
     {
         windows.Add(window);
     }
 
-    public void Update(float displayWidth, float displayHeight)
+    public void UpdateWindowOcculusion(float displayWidth, float displayHeight)
     {
         EffectiveWidth = displayWidth / Scale;
         EffectiveHeight = displayHeight / Scale;
@@ -34,9 +41,29 @@ internal class GUIViewport
         IsAnyWindowHovered = false;
         foreach (var w in windows)
         {
-            w.Update(this);
             IsAnyWindowHovered |= w.Hovered;
         }
+
+        // update popup window
+        IsAnyWindowHovered |= popupWindow.Hovered;
+    }
+
+    public void SetTooltip(GUILayout layout)
+    {
+        tooltipWindow.SetLayout(layout);
+    }
+
+    public void SetPopup(GUILayout layout, Vector2 viewportPosition, Alignment alignment)
+    {
+        popupWindow.SetLayout(layout);
+        popupWindow.Offset = viewportPosition - Bounds.GetAlignedPoint(alignment);
+        popupWindow.Anchor = alignment;
+        popupWindow.Alignment = alignment;
+    }
+
+    public void ClosePopup()
+    {
+        popupWindow.SetLayout(null);
     }
 
     public void Render(ICanvas canvas)
@@ -45,10 +72,47 @@ internal class GUIViewport
 
         foreach (var w in windows)
         {
-            if (w.Visible)
+            w.Render(canvas, canvas.Width / Scale, canvas.Height / Scale);
+        }
+
+        popupWindow.Render(canvas, canvas.Width / Scale, canvas.Height / Scale);
+        tooltipWindow.Render(canvas, canvas.Width / Scale, canvas.Height / Scale);
+    }
+
+    public void Update()
+    {
+        foreach (var w in windows)
+        {
+            w.Update(this);
+        }
+
+        if (popupWindow.Layout != null)
+        {
+            if (!popupWindow.HasNewLayout && !popupWindow.Hovered)
             {
-                w.Render(canvas, canvas.Width / Scale, canvas.Height / Scale);
+                if (Mouse.IsButtonPressed(MouseButton.Left) ||
+                    Mouse.IsButtonPressed(MouseButton.Right) ||
+                    Mouse.IsButtonPressed(MouseButton.Middle) ||
+                    Keyboard.IsKeyPressed(Key.Escape))
+                {
+                    popupWindow.SetLayout(null);
+                }
             }
+        }
+
+        popupWindow.Update(this);
+
+        if (tooltipWindow.Layout != null)
+        {
+            tooltipWindow.Offset = MousePosition;
+            tooltipWindow.Update(this);
+            tooltipWindow.SetLayout(null);
         }
     }
 }
+
+//interface IGUIWindowContainer
+//{
+//    void Render(ICanvas canvas, float displayWidth, float displayHeight);
+//    void Update(GUIViewport viewport);
+//}

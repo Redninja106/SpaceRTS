@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
-using SpaceGame;
 using SpaceGame.Commands;
+using SpaceGame.Debugging;
+using SpaceGame.Extensions;
 using SpaceGame.Ships;
 using System;
 using System.Collections.Generic;

@@ -13,21 +13,25 @@ using SpaceGame.Commands;
 using SpaceGame.Ships.Fleets;
 
 namespace SpaceGame.Interaction;
-internal class UnitBar : GUIWindow
+internal static class UnitBar
 {
-    private List<PopupWindow> windows = [];
+    // private List<PopupWindow> windows = [];
+    //private GUIWindow window;
 
-    public UnitBar()
-    {
-        this.Anchor = Alignment.BottomCenter;
-        this.LayoutMode = LayoutMode.Horizontal;
+    //public UnitBar()
+    //{
+    //    window = new()
+    //    {
+    //        Anchor = Alignment.BottomCenter
+    //    };
+    //    // this.LayoutMode = LayoutMode.Row;
 
-        // this.Anchor = this.Origin = Alignment.TopLeft;
-        // this.Visible = false;
-        // 
-        // this.Width = 100;
-        // this.Height = 20;
-    }
+    //    // this.Anchor = this.Origin = Alignment.TopLeft;
+    //    // this.Visible = false;
+    //    // 
+    //    // this.Width = 100;
+    //    // this.Height = 20;
+    //}
 
     //public override void Render(ICanvas canvas, float displayWidth, float displayHeight)
     //{
@@ -96,229 +100,242 @@ internal class UnitBar : GUIWindow
 
     //}
 
-    public override void Layout()
+    public static void Layout(GUIWindow window)
     {
+        window.Anchor = Alignment.BottomCenter;
+        window.Alignment = Alignment.BottomCenter;
+        window.Visible = World.SelectionHandler.SelectedCount > 0;
+
         if (World.SelectionHandler.SelectedCount == 1)
         {
-            LayoutSingleUnitMenu();
+            LayoutSingleUnitMenu(window);
         }
         else if (World.SelectionHandler.SelectedCount > 1)
         {
-            LayoutMultiUnitMenu();
+            LayoutMultiUnitMenu(window);
         }
 
 
+        //return;
 
-        return;
+        //// for (int i = 0; i < windows.Count; i++)
+        //// {
+        ////     Image(windows[i].GUIProvider.Icon);
+        ////     if (LastItemHovered())
+        ////     {
+        ////         Vector2 offset = LastItemBounds.GetAlignedPoint(Alignment.TopCenter) - World.GUIViewport.Bounds.GetAlignedPoint(Alignment.BottomCenter);
+        ////         windows[i].Show(offset);
+        ////     }
+        //// }
+        //// return;
 
-        // for (int i = 0; i < windows.Count; i++)
-        // {
-        //     Image(windows[i].GUIProvider.Icon);
-        //     if (LastItemHovered())
-        //     {
-        //         Vector2 offset = LastItemBounds.GetAlignedPoint(Alignment.TopCenter) - World.GUIViewport.Bounds.GetAlignedPoint(Alignment.BottomCenter);
-        //         windows[i].Show(offset);
-        //     }
-        // }
-        // return;
+        //var selectedCount = World.SelectionHandler.SelectedCount;
 
-        var selectedCount = World.SelectionHandler.SelectedCount;
+        //if (selectedCount == 1)
+        //{
+        //    switch (World.SelectionHandler.GetSingleUnit())
+        //    {
+        //        case Ship s:
+        //            Image(Icons.Ship);
+        //            if (LastItemHovered())
+        //            {
+        //                Vector2 offset = LastItemBounds.GetAlignedPoint(Alignment.TopCenter) - World.GUIViewport.Bounds.GetAlignedPoint(Alignment.BottomCenter);
+        //                // World.InfoMenu.Show(s, offset);
+        //            }
 
-        if (selectedCount == 1)
-        {
-            switch (World.SelectionHandler.GetSingleUnit())
-            {
-                case Ship s:
-                    Image(Icons.Ship);
-                    if (LastItemHovered())
-                    {
-                        Vector2 offset = LastItemBounds.GetAlignedPoint(Alignment.TopCenter) - World.GUIViewport.Bounds.GetAlignedPoint(Alignment.BottomCenter);
-                        // World.InfoMenu.Show(s, offset);
-                    }
+        //            foreach (var module in s.modules)
+        //            {
+        //                Image(Icons.Construction);
+        //            }
 
-                    foreach (var module in s.modules)
-                    {
-                        Image(Icons.Construction);
-                    }
+        //            if (s.modules.Select(ar => ar.Actor!).OfType<ConstructionModule>().Any())
+        //            {
+        //                if (LastItemHovered())
+        //                {
+        //                    Vector2 offset = LastItemBounds.GetAlignedPoint(Alignment.TopCenter) - World.GUIViewport.Bounds.GetAlignedPoint(Alignment.BottomCenter);
+        //                    // World.ConstructionMenu.Open(s, offset);
+        //                }
+        //            }
+        //            break;
+        //        case Structure:
+        //            Image(Icons.Structure);
+        //            break;
+        //        default:
+        //            Text("?");
+        //            break;
+        //    }
+        //}
+        //else
+        //{
+        //    foreach (var selected in World.SelectionHandler.GetSelectedUnits())
+        //    {
+        //        Image(selected switch
+        //        {
+        //            Ship => Icons.Ship,
+        //            Structure => Icons.Structure,
+        //            _ => throw new()
+        //        });
+        //    }
+        //}
 
-                    if (s.modules.Select(ar => ar.Actor!).OfType<ConstructionModule>().Any())
-                    {
-                        if (LastItemHovered())
-                        {
-                            Vector2 offset = LastItemBounds.GetAlignedPoint(Alignment.TopCenter) - World.GUIViewport.Bounds.GetAlignedPoint(Alignment.BottomCenter);
-                            // World.ConstructionMenu.Open(s, offset);
-                        }
-                    }
-                    break;
-                case Structure:
-                    Image(Icons.Structure);
-                    break;
-                default:
-                    Text("?");
-                    break;
-            }
-        }
-        else
-        {
-            foreach (var selected in World.SelectionHandler.GetSelectedUnits())
-            {
-                Image(selected switch
-                {
-                    Ship => Icons.Ship,
-                    Structure => Icons.Structure,
-                    _ => throw new()
-                });
-            }
-        }
-
-        base.Layout();
+        //base.Layout();
     }
 
-    private void LayoutMultiUnitMenu()
+    private static void LayoutMultiUnitMenu(GUIWindow window)
     {
         Unit[] units = World.SelectionHandler.GetSelectedUnits().ToArray();
 
-        LayoutMode = LayoutMode.Horizontal;
-        Text("Selected Units");
-        PushState();
-        if (TextButton("Create Fleet", 12))
+        using (window.Row())
         {
-            PlayerCommandProcessor playerCommandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor.GetCommandProcessor();
-            ActorReference<Ship>[] ships = units.OfType<Ship>().Select(u => u.AsReference()).ToArray();
-            playerCommandProcessor.AddCommand(new CreateFleetCommand(Prototypes.Get<CreateFleetCommandPrototype>("create_fleet_command"), "fleet", World.PlayerTeam, ships));
-        }
-        PopState();
-
-        LayoutMode = LayoutMode.Vertical;
-
-        for (int i = 0; i < units.Length; i++)
-        {
-            var unit = units[i];
-            Image(unit.Icon, new(24, 24));
-            if (LastItemClicked(MouseButton.Left))
+            window.Text("Selected Units");
+            
+            if (window.TextButton("Create Fleet", 12))
             {
-                World.SelectionHandler.ClearSelection();
-                World.SelectionHandler.Select(unit);
+                PlayerCommandProcessor playerCommandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor.GetCommandProcessor();
+                ActorReference<Ship>[] ships = units.OfType<Ship>().Select(u => u.AsReference()).ToArray();
+                playerCommandProcessor.AddCommand(new CreateFleetCommand(Prototypes.Get<CreateFleetCommandPrototype>("create_fleet_command"), "fleet", World.PlayerTeam, ships));
             }
-            else if (LastItemClicked(MouseButton.Right))
-            {
-                World.SelectionHandler.Deselect(unit);
-            }
-            else if (LastItemHovered())
-            {
-                World.SelectionHandler.VisualFocus = unit;
-                World.SetTooltip(window => window.Text(unit.Prototype.Title));
-            }
-            LayoutMode = LayoutMode.Horizontal;
-
         }
-    }
 
-    private void LayoutSingleUnitMenu()
-    {
-        var unit = World.SelectionHandler.GetSingleUnit()!;
-
-        LayoutMode = LayoutMode.Horizontal;
-        Image(unit.Icon);
-        Text(unit.Prototype.Title, 24);
-        if (unit is Ship s1 && s1.Fleet is Fleet fleet)
+        using (window.Row())
         {
-            PushState();
-            Text("(fleet 1)", color: Color.Gray);
-            PopState();
-        }
-        LayoutMode = LayoutMode.Vertical;
-
-        PushState();
-        LayoutMode = LayoutMode.Horizontal;
-        if (unit is Ship s)
-        {
-            Cursor += new Vector2(0, 4);
-            foreach (var module in s.modules)
+            for (int i = 0; i < units.Length; i++)
             {
-                Image(module.Actor!.Icon, new(24, 24));
-                if (LastItemHovered())
+                var unit = units[i];
+                window.Image(unit.Icon, new(24, 24));
+                if (window.LastItemClicked(MouseButton.Left))
                 {
-                    World.SetTooltip(w =>
-                    {
-                        w.Text(module.Actor.Prototype.Name);
-                    });
+                    World.SelectionHandler.ClearSelection();
+                    World.SelectionHandler.Select(unit);
+                }
+                else if (window.LastItemClicked(MouseButton.Right))
+                {
+                    World.SelectionHandler.Deselect(unit);
+                }
+                else if (window.LastItemHovered())
+                {
+                    World.SelectionHandler.VisualFocus = unit;
+                    World.GUIViewport.SetTooltip(window => window.Text(unit.Prototype.Title));
                 }
             }
         }
-        PopState();
-
-        LayoutMode = LayoutMode.Vertical;
-        string status = (unit.Health / (float)unit.Prototype.MaxHealth) switch
-        {
-            1 => "operational",
-            >= .5f => "damaged",
-            _ => "critical"
-        };
-
-        if (unit is Structure str && !str.Powered)
-        {
-            status = "unpowered";
-        }
-
-        if (unit.Team.Actor != World.PlayerTeam.Actor)
-        {
-            Text(unit.Team.Actor!.Name, color: Color.Gray);
-        }
-        else
-        {
-            Text(status, color: Color.Gray);
-            if (LastItemHovered())
-            {
-                World.SetTooltip(w => w.Text($"{unit.Health}/{unit.Prototype.MaxHealth}hp"));
-            }
-        }
-
-        LayoutMode = LayoutMode.Vertical;
-        unit.Layout(this);
     }
 
-    public override void Update(GUIViewport viewport)
+    private static void LayoutSingleUnitMenu(GUIWindow window)
     {
-        this.Visible = World.SelectionHandler.SelectedCount > 0;
-        base.Update(viewport);
+        var unit = World.SelectionHandler.GetSingleUnit()!;
+        
+        using (window.Row())
+        {
+            // LayoutMode = LayoutMode.Horizontal;
+            window.Image(unit.Icon);
+
+            using (window.Column())
+            {
+                using (window.Row())
+                {
+                    window.Text(unit.Prototype.Title, 24);
+                    if (unit is Ship s1 && s1.Fleet is Fleet fleet)
+                    {
+                        //PushState();
+                        window.Text("(fleet 1)", color: Color.Gray);
+                        //PopState();
+                    }
+                    // LayoutMode = LayoutMode.Vertical;
+
+                    // PushState();
+                    if (unit is Ship s)
+                    {
+                        //window.Cursor += new Vector2(0, 4);
+                        foreach (var module in s.modules)
+                        {
+                            window.Image(module.Actor!.Icon, new(24, 24));
+                            if (window.LastItemHovered())
+                            {
+                                World.GUIViewport.SetTooltip(w =>
+                                {
+                                    w.Text(module.Actor.Prototype.Name);
+                                });
+                            }
+                        }
+                    }
+                }
+
+                string status = (unit.Health / (float)unit.Prototype.MaxHealth) switch
+                {
+                    1 => "operational",
+                    >= .5f => "damaged",
+                    _ => "critical"
+                };
+
+                if (unit is Structure str && !str.Powered)
+                {
+                    status = "unpowered";
+                }
+
+                if (unit.Team.Actor != World.PlayerTeam.Actor)
+                {
+                    window.Text(unit.Team.Actor!.Name, color: Color.Gray);
+                }
+                else
+                {
+                    window.Text(status, color: Color.Gray);
+                    if (window.LastItemHovered())
+                    {
+                        World.GUIViewport.SetTooltip(w => w.Text($"{unit.Health}/{unit.Prototype.MaxHealth}hp"));
+                    }
+                }
+
+                // LayoutMode = LayoutMode.Vertical;
+                unit.Layout(window);
+            }
+
+            // LayoutMode = LayoutMode.Horizontal;
+            
+            //PopState();
+
+            //LayoutMode = LayoutMode.Vertical;
+            
+        }
     }
 }
 
-class PopupWindow : GUIWindow
-{
-    private bool justShown;
-    private IGUIProvider provider;
+delegate void GUILayout(GUIWindow window);
 
-    public void Show(IGUIProvider provider, Vector2 offset)
-    {
-        Visible = true;
-        Anchor = Alignment.BottomCenter;
-        Offset = offset;
-        justShown = true;
-        this.provider = provider;
-    }
+//class GUIPopup : GUIWindow
+//{
+//    private bool justShown;
+//    private IGUIProvider provider;
 
-    public PopupWindow()
-    {
-    }
+//    public void Show(IGUIProvider provider, Vector2 offset)
+//    {
+//        Visible = true;
+//        Anchor = Alignment.BottomCenter;
+//        Offset = offset;
+//        justShown = true;
+//        this.provider = provider;
+//    }
 
-    public override void Update(GUIViewport viewport)
-    {
-        base.Update(viewport);
-        if (Visible)
-        {
-            if (World.leftMouse.Pressed || World.rightMouse.Pressed)
-            {
-                Visible = false;
-            }
-            justShown = false;
-        }
-    }
+//    public GUIPopup()
+//    {
+//    }
 
-    public override void Layout()
-    {
-        provider?.Layout(this);
-        base.Layout();
-    }
-}
+//    public override void Update(GUIViewport viewport)
+//    {
+//        base.Update(viewport);
+//        if (Visible)
+//        {
+//            if (World.leftMouse.Pressed || World.rightMouse.Pressed)
+//            {
+//                Visible = false;
+//            }
+//            justShown = false;
+//        }
+//    }
+
+//    public override void Layout()
+//    {
+//        provider?.Layout(this);
+//        base.Layout();
+//    }
+//}

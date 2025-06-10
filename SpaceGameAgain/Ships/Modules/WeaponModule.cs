@@ -1,5 +1,6 @@
 ﻿using SpaceGame.Combat;
 using SpaceGame.GUI;
+using SpaceGame.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;

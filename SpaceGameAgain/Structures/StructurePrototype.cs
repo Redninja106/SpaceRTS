@@ -1,6 +1,8 @@
 ﻿using SpaceGame.Economy;
+using SpaceGame.Extensions;
 using SpaceGame.GUI;
 using SpaceGame.Planets;
+using SpaceGame.Rendering;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 using SpaceGame.Teams;
@@ -130,28 +132,35 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
 
     public void Layout(GUIWindow window)
     {
-        window.LayoutMode = LayoutMode.Horizontal;
-        window.Image(this.Icon);
-        window.Text(this.Title, 24);
-        window.LayoutMode = LayoutMode.Vertical;
-        window.Text("$" + this.Cost + "k");
-        window.LayoutMode = LayoutMode.Horizontal;
-
-        if (RequiredPowerLevel != PowerLevel.None)
+        using (window.Row())
         {
-            window.Image(Icons.Economic, new(22, 22));
-            window.Text(RequiredPowerLevel.ToString());
-        }
+            window.Image(this.Icon);
 
-        window.LayoutMode = LayoutMode.Vertical;
-        if (!string.IsNullOrWhiteSpace(this.Description))
-        {
-            window.Text(this.Description);
-        }
+            using (window.Column())
+            {
+                window.Text(this.Title, 24);
 
-        if (ProvidedPowerLevel != PowerLevel.None)
-        {
-            window.Text("provides '" + ProvidedPowerLevel.ToString() + "' power");
+                using (window.Row())
+                {
+                    window.Text("$" + this.Cost + "k");
+
+                    if (RequiredPowerLevel != PowerLevel.None)
+                    {
+                        window.Image(Icons.Economic, new(22, 22));
+                        window.Text(RequiredPowerLevel.ToString());
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(this.Description))
+                {
+                    window.Text(this.Description);
+                }
+
+                if (ProvidedPowerLevel != PowerLevel.None)
+                {
+                    window.Text("provides '" + ProvidedPowerLevel.ToString() + "' power");
+                }
+            }
         }
     }
 

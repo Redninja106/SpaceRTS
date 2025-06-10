@@ -1,4 +1,5 @@
-﻿using SpaceGame.Ships;
+﻿using SpaceGame.Debugging;
+using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 using SpaceGame.Teams;
 using System;

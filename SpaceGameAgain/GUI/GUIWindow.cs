@@ -1,118 +1,218 @@
-﻿using System;
+﻿using SpaceGame.Interaction;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.GUI;
-internal class GUIWindow
+internal sealed class GUIWindow
 {
     public static Color DefaultTextColor = Color.FromHSV(0, 0, .65f);
 
     public Vector2 Offset = new(0, 0);
+    /// <summary>
+    /// The anchor point (on the viewport) of the window.
+    /// </summary>
     public Alignment Anchor = Alignment.TopLeft;
-    public bool Visible = false;
+    /// <summary>
+    /// The alignment of the window to the anchor point.
+    /// </summary>
+    public Alignment Alignment = Alignment.TopLeft;
+    public bool Visible = true;
     public bool Hovered = false;
+    
 
-    public Vector2 Cursor;
     public Rectangle LastItemBounds;
-    public LayoutMode LayoutMode;
 
-    private Stack<LayoutState> stateStack = [];
+    private Stack<LayoutScope> scopes = [];
+    private LayoutScope currentScope;
 
-    public Rectangle CalculatedBounds => bounds;
+    public Rectangle CalculatedBounds => predictedWindowBounds;
 
-    private Rectangle lastFrameBounds;
-    private Rectangle bounds;
+
+    private Rectangle predictedWindowBounds;
+    private Rectangle currentWindowBounds;
     private List<DrawCommand> commands = [];
 
     private Vector2 mousePosition;
 
     public float Margin = 3;
 
-    public virtual void Update(GUIViewport viewport)
+    private GUILayout? layout;
+    public bool HasNewLayout;
+
+    public GUILayout? Layout => layout;
+
+    [DebugOverlay]
+    public static bool ShowGUIItemBounds;
+
+
+    public GUIWindow(GUILayout? layout)
     {
-        mousePosition = viewport.MousePosition;
+        SetLayout(layout);
+    }
 
-        if (Visible)
+    public void SetLayout(GUILayout? layout)
+    {
+        if (this.layout != layout) 
         {
-            Hovered = bounds.ContainsPoint(viewport.MousePosition);
-
-            lastFrameBounds = bounds;
-            bounds = new(viewport.Bounds.GetAlignedPoint(Anchor) + this.Offset, bounds.Size, this.Anchor);
-            bounds.Size = Vector2.Zero;
-            LastItemBounds = new(bounds.X, bounds.Y, 0, 0);
-            Cursor = this.bounds.Position;
-        }
-        else
-        {
-            Hovered = false;
-            if (commands.Count > 0)
-            {
-                commands.Clear();
-            }
+            this.layout = layout;
+            HasNewLayout = layout != null;
         }
     }
 
-    public virtual void Layout()
+    public void Update(GUIViewport viewport)
     {
+        commands.Clear();
+
+        mousePosition = viewport.MousePosition;
+
+        // finalWindowBounds = currentWindowBounds;
+
+        if (Visible && layout != null)
+        {
+            // do an invisible layout to determine approximate window size
+            Visible = false;
+            DoLayout(viewport, Vector2.Zero);
+            Visible = true;
+            predictedWindowBounds = currentWindowBounds;
+        }
+
+        DoLayout(viewport, predictedWindowBounds.Size);
+        HasNewLayout = false;
+
+        Hovered = Visible && currentWindowBounds.ContainsPoint(viewport.MousePosition);
+    }
+
+    private void DoLayout(GUIViewport viewport, Vector2 predictedSize)
+    {
+        scopes.Clear();
+
+        Rectangle windowBounds = new Rectangle(viewport.Bounds.GetAlignedPoint(Anchor), predictedSize, Alignment);
+
+        Vector2 windowOrigin = windowBounds.Position + this.Offset;
+
+        currentWindowBounds = new(windowOrigin, Vector2.Zero, this.Anchor);
+        LastItemBounds = new(windowOrigin, Vector2.Zero);
+
+        currentScope = new()
+        {
+            bounds = new(windowOrigin, Vector2.Zero),
+            Cursor = windowOrigin,
+            LayoutMode = LayoutMode.Column,
+        };
+
+        layout?.Invoke(this);
+    }
+
+    /// <summary>
+    /// Shortcut for BeginScope(LayoutMode.Row). The GUIScope returned must be disposed to end the scope.
+    /// </summary>
+    public GUIScope Row()
+    {
+        BeginScope(LayoutMode.Row);
+        return new(this, LayoutMode.Row);
+    }
+
+    /// <summary>
+    /// Shortcut for BeginScope(LayoutMode.Column). The GUIScope returned must be disposed to end the scope
+    /// </summary>
+    public GUIScope Column()
+    {
+        BeginScope(LayoutMode.Column);
+        return new(this, LayoutMode.Column);
+    }
+
+    public void BeginScope(LayoutMode mode)
+    {
+        scopes.Push(currentScope);
+
+        currentScope = new()
+        {
+            LayoutMode = mode,
+            Cursor = this.currentScope.Cursor,
+            bounds = new(this.currentScope.Cursor, Vector2.Zero),
+        };
+    }
+
+    public void EndScope(LayoutMode mode)
+    {
+        if (currentScope.LayoutMode != mode)
+        {
+            throw new InvalidOperationException("mismatching scope types");
+        }
+
+        // return to old scope and add ended one as an item to it
+        LayoutScope endedScope = currentScope;
+        currentScope = scopes.Pop();
+        InsertItem(endedScope.bounds);
     }
 
     public void Text(string text, float size = 16, Color? color = null, TextStyle style = TextStyle.Regular)
     {
-        UpdateLayout();
-        
-        LastItemBounds = Program.font.MeasureText(text, size);
-        LastItemBounds.Position += Cursor + new Vector2(0, size);
-        LastItemBounds.X -= Margin;
-        LastItemBounds.Y -= Margin;
-        LastItemBounds.Width += Margin * 2;
-        LastItemBounds.Height += Margin * 2;
+        Rectangle textBounds = Program.font.MeasureText(text, size);
+        textBounds.Position += currentScope.Cursor + new Vector2(0, size);
+        textBounds.X -= Margin;
+        textBounds.Y -= Margin;
+        textBounds.Width += Margin * 2;
+        textBounds.Height += Margin * 2;
 
-        commands.Add(new DrawCommand.Text(text, size, Cursor + new Vector2(0, size), color, style));
+        AddCommand(new DrawCommand.Text(text, size, currentScope.Cursor + new Vector2(0, size), color, style));
+        InsertItem(textBounds);
+    }
+
+    public void InsertItem(Rectangle itemBounds)
+    {
+        LastItemBounds = itemBounds;
+        if (currentScope.LayoutMode == LayoutMode.Row)
+        {
+            currentScope.Cursor.X = LastItemBounds.X + LastItemBounds.Width;
+        }
+        else
+        {
+            currentScope.Cursor.Y = LastItemBounds.Y + LastItemBounds.Height;
+        }
+        this.currentWindowBounds = this.currentWindowBounds.Union(itemBounds);
+        this.currentScope.bounds = this.currentScope.bounds.Union(itemBounds);
+
+        if (ShowGUIItemBounds)
+        {
+            AddCommand(new DrawCommand.Rectangle(itemBounds, Color.Red, false));
+        }
     }
 
     public bool TextButton(string text, float size = 16, bool disabled = false)
     {
-        UpdateLayout();
+        Rectangle textBounds = default;
+        textBounds.Width = Program.font.MeasureText(text, size).Width;
+        textBounds.Height = size;
+        textBounds.Position = currentScope.Cursor + new Vector2(0, Margin);
+        textBounds.X -= Margin;
+        textBounds.Y -= Margin;
+        textBounds.Width += Margin * 2;
+        textBounds.Height += Margin * 2;
         
-        LastItemBounds.Width = Program.font.MeasureText(text, size).Width;
-        LastItemBounds.Height = size;
-        LastItemBounds.Position = Cursor + new Vector2(0, Margin);
-        LastItemBounds.X -= Margin;
-        LastItemBounds.Y -= Margin;
-        LastItemBounds.Width += Margin * 2;
-        LastItemBounds.Height += Margin * 2;
+        Vector2 baseline = currentScope.Cursor + new Vector2(0, size);
+         
+        InsertItem(textBounds);
+        
+        if (!LastItemHovered())
+        {
+            AddCommand(new DrawCommand.Rectangle(textBounds, Color.FromHSV(.6f, .25f, .25f), true));
+        }
 
+        AddCommand(new DrawCommand.Rectangle(textBounds with { X = textBounds.X + 1, Y = textBounds.Y + 1 }, new Color(28, 33, 38), false));
+        AddCommand(new DrawCommand.Rectangle(textBounds, new Color(70, 79, 89), false));
+        
         if (LastItemHovered())
         {
-            commands.Add(new DrawCommand.Rectangle(LastItemBounds, Color.Gray, true));
-        }
-        else
-        {
-            commands.Add(new DrawCommand.Rectangle(LastItemBounds, Color.FromHSV(.6f, .25f, .25f), true));
+            AddCommand(new DrawCommand.Rectangle(textBounds, Color.Gray, true));
         }
 
-        commands.Add(new DrawCommand.Rectangle(LastItemBounds with { X = LastItemBounds.X + 1, Y = LastItemBounds.Y + 1 }, new Color(28, 33, 38), false));
-        commands.Add(new DrawCommand.Rectangle(LastItemBounds, new Color(70, 79, 89), false));
-        
-        commands.Add(new DrawCommand.Text(text, size, Cursor + new Vector2(0, size)));
+        AddCommand(new DrawCommand.Text(text, size, baseline));
 
         return LastItemClicked(MouseButton.Left);
-    }
-
-    protected void UpdateLayout()
-    {
-        if (LayoutMode == LayoutMode.Horizontal)
-        {
-            Cursor.X += LastItemBounds.Width;
-        }
-        else
-        {
-            Cursor.Y += LastItemBounds.Height;
-        }
-
-        bounds = bounds.Union(LastItemBounds);
     }
 
     public void Image(ITexture image)
@@ -122,9 +222,9 @@ internal class GUIWindow
 
     public void Image(ITexture image, Vector2 size)
     {
-        UpdateLayout();
-        LastItemBounds = new(Cursor.X, Cursor.Y, size.X, size.Y);
-        commands.Add(new DrawCommand.Image(image, LastItemBounds));
+        Rectangle bounds = new(currentScope.Cursor.X, currentScope.Cursor.Y, size.X, size.Y);
+        InsertItem(bounds);
+        AddCommand(new DrawCommand.Image(image, LastItemBounds));
     }
 
     public bool LastItemHovered()
@@ -137,20 +237,23 @@ internal class GUIWindow
         return Visible && LastItemHovered() && Mouse.IsButtonPressed(button);
     }
 
-    public virtual void Render(ICanvas canvas, float displayWidth, float displayHeight)
+    public void Render(ICanvas canvas, float displayWidth, float displayHeight)
     {
-        UpdateLayout();
+        if (!Visible || commands.Count == 0)
+        {
+            return;
+        }
 
         canvas.PushState();
 
         canvas.Fill(new Color(12, 17, 23));
-        canvas.DrawRect(this.bounds);
+        canvas.DrawRect(this.currentWindowBounds);
 
         canvas.Stroke(new Color(28, 33, 38));
-        canvas.DrawRect(this.bounds with { X = bounds.X + 1, Y = bounds.Y + 1 });
+        canvas.DrawRect(this.currentWindowBounds with { X = currentWindowBounds.X + 1, Y = currentWindowBounds.Y + 1 });
 
         canvas.Stroke(new Color(70, 79, 89));
-        canvas.DrawRect(this.bounds);
+        canvas.DrawRect(this.currentWindowBounds);
 
         foreach (var command in commands)
         {
@@ -163,49 +266,48 @@ internal class GUIWindow
 
     internal void ProgressBar(float progress, float width)
     {
-        UpdateLayout();
+        Rectangle bounds = new(currentScope.Cursor.X, currentScope.Cursor.Y, width, 5f);
         
-        LastItemBounds = new(Cursor.X, Cursor.Y, width, 5f);
-
-        commands.Add(new DrawCommand.Rectangle(LastItemBounds, Color.Gray, true));
-        commands.Add(new DrawCommand.Rectangle(LastItemBounds with { Width = LastItemBounds.Width * progress }, Color.DarkGray, true));
-    }
-
-    public void PushState()
-    {
-        stateStack.Push(new()
-        {
-            Cursor = this.Cursor,
-            LastItemBounds = this.LastItemBounds,
-            LayoutMode = this.LayoutMode,
-        });
-    }
-
-    public void PopState()
-    {
-        UpdateLayout();
-        var state = stateStack.Pop();
-
-        Cursor = state.Cursor;
-        LastItemBounds = state.LastItemBounds;
-        LayoutMode = state.LayoutMode;
+        InsertItem(bounds);
+        
+        AddCommand(new DrawCommand.Rectangle(LastItemBounds, Color.Gray, true));
+        AddCommand(new DrawCommand.Rectangle(LastItemBounds with { Width = LastItemBounds.Width * progress }, Color.DarkGray, true));
     }
 
     public void Separator()
     {
-        UpdateLayout();
+        Rectangle itemBounds = new(currentScope.Cursor.X, currentScope.Cursor.Y + Margin, this.predictedWindowBounds.Width - 2 * Margin, 1);
+        // Cursor.Y += Margin;
 
-        LastItemBounds = new(Cursor.X, Cursor.Y + Margin, this.lastFrameBounds.Width - 2 * Margin, 1);
-        Cursor.Y += Margin;
-
-        commands.Add(new DrawCommand.Rectangle(LastItemBounds, DefaultTextColor, true));
+        InsertItem(itemBounds);
+        AddCommand(new DrawCommand.Rectangle(LastItemBounds, DefaultTextColor, true));
     }
 
-    private struct LayoutState
+    public void AddCommand(DrawCommand command)
+    {
+        if (Visible)
+        {
+            commands.Add(command);
+        }
+    }
+
+    private struct LayoutScope
     {
         public Vector2 Cursor;
-        public Rectangle LastItemBounds;
+        public Rectangle bounds;
         public LayoutMode LayoutMode;
+    }
+
+}
+
+/// <summary>
+/// Helper class that calls window.EndScope(mode) when disposed.
+/// </summary>
+struct GUIScope(GUIWindow window, LayoutMode mode) : IDisposable
+{
+    public void Dispose()
+    {
+        window.EndScope(mode);
     }
 }
 
@@ -217,8 +319,10 @@ abstract class DrawCommand
     {
         public override void Render(ICanvas canvas)
         {
-            canvas.Fill(color ?? Color.FromHSV(0, 0, .65f));
             canvas.Font(Program.font);
+            canvas.Fill(Color.FromHSV(0, 0, .05f));
+            canvas.DrawText(text, size, position + new Vector2(1, 1), style);
+            canvas.Fill(color ?? Color.FromHSV(0, 0, .65f));
             canvas.DrawText(text, size, position, style);
         }
     }
@@ -248,6 +352,6 @@ abstract class DrawCommand
 }
 enum LayoutMode
 {
-    Vertical,
-    Horizontal,
+    Column,
+    Row,
 }

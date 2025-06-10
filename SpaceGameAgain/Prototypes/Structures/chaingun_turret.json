@@ -7,9 +7,21 @@
   "footprint": [
     [ 0, 0 ]
   ],
-  "weapon_system_prototype": "chaingun_system",
-  "turret_model": "chaingun_turret_model",
-  "model": "chaingun_turret_base_model",
+  "weapon_systems": [
+    {
+      "offset": [ 0, -0.5 ],
+      "prototype": "chaingun_system"
+    },
+    {
+      "offset": [ 0.40709, 0.2903 ],
+      "prototype": "chaingun_system"
+    },
+    {
+      "offset": [ -0.40709, 0.2903 ],
+      "prototype": "chaingun_system"
+    }
+  ],
+  "model": "new_chaingun_turret_base_model",
   "category": "Defense",
   "reveal_radius": 6
 

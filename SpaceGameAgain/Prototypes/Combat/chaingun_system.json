@@ -1,5 +1,6 @@
 {
   "prototype": "ChaingunSystemPrototype",
   "name": "chaingun_system",
+  "model": "chaingun_turret_model",
   "range": 6
 }

@@ -1,4 +1,5 @@
 ﻿using SpaceGame.Commands;
+using SpaceGame.Debugging;
 using SpaceGame.Planets;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;

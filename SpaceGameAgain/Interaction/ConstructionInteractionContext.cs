@@ -1,4 +1,5 @@
 ﻿using SpaceGame.Commands;
+using SpaceGame.Debugging;
 using SpaceGame.Orders;
 using SpaceGame.Ships;
 using SpaceGame.Structures;
@@ -149,7 +150,7 @@ internal class ConstructionInteractionContext : IInteractionContext
             canvas.PushState();
             // Transform.Create(World.MousePosition, 0).ApplyTo(canvas, World.Camera);
             canvas.Stroke(Color.White with { A = 40 });
-            canvas.DrawCircle(0, 0, turret.WeaponSystemPrototype.Range);
+            // canvas.DrawCircle(0, 0, turret.WeaponSystemPrototype.Range);
             canvas.PopState();
         }
 
@@ -160,7 +161,7 @@ internal class ConstructionInteractionContext : IInteractionContext
 
         if (prototype is TurretPrototype t)
         {
-            t.TurretModel?.Render(canvas, Transform.Default with { Position = World.MousePosition, Rotation = this.rotation * MathF.Tau / 6f }, color);
+            // t.WeaponSystemPrototype.Model?.Render(canvas, Transform.Default with { Position = World.MousePosition, Rotation = this.rotation * MathF.Tau / 6f }, color);
         }
 
         if (hoveredGrid is not null)
