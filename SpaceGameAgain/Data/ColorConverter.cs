@@ -1,8 +1,19 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-internal class ColorConverter : JsonConverter<Color>
+internal class ColorConverter : JsonConverter<Color>, ICustomSchemaProvider
 {
+    public JsonNode GetSchema()
+    {
+        return JsonNode.Parse($$"""
+            {
+                "type": "string",
+                "pattern": "^(?:#?|0x?)(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$"
+            }
+            """)!;
+    }
+
     public override Color Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.StartArray)

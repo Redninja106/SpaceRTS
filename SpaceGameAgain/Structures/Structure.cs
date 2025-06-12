@@ -5,7 +5,6 @@ using SpaceGame.Planets;
 using SpaceGame.Rendering;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
-using SpaceGame.Structures.Zones;
 using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
@@ -14,9 +13,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
+
 internal class Structure : Unit
 {
     public override StructurePrototype Prototype => (StructurePrototype)base.Prototype;
+
 
     public HexCoordinate Location { get; set; }
     public int Rotation { get; set; }
@@ -38,30 +39,6 @@ internal class Structure : Unit
         this.grid = grid;
         UpdateStatus();
     }
-
-    //public override ref Transform Transform 
-    //{
-    //    get 
-    //    { 
-    //        base.Transform = Grid.Transform.Translated(DoubleVector.FromVector2(Location.ToCartesian())).Rotated(Rotation * (MathF.Tau / 6f));
-    //        return ref base.Transform;
-    //    }
-    //}
-    //public override Transform InterpolatedTransform => base.InterpolatedTransform;
-
-    //public Structure(HexCoordinate location, int rotation, Grid grid, StructurePrototype structure, Team team, Type? behaviorType, List<HexCoordinate>? footprint)
-    //{
-    //    Location = location;
-    //    Rotation = rotation;
-    //    Structure = structure;
-    //    Grid = grid;
-    //    this.Team = team;
-    //    this.Footprint = footprint;
-    //    ComputeOutline();
-
-    //    if (behaviorType != null)
-    //        Behavior = (StructureBehavior)Activator.CreateInstance(behaviorType, this)!;
-    //}
 
     public override DoubleVector GetCenter()
     {
@@ -98,62 +75,25 @@ internal class Structure : Unit
 
     public override void Render(ICanvas canvas)
     {
-        if (Prototype is ZonedStructurePrototype zone)
+        canvas.Translate(Prototype.Center);
+        canvas.Rotate(-(this.Rotation * MathF.Tau / 6f));
+        Prototype.Model.Render(canvas, this.InterpolatedTransform, ColorF.White);
+
+        if (!Powered)
         {
-            //if (!isSelected && ((World.SelectionHandler.GetSelectedUnit() as Ship)?.modules?.Any(m => m is ConstructionModule) ?? false))
-            //{
-            //    canvas.Fill((zone.Color with { A = .5f }));
-            //    foreach (var cell in Prototype.Footprint)
-            //    {
-            //        canvas.PushState();
-            //        canvas.Translate(cell.ToCartesian());
-            //        canvas.DrawPolygon(Grid.hexagon);
-            //        canvas.PopState();
-            //    }
-            //}
-
-            //if (Behavior != null)
-            //{
-            //    Behavior?.RenderBeforeCells(canvas);
-
-            //    foreach (var cell in Footprint ?? Prototype.Footprint)
-            //    {
-            //        canvas.PushState();
-            //        canvas.Translate(cell.ToCartesian());
-            //        Behavior?.RenderCell(canvas, cell);
-            //        canvas.PopState();
-            //    }
-
-            //    Behavior?.RenderAfterCells(canvas);
-            //}
-        }
-        else
-        {
-            canvas.Translate(Prototype.Center);
-            canvas.Rotate(-(this.Rotation * MathF.Tau / 6f));
-            Prototype.Model.Render(canvas, this.InterpolatedTransform, ColorF.White);
-
-            if (!Powered)
-            {
-                Prototype.Model.Render(canvas, this.InterpolatedTransform, new ColorF(.5f, .5f, .5f, 1));
-                canvas.DrawTexture(Icons.Economic, new Rectangle(0, 0, 2, 2, Alignment.Center), ColorF.Red);
-            }
+            Prototype.Model.Render(canvas, this.InterpolatedTransform, new ColorF(.5f, .5f, .5f, 1));
+            canvas.DrawTexture(Icons.Economic, new Rectangle(0, 0, 2, 2, Alignment.Center), ColorF.Red);
         }
     }
 
     public void RenderShadow(ICanvas canvas, Vector2 offset)
     {
-        if (Prototype is ZonedStructurePrototype zone)
+        foreach (var cell in Prototype.Footprint)
         {
-            foreach (var cell in Prototype.Footprint)
-            {
-                canvas.PushState();
-                canvas.Translate(cell.ToCartesian());
-                // Behavior?.RenderCellShadow(canvas, offset, cell);
-                canvas.PopState();
-            }
-
-            return;
+            canvas.PushState();
+            canvas.Translate(cell.ToCartesian());
+            // Behavior?.RenderCellShadow(canvas, offset, cell);
+            canvas.PopState();
         }
 
         // Prototype.Model.RenderShadow(canvas, offset);
@@ -172,13 +112,6 @@ internal class Structure : Unit
             }
         }
     }
-
-    //public override void Damage()
-    //{
-    //    health--;
-    //    if (health <= 0)
-    //        IsDestroyed = true;
-    //}
 
     public override void Tick()
     {

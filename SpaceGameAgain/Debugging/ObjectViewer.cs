@@ -109,6 +109,18 @@ class ObjectViewer
                     ImGui.TreePop();
                 }
                 return inspectable;
+            case float or Vector2 or DoubleVector or int or bool or string or Enum:
+            case object when obj.GetType().IsPrimitive:
+                if (isReadonly)
+                {
+                    ImGui.BeginDisabled();
+                }
+                object? result = LayoutPrimitiveObject(label, obj);
+                if (isReadonly)
+                {
+                    ImGui.EndDisabled();
+                }
+                return result;
             case IEnumerable enumerable:
                 if (ImGui.TreeNode(label))
                 {
@@ -125,18 +137,6 @@ class ObjectViewer
                     ImGui.TreePop();
                 }
                 return enumerable;
-            case float or Vector2 or DoubleVector or int or bool or string or Enum:
-            case object when obj.GetType().IsPrimitive:
-                if (isReadonly)
-                {
-                    ImGui.BeginDisabled();
-                }
-                object? result = LayoutPrimitiveObject(label, obj);
-                if (isReadonly)
-                {
-                    ImGui.EndDisabled();
-                }
-                return result;
             case null:
             case object:
                 if (ImGui.TreeNode(label))

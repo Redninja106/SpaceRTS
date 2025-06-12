@@ -1,9 +1,24 @@
 ﻿using SpaceGame.Structures;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-class HexCoordinateConverter : JsonConverter<HexCoordinate>
+class HexCoordinateConverter : JsonConverter<HexCoordinate>, ICustomSchemaProvider
 {
+    public JsonNode GetSchema()
+    {
+        return JsonNode.Parse($$"""
+            {
+                "type": "array",
+                "prefixItems": [
+                    { "type": "integer" },
+                    { "type": "integer" }
+                ],
+                "items": false
+            }
+            """)!;
+    }
+
     public override HexCoordinate Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.StartArray)

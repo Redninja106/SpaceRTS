@@ -1,1 +1,1 @@
-{"type":["object","null"],"properties":{"name":{"type":"string"}}}
+{"type":["object","null"],"properties":{"name":{"type":"string"}},"prototype":{"const":"ConstructionOrderPrototype"}}

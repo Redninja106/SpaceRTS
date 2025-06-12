@@ -1,1 +1,1 @@
-{"type":["object","null"],"properties":{"buildable_structures":{"type":"array"},"buildable_structures_by_category":{"type":"array","items":{"type":["array","null"]}},"name":{"type":"string"}}}
+{"type":["object","null"],"properties":{"buildable_structures":{"type":"array"},"buildable_structures_by_category":{"type":"array","items":{"type":["array","null"]}},"name":{"type":"string"}},"prototype":{"const":"ConstructionModulePrototype"}}

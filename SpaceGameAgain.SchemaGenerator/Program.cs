@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
+using System.Text.Json.Serialization.Metadata;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -78,15 +79,39 @@ foreach (var prototypeClass in Prototypes.PrototypeClasses)
     {
         TransformSchemaNode = (JsonSchemaExporterContext context, JsonNode schema) =>
         {
-            if (!context.Path.IsEmpty && context.TypeInfo.Type.IsSubclassOf(typeof(Prototype)))
+            if (context.TypeInfo.Type.IsSubclassOf(typeof(Prototype)))
             {
-                if (prototypesByClass.TryGetValue(context.TypeInfo.Type, out var values))
+                if (!context.Path.IsEmpty)
+                {
+                    if (prototypesByClass.TryGetValue(context.TypeInfo.Type, out var values))
+                    {
+                        return new JsonObject([
+                            new("enum", new JsonArray(values.Select(n => JsonValue.Create(n)).ToArray()))
+                            ]);
+                    }
+                }
+                else
+                {
+                    schema.AsObject().Add("prototype", new JsonObject([new("const", prototypeClass.Name)]));
+                }
+            }
+
+            if (context.TypeInfo.Kind == JsonTypeInfoKind.Enumerable)
+            {
+                if (context.TypeInfo.Options.GetConverter(context.TypeInfo.ElementType!) is ICustomSchemaProvider arraySchemaProvider)
                 {
                     return new JsonObject([
-                        new("enum", new JsonArray(values.Select(n => JsonValue.Create(n)).ToArray()))
+                        new("type", "array"),
+                        new("items", arraySchemaProvider.GetSchema())
                         ]);
                 }
             }
+
+            if (context.TypeInfo.Kind == JsonTypeInfoKind.None && context.TypeInfo.Converter is ICustomSchemaProvider schemaProvider)
+            {
+                return schemaProvider.GetSchema();
+            }
+            
 
             return schema;
         }

@@ -1,8 +1,23 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-class Vector2Converter : JsonConverter<Vector2>
+class Vector2Converter : JsonConverter<Vector2>, ICustomSchemaProvider
 {
+    public JsonNode GetSchema()
+    {
+        return JsonNode.Parse($$"""
+            {
+                "type": "array",
+                "items": false,
+                "prefixItems": [
+                    { "type": "number" },
+                    { "type": "number" }
+                ]
+            }
+            """)!;
+    }
+
     public override Vector2 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.StartArray)

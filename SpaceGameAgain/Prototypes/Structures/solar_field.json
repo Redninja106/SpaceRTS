@@ -1,0 +1,11 @@
+{
+  "prototype": "StructurePrototype",
+  "name": "solar_field",
+  "title": "Solar Field",
+  "provided_power_level": "Low",
+  "footprint": [
+    [0, 0]
+  ],
+  "cost": 10,
+  "max_health": 25
+}
