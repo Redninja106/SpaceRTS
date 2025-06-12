@@ -11,7 +11,7 @@
   "price": 100,
   "can_be_rotated": true,
   "max_health": 10,
-  "required_power_level": "low",
+  "required_power_level": "Low",
   "cost": 25,
   "category": "Shipbuilding"
 

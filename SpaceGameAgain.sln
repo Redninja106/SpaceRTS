@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpaceGameAgain", "SpaceGame
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpaceGameAgain.Tests", "SpaceGameAgain.Tests\SpaceGameAgain.Tests.csproj", "{ACF99C43-9ACD-4DF6-AEEC-7C23EB945EED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpaceGameAgain.SchemaGenerator", "SpaceGameAgain.SchemaGenerator\SpaceGameAgain.SchemaGenerator.csproj", "{253C865E-62C2-453F-A23A-DA5C7ECE4284}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{ACF99C43-9ACD-4DF6-AEEC-7C23EB945EED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ACF99C43-9ACD-4DF6-AEEC-7C23EB945EED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ACF99C43-9ACD-4DF6-AEEC-7C23EB945EED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{253C865E-62C2-453F-A23A-DA5C7ECE4284}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{253C865E-62C2-453F-A23A-DA5C7ECE4284}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{253C865E-62C2-453F-A23A-DA5C7ECE4284}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{253C865E-62C2-453F-A23A-DA5C7ECE4284}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

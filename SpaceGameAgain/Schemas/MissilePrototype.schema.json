@@ -1,0 +1,1 @@
+{"type":["object","null"],"properties":{"acceleration":{"type":"number"},"max_speed":{"type":"number"},"name":{"type":"string"}}}

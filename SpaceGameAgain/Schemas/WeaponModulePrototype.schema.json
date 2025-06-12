@@ -1,0 +1,1 @@
+{"type":["object","null"],"properties":{"weapon_system_prototype":{"enum":["chaingun_system","missile_system"]},"name":{"type":"string"}}}

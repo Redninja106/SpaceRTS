@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-static class Prototypes
+public static class Prototypes
 {
     private static Dictionary<string, Prototype> prototypes = [];
     private static Dictionary<string, Type> prototypeTypes = [];
@@ -25,6 +25,8 @@ static class Prototypes
     }
 
     public static IEnumerable<Prototype> RegisteredPrototypes => prototypes.Values;
+
+    public static Type[] PrototypeClasses => prototypeTypes.Values.ToArray();
 
     public static Prototype Get(string name)
     {
@@ -50,7 +52,7 @@ static class Prototypes
             files.Add(file.PrototypeName, file);
         }
 
-        var options = CreateOptions();
+        var options = CreateJsonOptions();
 
         foreach (var (_, file) in files)
         {
@@ -64,7 +66,7 @@ static class Prototypes
         }
     }
 
-    private static JsonSerializerOptions CreateOptions()
+    public static JsonSerializerOptions CreateJsonOptions()
     {
         JsonSerializerOptions options = new()
         {
@@ -88,7 +90,7 @@ static class Prototypes
     {
         PrototypeFile file = files.Single(f => f.Value.GetInstance() == prototype).Value;
 
-        var options = CreateOptions();
+        var options = CreateJsonOptions();
         file.Load(options);
         prototype.InitializePrototype();
     }

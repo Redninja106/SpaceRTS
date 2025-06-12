@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +8,9 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Data;
-internal abstract class Prototype
+
+// [JsonObject(NamingStrategyType = typeof(KebabCaseNamingStrategy)]
+public abstract class Prototype
 {
     [JsonInclude]
     public string Name { get; private set; }

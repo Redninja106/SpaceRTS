@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame;
-internal abstract class Actor(Prototype prototype) : IInspectable
+public abstract class Actor(Prototype prototype) : IInspectable
 {
     public virtual Prototype Prototype { get; } = prototype;
 

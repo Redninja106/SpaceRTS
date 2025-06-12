@@ -1,0 +1,1 @@
+{"type":["object","null"],"properties":{"max_health":{"type":"integer"},"title":{"type":"string"},"collision_radius":{"type":"number"},"reveal_radius":{"type":"number"},"name":{"type":"string"}}}
