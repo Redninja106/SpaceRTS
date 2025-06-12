@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 
 namespace SpaceGame.Ships;
 
+
 internal class Ship(ShipPrototype prototype, ulong id, Transform transform, ActorReference<Team> team, float height = 0) : Unit(prototype, id, transform, team)
 {
     public override ShipPrototype Prototype => (ShipPrototype)base.Prototype;

@@ -11,25 +11,16 @@ internal sealed class GUIWindow
     public static Color DefaultTextColor = Color.FromHSV(0, 0, .65f);
 
     public Vector2 Offset = new(0, 0);
-    /// <summary>
-    /// The anchor point (on the viewport) of the window.
-    /// </summary>
     public Alignment Anchor = Alignment.TopLeft;
-    /// <summary>
-    /// The alignment of the window to the anchor point.
-    /// </summary>
     public Alignment Alignment = Alignment.TopLeft;
+
     public bool Visible = true;
     public bool Hovered = false;
-    
 
     public Rectangle LastItemBounds;
 
     private Stack<LayoutScope> scopes = [];
     private LayoutScope currentScope;
-
-    public Rectangle CalculatedBounds => predictedWindowBounds;
-
 
     private Rectangle predictedWindowBounds;
     private Rectangle currentWindowBounds;
@@ -46,7 +37,6 @@ internal sealed class GUIWindow
 
     [DebugOverlay]
     public static bool ShowGUIItemBounds;
-
 
     public GUIWindow(GUILayout? layout)
     {
@@ -107,7 +97,7 @@ internal sealed class GUIWindow
     }
 
     /// <summary>
-    /// Shortcut for BeginScope(LayoutMode.Row). The GUIScope returned must be disposed to end the scope.
+    /// Shortcut for <c>BeginScope(LayoutMode.Row)</c>. The GUIScope returned must be disposed to end the scope.
     /// </summary>
     public GUIScope Row()
     {
@@ -116,7 +106,7 @@ internal sealed class GUIWindow
     }
 
     /// <summary>
-    /// Shortcut for BeginScope(LayoutMode.Column). The GUIScope returned must be disposed to end the scope
+    /// Shortcut for <c>BeginScope(LayoutMode.Column)</c>. The GUIScope returned must be disposed to end the scope
     /// </summary>
     public GUIScope Column()
     {
@@ -298,60 +288,4 @@ internal sealed class GUIWindow
         public LayoutMode LayoutMode;
     }
 
-}
-
-/// <summary>
-/// Helper class that calls window.EndScope(mode) when disposed.
-/// </summary>
-struct GUIScope(GUIWindow window, LayoutMode mode) : IDisposable
-{
-    public void Dispose()
-    {
-        window.EndScope(mode);
-    }
-}
-
-abstract class DrawCommand
-{
-    public abstract void Render(ICanvas canvas);
-
-    public class Text(string text, float size, Vector2 position, Color? color = null, TextStyle style = TextStyle.Regular) : DrawCommand
-    {
-        public override void Render(ICanvas canvas)
-        {
-            canvas.Font(Program.font);
-            canvas.Fill(Color.FromHSV(0, 0, .05f));
-            canvas.DrawText(text, size, position + new Vector2(1, 1), style);
-            canvas.Fill(color ?? Color.FromHSV(0, 0, .65f));
-            canvas.DrawText(text, size, position, style);
-        }
-    }
-    public class Image(ITexture image, SimulationFramework.Rectangle destination) : DrawCommand
-    {
-        public override void Render(ICanvas canvas)
-        {
-            canvas.DrawTexture(image, destination);
-        }
-    }
-    public class Rectangle(SimulationFramework.Rectangle rectangle, Color color, bool fill) : DrawCommand
-    {
-        public override void Render(ICanvas canvas)
-        {
-            if (fill)
-            {
-                canvas.Fill(color);
-            }
-            else
-            {
-                canvas.Stroke(color);
-                canvas.StrokeWidth(1);
-            }
-            canvas.DrawRect(rectangle);
-        }
-    }
-}
-enum LayoutMode
-{
-    Column,
-    Row,
 }
