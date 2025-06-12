@@ -8,11 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Planets;
-internal class PlanetPrototype : WorldActorPrototype
+internal class PlanetPrototype : ActorPrototype
 {
     public BackgroundMaterial Material { get; set; }
 
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
         Transform transform = reader.ReadTransform();
@@ -27,7 +27,7 @@ internal class PlanetPrototype : WorldActorPrototype
         Orbit? orbit = null;
         if (hasOrbit)
         {
-            ActorReference<WorldActor> center = reader.ReadActorReference<WorldActor>();
+            ActorReference<Actor> center = reader.ReadActorReference<Actor>();
             float phase = reader.ReadSingle();
             float orbitRadius = reader.ReadSingle();
 

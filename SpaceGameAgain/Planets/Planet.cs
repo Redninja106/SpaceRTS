@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Planets;
-internal class Planet : WorldActor
+internal class Planet : Actor
 {
     public override PlanetPrototype Prototype => (PlanetPrototype)base.Prototype;
 
@@ -60,7 +60,7 @@ internal class Planet : WorldActor
 
         if (grid.IsNull)
         {
-            this.grid = new Grid(Prototypes.Get<GridPrototype>("grid"), World.NewID(), this.AsReference().Cast<WorldActor>()).AsReference();
+            this.grid = new Grid(Prototypes.Get<GridPrototype>("grid"), World.NewID(), this.AsReference().Cast<Actor>()).AsReference();
             World.Add(this.grid.Actor!);
         }
         else

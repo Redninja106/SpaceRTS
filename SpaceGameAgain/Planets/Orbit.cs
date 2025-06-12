@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 namespace SpaceGame.Planets;
 internal class Orbit
 {
-    public ActorReference<WorldActor> center;
+    public ActorReference<Actor> center;
     public float radius;
     public float phase;
 
-    public Orbit(ActorReference<WorldActor> center, float radius, float phase)
+    public Orbit(ActorReference<Actor> center, float radius, float phase)
     {
         this.center = center;
         this.radius = radius;

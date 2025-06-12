@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Teams;
-internal class Team : WorldActor
+internal class Team : Actor
 {
     public override TeamPrototype Prototype => (TeamPrototype)base.Prototype;
 

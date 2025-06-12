@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Ships.Modules;
-internal abstract class Module : WorldActor, IGUIProvider
+internal abstract class Module : Actor, IGUIProvider
 {
     public ActorReference<Ship> Ship { get; }
     public abstract ITexture Icon { get; }
@@ -22,9 +22,9 @@ internal abstract class Module : WorldActor, IGUIProvider
     public abstract void Layout(GUIWindow window);
 }
 
-abstract class ModulePrototype : WorldActorPrototype
+abstract class ModulePrototype : ActorPrototype
 {
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         return null;
     }

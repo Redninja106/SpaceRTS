@@ -13,7 +13,7 @@ internal class ChaingunSystemPrototype : WeaponSystemPrototype
     public float TurnSpeed { get; set; } = 1;
     public float ReloadTime { get; set; } = 150;
 
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
         ActorReference<Unit> unit = reader.ReadActorReference<Unit>();

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal class Bullet : WorldActor, IDestructable
+internal class Bullet : Actor, IDestructable
 {
     public override BulletPrototype Prototype => (BulletPrototype)base.Prototype;
 

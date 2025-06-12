@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
-internal class Grid : WorldActor
+internal class Grid : Actor
 {
     public static Vector2[] hexagon = [
         Angle.ToVector(0 * MathF.Tau / 6),
@@ -23,15 +23,15 @@ internal class Grid : WorldActor
     ];
 
     public Dictionary<HexCoordinate, GridCell> cells = [];
-    private ActorReference<WorldActor> parent;
+    private ActorReference<Actor> parent;
 
     //public PowerLevel PowerLevel { get; private set; }
-    public WorldActor Parent => parent.Actor!;
+    public Actor Parent => parent.Actor!;
 
     public override ref Transform Transform => ref parent.Actor!.Transform;
     public override Transform InterpolatedTransform => parent.Actor!.InterpolatedTransform;
 
-    public Grid(GridPrototype prototype, ulong id, ActorReference<WorldActor> parent) : base(prototype, id, Transform.Default)
+    public Grid(GridPrototype prototype, ulong id, ActorReference<Actor> parent) : base(prototype, id, Transform.Default)
     {
         this.parent = parent;
     }
@@ -224,12 +224,12 @@ internal class Grid : WorldActor
     }
 }
 
-class GridPrototype : WorldActorPrototype
+class GridPrototype : ActorPrototype
 {
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
-        ActorReference<WorldActor> parent = reader.ReadActorReference<WorldActor>();
+        ActorReference<Actor> parent = reader.ReadActorReference<Actor>();
 
         Dictionary<HexCoordinate, GridCell> cells = new();
         int cellCount = reader.ReadInt32();

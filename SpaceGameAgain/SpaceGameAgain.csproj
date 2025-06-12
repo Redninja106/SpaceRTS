@@ -14,7 +14,6 @@
     <None Remove="Assets\Structures\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="SimulationFramework" Version="0.3.0-alpha.13" />
     <PackageReference Include="SimulationFramework.Desktop" Version="0.3.0-alpha.13" />
   </ItemGroup>

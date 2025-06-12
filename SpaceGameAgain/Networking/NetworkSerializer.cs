@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Networking;
 internal class NetworkSerializer
 {
-    public void Serialize(Actor actor, BinaryWriter writer)
+    public void Serialize(PrototypeObject actor, BinaryWriter writer)
     {
         DebugLog.Assert(!string.IsNullOrEmpty(actor.Prototype.Name));
         
@@ -21,7 +21,7 @@ internal class NetworkSerializer
         actor.Serialize(writer);
     }
 
-    public Actor Deserialize(BinaryReader reader)
+    public PrototypeObject Deserialize(BinaryReader reader)
     {
         // uint sig = reader.ReadUInt32();
         // DebugLog.Assert(sig == 0xDDBBCCAA);
@@ -34,7 +34,7 @@ internal class NetworkSerializer
         return prototype.Deserialize(reader);
     }
 
-    public byte[] SerializeWithLengthPrefix(Actor actor)
+    public byte[] SerializeWithLengthPrefix(PrototypeObject actor)
     {
         using MemoryStream ms = new();
         using BinaryWriter writer = new(ms);

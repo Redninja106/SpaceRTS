@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame;
-internal abstract class Unit(UnitPrototype prototype, ulong id, Transform transform, ActorReference<Team> team) : WorldActor(prototype, id, transform), IDestructable, IGUIProvider, ISelectable
+internal abstract class Unit(UnitPrototype prototype, ulong id, Transform transform, ActorReference<Team> team) : Actor(prototype, id, transform), IDestructable, IGUIProvider, ISelectable
 {
     public override UnitPrototype Prototype => (UnitPrototype)base.Prototype;
 

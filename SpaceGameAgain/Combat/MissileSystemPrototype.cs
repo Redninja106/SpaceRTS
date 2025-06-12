@@ -12,7 +12,7 @@ internal class MissileSystemPrototype : WeaponSystemPrototype
     public int FireInterval { get; set; } = 25;
     public int SalvoInterval { get; set; } = 125;
 
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
         ActorReference<Unit> unit = reader.ReadActorReference<Unit>();

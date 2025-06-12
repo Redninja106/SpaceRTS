@@ -4,7 +4,7 @@ using System.Transactions;
 
 namespace SpaceGame;
 
-abstract class WorldActorPrototype : Prototype
+abstract class ActorPrototype : Prototype
 {
     public void DeserializeArgs(BinaryReader reader, out ulong id, out Transform transform)
     {
@@ -12,5 +12,5 @@ abstract class WorldActorPrototype : Prototype
         transform = reader.ReadTransform();
     }
 
-    public abstract override WorldActor Deserialize(BinaryReader reader);
+    public abstract override Actor Deserialize(BinaryReader reader);
 }

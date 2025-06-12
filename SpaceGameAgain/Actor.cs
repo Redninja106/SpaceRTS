@@ -1,5 +1,6 @@
 ﻿using ImGuiNET;
-using SpaceGame.Data;
+using SimulationFramework.Drawing;
+using SpaceGame.Debugging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,19 +8,70 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame;
-public abstract class Actor(Prototype prototype) : IInspectable
+
+internal abstract class Actor(ActorPrototype prototype, ulong id, Transform transform) : PrototypeObject(prototype)
 {
-    public virtual Prototype Prototype { get; } = prototype;
+    private readonly ulong id = id;
+    private Transform transform = transform;
+    private Transform previousTransform = transform;
+    private Transform interpolatedTransform = transform;
 
-    public virtual void DebugLayout()
+    public virtual Transform InterpolatedTransform => interpolatedTransform;
+    public virtual ref Transform Transform => ref transform;
+    public virtual ref Transform PreviousTransform => ref previousTransform;
+
+    public ulong ID => id;
+
+    public virtual void Update(float tickProgress)
     {
-        ImGui.Text("Prototype: " + Prototype.Name);
+        interpolatedTransform = Transform.Lerp(previousTransform, Transform, tickProgress);
+    }
+    
+    public virtual void Tick()
+    {
+        previousTransform = Transform;
     }
 
-    public abstract void Serialize(BinaryWriter writer);
-
-    public virtual void FinalizeDeserialization()
+    public virtual void Render(ICanvas canvas)
     {
     }
 
+    /// <summary>
+    /// Moves the actor without interpolation.
+    /// </summary>
+    public void Teleport(Transform destination)
+    {
+        this.transform = destination;
+        this.previousTransform = destination;
+        this.interpolatedTransform = destination;
+    }
+
+    public override void DebugLayout()
+    {
+        base.DebugLayout();
+
+        ImGui.Text("ID: " + ID);
+        Transform.Layout();
+
+        if (this.GetType().GetMethod("DebugLayout")?.DeclaringType == typeof(Actor))
+        {
+            DebugLayoutSubclass(this.GetType());
+        }
+    }
+
+    private void DebugLayoutSubclass(Type type)
+    {
+        if (type == typeof(Actor))
+            return;
+
+        DebugLayoutSubclass(type.BaseType!);
+
+        ImGui.SeparatorText(type.Name);
+        ObjectViewer.ReflectionLayoutObjectFields(this, type);
+    }
+
+    public override string ToString()
+    {
+        return base.ToString() + " (id: " + id + ")";
+    }
 }

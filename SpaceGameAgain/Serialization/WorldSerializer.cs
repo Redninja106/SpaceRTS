@@ -26,7 +26,7 @@ internal class WorldSerializer
             string prototypeName = reader.ReadString();
             int actorCount = reader.ReadInt32();
 
-            WorldActorPrototype prototype = Prototypes.Get<WorldActorPrototype>(prototypeName);
+            ActorPrototype prototype = Prototypes.Get<ActorPrototype>(prototypeName);
 
             for (int j = 0; j < actorCount; j++)
             {
@@ -57,7 +57,7 @@ internal class WorldSerializer
 
     public void Serialize(GameWorld world, BinaryWriter writer)
     {
-        WorldActorPrototype[] prototypes = Prototypes.RegisteredPrototypes.OfType<WorldActorPrototype>().ToArray();
+        ActorPrototype[] prototypes = Prototypes.RegisteredPrototypes.OfType<ActorPrototype>().ToArray();
 
         writer.Write(world.NextID);
         writer.Write(world.PlayerTeam);
@@ -69,12 +69,12 @@ internal class WorldSerializer
 
         foreach (var prototype in prototypes)
         {
-            WorldActor[] actors = world.GetActorsByPrototype(prototype).ToArray();
+            Actor[] actors = world.GetActorsByPrototype(prototype).ToArray();
 
             writer.Write(prototype.Name);
             writer.Write(actors.Length);
 
-            foreach (WorldActor actor in actors)
+            foreach (Actor actor in actors)
             {
                 actor.Serialize(writer);
                 writer.Write(0);

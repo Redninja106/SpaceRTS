@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal abstract class WeaponSystem : WorldActor, IDestructable
+internal abstract class WeaponSystem : Actor, IDestructable
 {
     public override WeaponSystemPrototype Prototype => (WeaponSystemPrototype)base.Prototype;
 

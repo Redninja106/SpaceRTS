@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Commands;
-internal abstract class Command(CommandPrototype prototype) : Actor(prototype)
+internal abstract class Command(CommandPrototype prototype) : PrototypeObject(prototype)
 {
     public abstract void Apply();
 }

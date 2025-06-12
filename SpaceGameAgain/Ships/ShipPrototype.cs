@@ -20,7 +20,7 @@ internal class ShipPrototype : UnitPrototype
 
     public SpriteModel? Model { get; set; }
 
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
         Transform transform = reader.ReadTransform();

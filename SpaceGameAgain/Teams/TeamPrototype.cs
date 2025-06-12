@@ -8,11 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Teams;
-internal abstract class TeamPrototype : WorldActorPrototype
+internal abstract class TeamPrototype : ActorPrototype
 {
     public abstract ICommandProcessor CreateCommandProcessor(Team team);
 
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
 

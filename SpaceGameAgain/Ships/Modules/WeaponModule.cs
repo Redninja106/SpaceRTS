@@ -54,7 +54,7 @@ class WeaponModulePrototype : ModulePrototype
 {
     public WeaponSystemPrototype WeaponSystemPrototype { get; set; }
 
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
         ActorReference<Ship> ship = reader.ReadActorReference<Ship>();

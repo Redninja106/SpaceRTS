@@ -7,11 +7,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal class BulletPrototype() : WorldActorPrototype()
+internal class BulletPrototype() : ActorPrototype()
 {
     public float Speed { get; set; }
 
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
         Transform transform = reader.ReadTransform();

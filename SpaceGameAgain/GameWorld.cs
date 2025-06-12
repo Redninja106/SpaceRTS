@@ -19,7 +19,7 @@ internal class GameWorld
 
     public ulong NextID { get; set; } = 1;
 
-    public Dictionary<ulong, WorldActor> Actors = [];
+    public Dictionary<ulong, Actor> Actors = [];
 
     public WorldActorList<Ship> Ships { get; } = [];
     public WorldActorList<Planet> Planets { get; } = [];
@@ -426,7 +426,7 @@ internal class GameWorld
         return smallest;
     }
 
-    public IEnumerable<WorldActor> GetActorsByPrototype(WorldActorPrototype prototype)
+    public IEnumerable<Actor> GetActorsByPrototype(ActorPrototype prototype)
     {
         foreach (var a in Actors.Values)
         {
@@ -437,7 +437,7 @@ internal class GameWorld
         }
     }
 
-    public void Add(WorldActor actor)
+    public void Add(Actor actor)
     {
         Actors.Add(actor.ID, actor);
 

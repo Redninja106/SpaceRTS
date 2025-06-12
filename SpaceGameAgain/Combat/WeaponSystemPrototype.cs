@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal abstract class WeaponSystemPrototype : WorldActorPrototype
+internal abstract class WeaponSystemPrototype : ActorPrototype
 {
     public float Range { get; set; } = 1;
     public SpriteModel? Model { get; set; }

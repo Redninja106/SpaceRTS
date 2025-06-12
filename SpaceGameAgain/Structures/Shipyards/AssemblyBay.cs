@@ -149,7 +149,7 @@ class AssemblyBayPrototype : StructurePrototype
         return new AssemblyBay(this, id, grid, location, rotation, team);
     }
 
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         base.DeserializeArgs(reader, out var id, out var team, out var grid, out var location, out var rotation);
         bool isBuildingShip = reader.ReadBoolean();

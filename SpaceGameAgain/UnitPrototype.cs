@@ -4,7 +4,7 @@ using SpaceGame.Teams;
 
 namespace SpaceGame;
 
-abstract class UnitPrototype : WorldActorPrototype
+abstract class UnitPrototype : ActorPrototype
 {
     public int MaxHealth { get; set; } = 1;
     public string Title { get; set; } = "";

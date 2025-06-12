@@ -46,7 +46,7 @@ internal class StarSystemGenerator
                 World.NewID(),
                 Transform.Default,
                 new Orbit(
-                    star.AsReference<WorldActor>(),
+                    star.AsReference<Actor>(),
                     orbitDistance,
                     random.NextSingle(0, MathF.PI * orbitDistance)
                 )

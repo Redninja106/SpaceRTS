@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Orders;
 internal class MoveOrderPrototype : OrderPrototype
 {
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         DeserializeArgs(reader, out var id, unit: out var unit);
         DoubleVector target = reader.ReadDoubleVector();

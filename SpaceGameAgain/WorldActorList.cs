@@ -1,9 +1,9 @@
 ﻿namespace SpaceGame;
 
 class WorldActorList<TActor> : List<TActor>
-    where TActor : WorldActor
+    where TActor : Actor
 {
-    public bool AddIfApplicable(WorldActor actor)
+    public bool AddIfApplicable(Actor actor)
     {
         if (actor is TActor tActor)
         {

@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Orders;
-internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference<Unit> unit) : WorldActor(prototype, id, Transform.Default)
+internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference<Unit> unit) : Actor(prototype, id, Transform.Default)
 {
     public ActorReference<Unit> Unit { get; } = unit;
 

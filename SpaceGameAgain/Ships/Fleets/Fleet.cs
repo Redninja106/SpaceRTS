@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Ships.Fleets;
-internal class Fleet : WorldActor
+internal class Fleet : Actor
 {
     public ActorReference<Team> team;
     public ActorReference<Ship>[] ships;
@@ -35,9 +35,9 @@ internal class Fleet : WorldActor
 }
 
 
-class FleetPrototype : WorldActorPrototype
+class FleetPrototype : ActorPrototype
 {
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
         Transform transform = reader.ReadTransform();

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Orders;
-internal abstract class OrderPrototype : WorldActorPrototype
+internal abstract class OrderPrototype : ActorPrototype
 {
     public void DeserializeArgs(BinaryReader reader, out ulong id, out ActorReference<Unit> unit)
     {

@@ -106,7 +106,7 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
         return new Structure(this, id, grid, location, rotation, team);
     }
 
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         DeserializeArgs(reader, out var id, out var team, out var grid, out var location, out var rotation);
         return CreateStructure(id, team, grid, location, rotation);

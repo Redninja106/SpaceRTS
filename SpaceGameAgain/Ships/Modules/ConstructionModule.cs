@@ -119,7 +119,7 @@ class ConstructionModulePrototype : ModulePrototype
         base.InitializePrototype();
     }
 
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         ulong id = reader.ReadUInt64();
         ActorReference<Ship> ship = reader.ReadActorReference<Ship>();

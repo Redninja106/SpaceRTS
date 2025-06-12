@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Networking;
-internal abstract class Packet : Actor
+internal abstract class Packet : PrototypeObject
 {
     public Packet(PacketPrototype prototype) : base(prototype)
     {

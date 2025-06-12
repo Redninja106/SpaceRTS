@@ -32,7 +32,7 @@ internal class SphereOfInfluence
         lastTickPosition = planet.Transform.Position;
     }
 
-    public void ApplyTickTo(WorldActor actor)
+    public void ApplyTickTo(Actor actor)
     {
         ApplyTickTo(ref actor.Transform);
     }

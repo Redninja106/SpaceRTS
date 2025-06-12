@@ -87,7 +87,7 @@ class ObjectViewer
                     DebugMenu.ViewObject(proto);
                 }
                 return proto;
-            case WorldActor actor:
+            case Actor actor:
                 bool missing = !World.Actors.ContainsKey(actor.ID);
                 if (missing)
                 {

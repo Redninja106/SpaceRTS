@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Economy;
 internal class ResourcePrototype : Prototype
 {
-    public override Actor Deserialize(BinaryReader reader)
+    public override PrototypeObject Deserialize(BinaryReader reader)
     {
         throw new NotSupportedException();
     }

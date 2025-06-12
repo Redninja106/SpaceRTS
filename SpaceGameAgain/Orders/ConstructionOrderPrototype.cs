@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Orders;
 internal class ConstructionOrderPrototype : OrderPrototype
 {
-    public override WorldActor Deserialize(BinaryReader reader)
+    public override Actor Deserialize(BinaryReader reader)
     {
         DeserializeArgs(reader, out var id, unit: out var unit);
         ActorReference<Grid> grid = reader.ReadActorReference<Grid>();

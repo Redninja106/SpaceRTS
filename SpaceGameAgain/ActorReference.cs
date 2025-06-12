@@ -4,7 +4,7 @@ namespace SpaceGame;
 
 // used for late binding during object serialization
 struct ActorReference<TActor>
-    where TActor : WorldActor
+    where TActor : Actor
 {
     public static ActorReference<TActor> Null => default;
 
@@ -62,7 +62,7 @@ struct ActorReference<TActor>
     }
 
     public ActorReference<T> Cast<T>()
-        where T : WorldActor
+        where T : Actor
     {
         if (actor == null)
         {
