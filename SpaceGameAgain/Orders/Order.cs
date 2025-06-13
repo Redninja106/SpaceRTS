@@ -69,8 +69,11 @@ internal abstract class Order
         // DebugDraw.Ray(Vector2.Zero, targetVelocity.ToVector2(), s.Transform with { Rotation = 0 });
         // DebugDraw.Ray(Vector2.Zero, s.velocity.ToVector2(), s.Transform with { Rotation = 0 });
         float accel = s.Prototype.FlySpeed * Program.Timestep;
+
+        DoubleVector oldVel = s.velocity;
         s.velocity = DoubleVector.Step(s.velocity, targetVelocity, accel);
-        
+        s.CurrentAcceleration = s.velocity - oldVel;
+
         //if (DoubleVector.Dot(delta, s.velocity) > 0 && timeToTarget < timeToStop)
         //{
         //    s.Fly(-1);

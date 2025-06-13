@@ -1,5 +1,6 @@
 ﻿using SpaceGame.Extensions;
 using SpaceGame.Planets;
+using SpaceGame.Ships;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,13 @@ internal class Bullet : Actor, IDestructable
     public Bullet(BulletPrototype prototype, ulong id) : base(prototype, id)
     {
         // this.target = target;
-        // this.sphereOfInfluence = World.GetSphereOfInfluence(transform.Position);
+    }
+
+    public override void InitializeActor()
+    {
+        base.InitializeActor();
+        this.sphereOfInfluence = World.GetSphereOfInfluence(this.Transform.Position);
+
     }
 
     public override void Tick()
@@ -29,15 +36,18 @@ internal class Bullet : Actor, IDestructable
 
         sphereOfInfluence?.ApplyTickTo(ref this.Transform);
         Transform.Position += Transform.Forward * Prototype.Speed * Program.Timestep;
-        
-        if (Vector2.Distance(Transform.Position.ToVector2(), target.Transform.Position.ToVector2()) < 0.1f)
+
+        bool hit = target switch
+        {
+            Missile => Vector2.Distance(Transform.Position.ToVector2(), target.Transform.Position.ToVector2()) < 0.1f,
+            Ship s => s.TestPoint(Transform.Position),
+        };
+
+        if (hit)
         {
             //DebugDraw.Circle(Vector2.Zero, 0.15f, this.Transform, Color.Orange);
-            target.Damage(new DamageInfo() { Amount = 1, Kind = DamageKind.Normal, source = null });
-        }
-        else
-        {
-            //DebugDraw.Circle(Vector2.Zero, 0.15f, this.Transform, Color.Blue);
+            target.Damage(new DamageInfo() { Amount = Prototype.Damage, Kind = DamageKind.Normal, source = null });
+            lifetime = 0;
         }
 
         lifetime--;

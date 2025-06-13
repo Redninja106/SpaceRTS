@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal class Missile : Actor, IDestructable, IDamagable
+internal class Missile : Actor, IDestructable, IDamagable, ITargetable
 {
     public override MissilePrototype Prototype => (MissilePrototype)base.Prototype;
 

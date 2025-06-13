@@ -21,7 +21,7 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id) : Wea
     {
         base.Tick();
 
-        Missile? target = null;
+        ITargetable? target = null;
         float minDistance = float.PositiveInfinity;
         foreach (var missile in World.Missiles)
         {
@@ -42,6 +42,24 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id) : Wea
             }
         }
 
+        minDistance = float.PositiveInfinity;
+        foreach (var ship in World.Ships)
+        {
+            if (ship.Team == this.Unit.Team)
+                continue;
+
+            if (DoubleVector.Distance(ship.Transform.Position, this.Transform.Position) <= Prototype.Range)
+            {
+                float dist = DoubleVector.Distance(ship.Transform.Position, this.Transform.Position);
+                if (dist < minDistance)
+                {
+                    target = ship;
+                    minDistance = dist;
+                }
+            }
+        }
+
+
         if (target is not null)
         {
             if (timeSinceShot > Prototype.FireInterval && ammo > 0)
@@ -61,7 +79,7 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id) : Wea
 
                 float targetAngle = Angle.FromVector((targetPos - this.Transform.Position).ToVector2());
                 this.Transform.Rotation = Angle.Step(this.Transform.Rotation, targetAngle, Prototype.TurnSpeed * MathF.Tau * Program.Timestep);
-                
+
                 if (Angle.Distance(this.Transform.Rotation, targetAngle) < 0.05f)
                 {
                     var transform = this.Transform with 

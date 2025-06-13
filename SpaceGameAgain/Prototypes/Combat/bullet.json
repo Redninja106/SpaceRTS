@@ -1,5 +1,6 @@
 {
   "prototype": "BulletPrototype",
   "name": "bullet",
-  "speed": 5
+  "speed": 5,
+  "damage": 0.01
 }

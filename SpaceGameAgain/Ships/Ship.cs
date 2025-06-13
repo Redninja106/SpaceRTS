@@ -3,6 +3,7 @@ using Silk.NET.Core.Native;
 using Silk.NET.Input;
 using SimulationFramework;
 using SimulationFramework.Drawing;
+using SpaceGame.Combat;
 using SpaceGame.Debugging;
 using SpaceGame.Extensions;
 using SpaceGame.GUI;
@@ -25,7 +26,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships;
 
 [Serializable]
-internal class Ship(ShipPrototype prototype, ulong id) : Unit(prototype, id)
+internal class Ship(ShipPrototype prototype, ulong id) : Unit(prototype, id), ITargetable
 {
     public override ShipPrototype Prototype => (ShipPrototype)base.Prototype;
 
@@ -55,6 +56,10 @@ internal class Ship(ShipPrototype prototype, ulong id) : Unit(prototype, id)
     public Fleet? Fleet;
 
     public override bool CanAttack => modules.Any(m => m is WeaponModule);
+
+    public DoubleVector Velocity => velocity;
+    public DoubleVector CurrentAcceleration { get; set; }
+    public DoubleVector LastAcceleration { get; set; }
 
     // PER CLIENT -- an order the player submitted that hasn't been processed yet
     public Order? potentialOrder = null;
@@ -121,6 +126,9 @@ internal class Ship(ShipPrototype prototype, ulong id) : Unit(prototype, id)
 
     public override void Tick()
     {
+        LastAcceleration = CurrentAcceleration;
+        CurrentAcceleration = DoubleVector.Zero;
+
         base.Tick();
 
         height = MathHelper.Step(height, Prototype.FlyHeight, Program.Timestep * Prototype.RiseSpeed);
