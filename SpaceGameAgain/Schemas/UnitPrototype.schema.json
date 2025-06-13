@@ -1,1 +1,1 @@
-{"type":["object","null"],"properties":{"max_health":{"type":"integer"},"title":{"type":"string"},"collision_radius":{"type":"number"},"reveal_radius":{"type":"number"},"name":{"type":"string"}},"prototype":{"const":"UnitPrototype"}}
+{"type":["object","null"],"properties":{"max_health":{"type":"integer"},"title":{"type":"string"},"collision_radius":{"type":"number"},"reveal_radius":{"type":"number"},"armor":{"type":"integer"},"armor_effectiveness":{"type":"number"},"base_defense_info":{"type":"object"},"name":{"type":"string"}},"prototype":{"const":"UnitPrototype"}}

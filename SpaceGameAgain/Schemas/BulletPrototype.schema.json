@@ -1,1 +1,1 @@
-{"type":["object","null"],"properties":{"speed":{"type":"number"},"name":{"type":"string"}},"prototype":{"const":"BulletPrototype"}}
+{"type":["object","null"],"properties":{"actor_type":{"$comment":"Unsupported .NET type","not":{"enum":["grassy_material","mars_material","sandy_material","rocky_material","mud_material","star_material"]}},"speed":{"type":"number"},"lifetime":{"type":"integer"},"name":{"type":"string"}},"prototype":{"const":"BulletPrototype"}}

@@ -2,6 +2,7 @@
 
 abstract class DrawCommand
 {
+    //asdasd
     public abstract void Render(ICanvas canvas);
 
     public class Text(string text, float size, Vector2 position, Color? color = null, TextStyle style = TextStyle.Regular) : DrawCommand

@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 namespace SpaceGame.Structures;
 internal class StructurePrototype : UnitPrototype, IGUIProvider
 {
+    public override Type ActorType => typeof(Structure);
+
     public HexCoordinate[] Footprint { get; set; } = [HexCoordinate.Zero];
     public int Price { get; set; }
     // public string PresetModel { get; set; } = "default";
@@ -31,11 +33,12 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
     [JsonConverter(typeof(JsonStringEnumConverter<PowerLevel>))]
     public PowerLevel RequiredPowerLevel { get; set; } = PowerLevel.None;
 
-    [JsonIgnore]
-    public ITexture Icon => Icons.Structure;
     public string? Description { get; set; }
     public int Cost { get; set; }
     public string Category { get; set; } = "Other";
+
+    [JsonIgnore]
+    public ITexture Icon => Icons.Structure;
 
     public StructurePrototype()
     {
@@ -67,7 +70,7 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
             for (int i = 0; i < 6; i++)
             {
                 HexCoordinate adjacent = cell + HexCoordinate.UnitQ.Rotated(i);
-                if (!footprint.Contains(cell))
+                if (!footprint.Contains(adjacent) && !adjacents.Contains(adjacent))
                 {
                     adjacents.Add(adjacent);
                 }
@@ -100,31 +103,38 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
         return segments.ToArray();
     }
 
-    
-    public virtual Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
-    {
-        return new Structure(this, id, grid, location, rotation, team);
-    }
+    public override Structure CreateActor(ulong id) => (Structure)base.CreateActor(id);
 
-    public override Actor Deserialize(BinaryReader reader)
-    {
-        DeserializeArgs(reader, out var id, out var team, out var grid, out var location, out var rotation);
-        return CreateStructure(id, team, grid, location, rotation);
-    }
+    //public virtual Structure CreateStructure(ulong id, Team team, Grid grid, HexCoordinate location, int rotation)
+    //{
+    //    return new Structure(this, id)
+    //    {
+    //        Grid = grid,
+    //        Team = team,
+    //        Location = location,
+    //        Rotation = rotation,
+    //    };
+    //}
 
-    public void DeserializeArgs(BinaryReader reader, out ulong id, out ActorReference<Team> team, out ActorReference<Grid> grid, out HexCoordinate location, out int rotation)
-    {
-        id = reader.ReadUInt64();
-        team = reader.ReadActorReference<Team>();
-        grid = reader.ReadActorReference<Grid>();
-        location = reader.ReadHexCoordinate();
-        rotation = reader.ReadInt32();
-    }
+    //public override Actor Deserialize(BinaryReader reader)
+    //{
+    //    DeserializeArgs(reader, out var id, out var team, out var grid, out var location, out var rotation);
+    //    return CreateStructure(id, team, grid, location, rotation);
+    //}
+
+    //public void DeserializeArgs(BinaryReader reader, out ulong id, out ActorReference<Team> team, out ActorReference<Grid> grid, out HexCoordinate location, out int rotation)
+    //{
+    //    id = reader.ReadUInt64();
+    //    team = reader.ReadActorReference<Team>();
+    //    grid = reader.ReadActorReference<Grid>();
+    //    location = reader.ReadHexCoordinate();
+    //    rotation = reader.ReadInt32();
+    //}
 
     [DebugButton]
     public void Build()
     {
-        var ctorShip = World.SelectionHandler.GetSelectedUnits().OfType<Ship>().FirstOrDefault(u => u is Ship s && s.modules.Any(m => m!.Actor is ConstructionModule));
+        var ctorShip = World.SelectionHandler.GetSelectedUnits().OfType<Ship>().FirstOrDefault(u => u is Ship s && s.modules.Any(m => m is ConstructionModule));
         if (ctorShip != null)
         {
             World.ConstructionInteractionContext.BeginPlacing(this, ctorShip);

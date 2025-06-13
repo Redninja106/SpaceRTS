@@ -8,27 +8,27 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Teams;
-internal abstract class TeamPrototype : ActorPrototype
+internal abstract class TeamPrototype : Prototype
 {
     public abstract ICommandProcessor CreateCommandProcessor(Team team);
 
-    public override Actor Deserialize(BinaryReader reader)
-    {
-        ulong id = reader.ReadUInt64();
+    //public override Actor Deserialize(BinaryReader reader)
+    //{
+    //    ulong id = reader.ReadUInt64();
 
-        int money = reader.ReadInt32();
+    //    int money = reader.ReadInt32();
 
-        int relationshipCount = reader.ReadInt32();
+    //    int relationshipCount = reader.ReadInt32();
 
-        Dictionary<ActorReference<Team>, TeamRelation> relationships = [];
-        for (int i = 0; i < relationshipCount; i++)
-        {
-            ActorReference<Team> team = reader.ReadActorReference<Team>();
-            TeamRelation relation = (TeamRelation)reader.ReadInt32();
+    //    Dictionary<ActorReference<Team>, TeamRelation> relationships = [];
+    //    for (int i = 0; i < relationshipCount; i++)
+    //    {
+    //        ActorReference<Team> team = reader.ReadActorReference<Team>();
+    //        TeamRelation relation = (TeamRelation)reader.ReadInt32();
 
-            relationships.Add(team, relation);
-        }
+    //        relationships.Add(team, relation);
+    //    }
 
-        return new Team(this, id, Transform.Default, relationships, money);
-    }
+    //    return new Team(this, id, Transform.Default, relationships, money);
+    //}
 }

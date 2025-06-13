@@ -1,6 +1,7 @@
 ﻿using SpaceGame.Commands;
 using SpaceGame.Debugging;
 using SpaceGame.Extensions;
+using SpaceGame.Networking.Packets;
 using SpaceGame.Orders;
 using SpaceGame.Teams;
 using System;
@@ -12,41 +13,21 @@ using System.Threading.Tasks;
 
 namespace SpaceGame.Networking;
 
+[Serializable]
 internal class TurnPacket : Packet
 {
-    public ulong turn;
-    public ActorReference<Team> team;
-    public List<Command> commands;
-    public List<Command> prevTurnCommands;
-
-    public TurnPacket(TurnPacketPrototype prototype, ulong turn, ActorReference<Team> team, List<Command> commands, List<Command> prevTurnCommands) : base(prototype)
-    {
-        this.turn = turn;
-        this.team = team;
-        this.commands = commands;
-        this.prevTurnCommands = prevTurnCommands;
-    }
-
-    public override void Serialize(BinaryWriter writer)
-    {
-        writer.Write(turn);
-        writer.Write(team);
-
-        writer.Write(commands.Count);
-        for (int i = 0; i < commands.Count; i++)
-        {
-            Program.NetworkSerializer.Serialize(commands[i], writer);
-        }
-        writer.Write(prevTurnCommands.Count);
-        for (int i = 0; i < prevTurnCommands.Count; i++)
-        {
-            Program.NetworkSerializer.Serialize(prevTurnCommands[i], writer);
-        }
-    }
+    [Serialize]
+    public required ulong turn;
+    [Serialize]
+    public required Team team;
+    [Serialize]
+    public required List<Command> commands;
+    [Serialize]
+    public required List<Command> prevTurnCommands;
 
     public void Process()
     {
-        if (team.Actor!.GetCommandProcessor() is not NetworkCommandProcessor commandProcessor)
+        if (team.GetCommandProcessor() is not NetworkCommandProcessor commandProcessor)
         {
             // Debug.Assert(false);
             DebugLog.Warning($"Received commands for player controlled team {team.ID}. Dropping commands.");
@@ -64,41 +45,14 @@ internal class TurnPacket : Packet
         }
         else
         {
-            DebugLog.Warning($"received turn {turn} for {team.Actor!} twice!");
+            DebugLog.Warning($"received turn {turn} for {team} twice!");
         }
 
         if (World.TurnProcessor.turn < turn && !commandProcessor.HasCommands(turn - 1))
         {
             commandProcessor.AddCommands(turn - 1, prevTurnCommands.ToArray());
         }
-
+        
         // Console.WriteLine("got commands for turn " + turn);
-    }
-}
-
-class TurnPacketPrototype : PacketPrototype
-{
-    public override Packet Deserialize(BinaryReader reader)
-    {
-        ulong turn = reader.ReadUInt64();
-        ActorReference<Team> team = reader.ReadActorReference<Team>();
-
-        List<Command> commands = [];
-        int commandCount = reader.ReadInt32();
-        for (int i = 0; i < commandCount; i++)
-        {
-            Command command = (Command)Program.NetworkSerializer.Deserialize(reader);
-            commands.Add(command);
-        }
-
-        List<Command> prevTurnCommands = [];
-        int prevCommandCount = reader.ReadInt32();
-        for (int i = 0; i < prevCommandCount; i++)
-        {
-            Command command = (Command)Program.NetworkSerializer.Deserialize(reader);
-            prevTurnCommands.Add(command);
-        }
-
-        return new TurnPacket(this, turn, team, commands, prevTurnCommands);
     }
 }

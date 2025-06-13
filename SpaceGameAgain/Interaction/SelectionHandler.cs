@@ -74,7 +74,7 @@ internal class SelectionHandler
             //    foreach (var fleetShip in fleet.ships)
             //    {
             //        canvas.PushState();
-            //        fleetShip.Actor!.DrawHighlightAbove(canvas, camera, true);
+            //        fleetShip.DrawHighlightAbove(canvas, camera, true);
             //        canvas.PopState();
             //    }
             //}
@@ -96,7 +96,7 @@ internal class SelectionHandler
             //    foreach (var fleetShip in fleet.ships)
             //    {
             //        canvas.PushState();
-            //        fleetShip.Actor!.DrawHighlightAbove(canvas, camera, true);
+            //        fleetShip.DrawHighlightAbove(canvas, camera, true);
             //        canvas.PopState();
             //    }
             //}

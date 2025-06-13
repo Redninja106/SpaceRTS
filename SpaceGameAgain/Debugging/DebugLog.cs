@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -54,7 +55,7 @@ internal static class DebugLog
     }
 
     [DebuggerHidden]
-    public static void Assert(bool condition, string message = "Assert failed!", [CallerFilePath] string callerFile = "", [CallerLineNumber] int callerLine = 0, [CallerMemberName] string memberName = "", [CallerArgumentExpression(nameof(condition))] string expr = "")
+    public static void Assert([DoesNotReturnIf(false)] bool condition, string message = "Assert failed!", [CallerFilePath] string callerFile = "", [CallerLineNumber] int callerLine = 0, [CallerMemberName] string memberName = "", [CallerArgumentExpression(nameof(condition))] string expr = "")
     {
         if (!condition)
         {
@@ -105,7 +106,7 @@ internal static class DebugLog
         return $"[{DateTime.Now:HH:mm:ss.ffff}] [{severityStr}] ({Path.GetFileName(callerFile)}:{callerLine} {memberName}): {message}\n";
     }
 
-    [Conditional("DEBUG")]
+    [Conditional("LOGGING")]
     public static void WriteDirect(string message)
     {
         Console.Write(message);

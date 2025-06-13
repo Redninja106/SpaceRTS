@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Rendering;
-internal class BackgroundMaterial : Prototype
+internal class BackgroundMaterial : DataPrototype
 {
     public string TextureFile { get; set; }
     public string NormalMapFile { get; set; }
@@ -21,16 +21,11 @@ internal class BackgroundMaterial : Prototype
 
         if (NormalMapFile != null)
         {
-            NormalMap = Graphics.LoadTexture("Assets/Textures/" + NormalMapFile);
+            NormalMap = Graphics.LoadTexture("Assets/Textures/" + NormalMapFile, TextureOptions.Constant);
             Graphics.GenerateMipmaps(NormalMap);
             NormalMap.Filter = TextureFilter.MipmapPoint;
         }
 
         base.InitializePrototype();
-    }
-
-    public override PrototypeObject Deserialize(BinaryReader reader)
-    {
-        throw new NotSupportedException();
     }
 }

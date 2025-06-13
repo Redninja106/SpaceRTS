@@ -6,14 +6,18 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
+
+[Serializable]
 internal class GridCell
 {
-    public ActorReference<Structure> Structure { get; set; }
+    [field: Serialize]
+    public Structure? Structure { get; set; }
+    [field: Serialize]
     public TilePrototype Tile { get; set; }
+    //[field: Serialize]
     public ColorF Tint { get; set; }
 
-    public GridCell(TilePrototype tile)
+    public GridCell()
     {
-        this.Tile = tile;
     }
 }

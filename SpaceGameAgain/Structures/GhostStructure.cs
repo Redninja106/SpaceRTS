@@ -6,13 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
+
+[Serializable]
 internal class GhostStructure : Structure
 {
     public override StructurePrototype Prototype => base.Prototype;
 
+    [Serialize]
     public StructurePrototype GhostPrototype;
 
-    public GhostStructure(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
+    public GhostStructure(StructurePrototype prototype, ulong id) : base(prototype, id)
     {
     }
 

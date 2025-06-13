@@ -7,12 +7,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal class Missile : Actor, IDestructable
+internal class Missile : Actor, IDestructable, IDamagable
 {
     public override MissilePrototype Prototype => (MissilePrototype)base.Prototype;
 
-    public ActorReference<Unit> Target { get; set; }
-    public DoubleVector TargetOffset { get; set; }
+    public required Unit? Target { get; set; }
+    public required DoubleVector TargetOffset { get; set; }
 
     public DoubleVector Velocity { get; set; }
     public bool IsDestroyed => explosionProgress > 1;
@@ -24,13 +24,13 @@ internal class Missile : Actor, IDestructable
     public float explosionProgress;
     public float age;
 
-    public Missile(MissilePrototype prototype, ulong id, Transform transform, ActorReference<Unit> target, DoubleVector targetOffset) : base(prototype, id, transform)
+    public Missile(MissilePrototype prototype, ulong id) : base(prototype, id)
     {
-        Target = target;
-        TargetOffset = targetOffset;
-        Transform = transform;
+        //Target = target;
+        //TargetOffset = targetOffset;
+        //Transform = transform;
 
-        Velocity = DoubleVector.FromVector2(Angle.ToVector(transform.Rotation) * prototype.MaxSpeed);
+        //Velocity = DoubleVector.FromVector2(Angle.ToVector(transform.Rotation) * prototype.MaxSpeed);
     }
 
     public override void Tick()
@@ -51,16 +51,16 @@ internal class Missile : Actor, IDestructable
             return;
         }
 
-        if (((IDestructable?)Target.Actor)?.IsDestroyed ?? false)
+        if (((IDestructable?)Target)?.IsDestroyed ?? false)
         {
-            Target = ActorReference<Unit>.Null;
+            Target = null;
         }
 
         DoubleVector positionDelta;
-        if (!Target.IsNull)
+        if (Target != null)
         {
-            positionDelta = (Target.Actor!.Transform.Position + TargetOffset - Transform.Position).Normalized() * Prototype.MaxSpeed;
-            if (DoubleVector.Distance(Target.Actor!.Transform.Position + TargetOffset, Transform.Position) < .05f)
+            positionDelta = (Target.Transform.Position + TargetOffset - Transform.Position).Normalized() * Prototype.MaxSpeed;
+            if (DoubleVector.Distance(Target.Transform.Position + TargetOffset, Transform.Position) < .05f)
             {
                 TargetOffset = DoubleVector.Zero;
             }
@@ -77,12 +77,12 @@ internal class Missile : Actor, IDestructable
 
         Transform.Position += Velocity * Program.Timestep;
 
-        if (!Target.IsNull)
+        if (Target != null)
         {
-            if (age > 1 && Target.Actor!.TestPoint(Transform.Position))
+            if (age > 1 && Target.TestPoint(Transform.Position))
             {
                 Detonate();
-                Target.Actor!.Health--;
+                Target.Health--;
             }
         }
 
@@ -122,17 +122,22 @@ internal class Missile : Actor, IDestructable
     {
     }
 
-    public override void Serialize(BinaryWriter writer)
+    public void Damage(DamageInfo damage)
     {
-        writer.Write(ID);
-        writer.Write(Transform);
-        writer.Write(Target);
-        writer.Write(TargetOffset);
-        writer.Write(Velocity);
-        writer.Write(LastAcceleration);
-        writer.Write(CurrentAcceleration);
-        writer.Write(exploding);
-        writer.Write(explosionProgress);
-        writer.Write(age);
+        this.Detonate();
     }
+
+    //public override void Serialize(BinaryWriter writer)
+    //{
+    //    writer.Write(ID);
+    //    writer.Write(Transform);
+    //    writer.Write(Target);
+    //    writer.Write(TargetOffset);
+    //    writer.Write(Velocity);
+    //    writer.Write(LastAcceleration);
+    //    writer.Write(CurrentAcceleration);
+    //    writer.Write(exploding);
+    //    writer.Write(explosionProgress);
+    //    writer.Write(age);
+    //}
 }

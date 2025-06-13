@@ -8,11 +8,12 @@ using System.Threading.Tasks;
 namespace SpaceGame.Structures;
 internal class ResourceDeposit : Structure
 {
-    public ResourceDeposit(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
+    public ResourceDeposit(StructurePrototype prototype, ulong id) : base(prototype, id)
     {
     }
 }
 
 class ResourceDepositPrototype : StructurePrototype
 {
+    public override Type ActorType => typeof(ResourceDepositPrototype);
 }

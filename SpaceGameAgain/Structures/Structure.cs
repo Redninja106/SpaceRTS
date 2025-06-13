@@ -14,30 +14,33 @@ using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
 
+[Serializable]
 internal class Structure : Unit
 {
     public override StructurePrototype Prototype => (StructurePrototype)base.Prototype;
 
-
-    public HexCoordinate Location { get; set; }
-    public int Rotation { get; set; }
-    public Grid Grid => grid.Actor!;
+    [field: Serialize]
+    public required HexCoordinate Location { get; set; }
+    [field: Serialize]
+    public required int Rotation { get; set; }
+    [field: Serialize]
+    public required Grid Grid { get; set; }
+    
     public List<HexCoordinate>? Footprint { get; set; }
-
-    private ActorReference<Grid> grid;
-
     public HashSet<Structure> neighbors = [];
-
     public bool Enabled { get; set; }
     public bool Powered { get; set; }
     public override ITexture Icon => Icons.Structure;
 
-    public Structure(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid.Actor!.Transform.Translated(DoubleVector.FromVector2(location.ToCartesian())).Rotated(rotation * (MathF.Tau / 6f)), team)
+    public Structure(StructurePrototype prototype, ulong id) : base(prototype, id)
     {
-        Location = location;
-        Rotation = rotation;
-        this.grid = grid;
         UpdateStatus();
+    }
+
+    public override void InitializeActor()
+    {
+        this.Teleport(Grid.Transform.Translated(DoubleVector.FromVector2(this.Location.ToCartesian())).Rotated(Rotation * (MathF.Tau / 6f)));
+        base.InitializeActor();
     }
 
     public override DoubleVector GetCenter()
@@ -47,21 +50,20 @@ internal class Structure : Unit
 
     public IEnumerable<HexCoordinate> GetAdjacentCells()
     {
-        foreach (var cell in Prototype.Footprint)
+        foreach (var cell in Prototype.AdjacentCells)
         {
-            for (int i = 0; i < 6; i++)
-            {
-                HexCoordinate neighbor = cell + HexCoordinate.UnitQ.Rotated(i);
-                if (Prototype.Footprint.Contains(neighbor))
-                {
-                    continue;
-                }
-                if (Grid.GetCell(neighbor) is null)
-                {
-                    continue;
-                }
+            yield return this.Location + cell.Rotated(this.Rotation);
+        }
+    }
 
-                yield return neighbor;
+    [DebugOverlay]
+    public static void ShowStructureAdjacentCells()
+    {
+        if (World.SelectInteractionContext.target is Structure structure)
+        {
+            foreach (var adjacent in structure.GetAdjacentCells())
+            {
+                DebugDraw.Circle(adjacent.ToCartesian(), 1, structure.Grid.Transform);
             }
         }
     }
@@ -70,7 +72,7 @@ internal class Structure : Unit
     {
         Vector2 localPoint = Grid.Transform.WorldToLocal(point.ToVector2());
         HexCoordinate coord = HexCoordinate.FromCartesian(localPoint);
-        return Grid.GetCell(coord) is GridCell cell && cell.Structure.Actor == this;
+        return Grid.GetCell(coord) is GridCell cell && cell.Structure == this;
     }
 
     public override void Render(ICanvas canvas)
@@ -99,13 +101,13 @@ internal class Structure : Unit
         // Prototype.Model.RenderShadow(canvas, offset);
     }
 
-    public override void FinalizeDeserialization()
+    public override void FinishDeserialization()
     {
-        base.FinalizeDeserialization();
+        base.FinishDeserialization();
 
         foreach (var cell in this.GetAdjacentCells())
         {
-            var structure = Grid.GetCell(Location + cell)?.Structure.Actor;
+            var structure = Grid.GetCell(Location + cell)?.Structure;
             if (structure != null)
             {
                 neighbors.Add(structure);
@@ -116,6 +118,7 @@ internal class Structure : Unit
     public override void Tick()
     {
         base.Tick();
+
         this.Transform = Grid.Transform.Translated(DoubleVector.FromVector2(Location.ToCartesian())).Rotated(Rotation * (MathF.Tau / 6f));
         UpdateStatus();
 
@@ -146,16 +149,16 @@ internal class Structure : Unit
         base.OnDestroyed();
     }
 
-    public override void Serialize(BinaryWriter writer)
-    {
-        writer.Write(ID);
+    //public override void Serialize(BinaryWriter writer)
+    //{
+    //    writer.Write(ID);
 
-        writer.Write(Team);
-        writer.Write(grid);
+    //    writer.Write(Team);
+    //    writer.Write(grid);
 
-        writer.Write(Location);
-        writer.Write(Rotation);
-    }
+    //    writer.Write(Location);
+    //    writer.Write(Rotation);
+    //}
 
     public virtual void OnNeighborAdded(Structure neighbor)
     {
@@ -183,8 +186,8 @@ internal class Structure : Unit
             Vector2 side1 = this.Location.ToCartesian() + edgeCenter + new Vector2(delta.Y, -delta.X);
             Vector2 side2 = this.Location.ToCartesian() + edgeCenter + new Vector2(-delta.Y, delta.X);
 
-            var structure1 = this.grid.Actor!.GetCell(HexCoordinate.FromCartesian(side1))?.Structure.Actor;
-            var structure2 = this.grid.Actor!.GetCell(HexCoordinate.FromCartesian(side2))?.Structure.Actor;
+            var structure1 = this.Grid.GetCell(HexCoordinate.FromCartesian(side1))?.Structure;
+            var structure2 = this.Grid.GetCell(HexCoordinate.FromCartesian(side2))?.Structure;
 
             if (structure1 != null && structure2 != null && structure1.Team == structure2.Team)
             {
@@ -216,7 +219,7 @@ internal class Structure : Unit
     public override void DrawHighlightBelow(ICanvas canvas, Camera camera, bool selected)
     {
         canvas.Transform(World.Camera.CreateRelativeMatrix(InterpolatedTransform));
-        canvas.Stroke(World.PlayerTeam.Actor!.GetRelationColor(Team.Actor!) with { A = (byte)(selected ? 255 : 100) });
+        canvas.Stroke(World.PlayerTeam.GetRelationColor(Team) with { A = (byte)(selected ? 255 : 100) });
         for (int i = 0; i < Prototype.Outline.Length; i += 2)
         {
             canvas.DrawLine(Prototype.Outline[i], Prototype.Outline[i + 1]);

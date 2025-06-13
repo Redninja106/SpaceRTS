@@ -87,7 +87,7 @@ internal class TurnProcessor
 
     public void BroadcastCommands()
     {
-        PlayerCommandProcessor playerCommandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.GetCommandProcessor();
+        PlayerCommandProcessor playerCommandProcessor = (PlayerCommandProcessor)World.PlayerTeam.GetCommandProcessor();
         playerCommandProcessor.BroadcastCommands(turn + TurnDelay);
 
         // history.AddCommands(turn, team)

@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, ActorReference<Unit> unit) : WeaponSystem(prototype, id, unit)
+internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id) : WeaponSystem(prototype, id)
 {
     public override ChaingunSystemPrototype Prototype => (ChaingunSystemPrototype)base.Prototype;
 
@@ -25,10 +25,10 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
         float minDistance = float.PositiveInfinity;
         foreach (var missile in World.Missiles)
         {
-            if (missile.Target.IsNull)
+            if (missile.Target == null)
                 continue;
 
-            if (DoubleVector.Distance(missile.Transform.Position, this.Transform.Position) <= Prototype.Range && missile.Target.Actor!.Team.Actor!.GetRelation(unit.Actor!.Team.Actor!) is TeamRelation.Allies or TeamRelation.Self)
+            if (DoubleVector.Distance(missile.Transform.Position, this.Transform.Position) <= Prototype.Range && missile.Target.Team.GetRelation(Unit.Team) is TeamRelation.Allies or TeamRelation.Self)
             {
                 if (missile.exploding)
                     continue;
@@ -68,7 +68,15 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
                     { 
                         Rotation = Angle.FromVector((targetPos - this.Transform.Position).ToVector2()) + World.TickRandom.NextSingle() * 0.05f
                     };
-                    World.Add(new Bullet(bulletProto, World.NewID(), transform, target.AsReference(), Prototype.Range / bulletProto.Speed));
+
+                    Bullet bullet = new(bulletProto, World.NewID())
+                    { 
+                        target = target, 
+                        lifetime = (int)(Program.TickRate * Prototype.Range / bulletProto.Speed)
+                    };
+
+                    bullet.Teleport(transform);
+                    World.Add(bullet);
 
                     timeSinceShot = 0;
                     ammo--;
@@ -87,7 +95,7 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
     public override void Render(ICanvas canvas)
     {
         base.Render(canvas);
-        // DebugDraw.Line(Vector2.Zero, Vector2.UnitX, this.unit.Actor!.Transform with { Rotation = angle } );
+        // DebugDraw.Line(Vector2.Zero, Vector2.UnitX, this.unit.Transform with { Rotation = angle } );
         // canvas.DrawLine(Vector2.Zero, Vector2.UnitX);
     }
 
@@ -105,12 +113,12 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id, Actor
         return p + v * t + (1 / 2f) * a * t * t + (1 / 6f) * j * t * t * t;
     }
 
-    public override void Serialize(BinaryWriter writer)
-    {
-        writer.Write(ID);
-        writer.Write(unit);
-        writer.Write(ammo);
-        writer.Write(this.Transform.Rotation);
-        writer.Write(timeSinceShot);
-    }
+    //public override void Serialize(BinaryWriter writer)
+    //{
+    //    writer.Write(ID);
+    //    writer.Write(Unit);
+    //    writer.Write(ammo);
+    //    writer.Write(this.Transform.Rotation);
+    //    writer.Write(timeSinceShot);
+    //}
 }

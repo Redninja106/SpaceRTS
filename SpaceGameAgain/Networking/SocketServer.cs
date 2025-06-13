@@ -1,5 +1,6 @@
 ﻿using Silk.NET.OpenGL;
 using SpaceGame.Debugging;
+using SpaceGame.Networking.Packets;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -14,6 +15,7 @@ internal class SocketServer
 {
     private Socket listeningSocket;
     private List<SocketClientInterface> clients = [];
+    private Serializer packetSerializer;
     // private Dictionary<Socket, int> socketToClientID = [];
     // private Dictionary<int, Socket> clientIDToSocket = [];
     // private int nextClientId = 1;
@@ -28,6 +30,7 @@ internal class SocketServer
         listeningSocket.Listen();
         listeningSocket.NoDelay = true;
         DebugLog.Message("listening on port " + port.ToString());
+        packetSerializer = Serializer.GetSerializer(typeof(Packet));
     }
 
     public void Update()
@@ -103,7 +106,6 @@ internal class SocketServer
             }
         }
 
-
         packet = null;
         client = null;
         return false;
@@ -111,7 +113,7 @@ internal class SocketServer
 
     public void SendAll(Packet packet, Predicate<Socket>? predicate = null)
     {
-        byte[] data = Program.NetworkSerializer.SerializeWithLengthPrefix(packet);
+        byte[] data = SocketPacketReceiver.SerializeWithLengthPrefix(packet, packetSerializer);
 
         foreach (var client in clients)
         {
@@ -124,11 +126,11 @@ internal class SocketServer
 
     public void Send(Packet packet, Socket client)
     {
-        byte[] data = Program.NetworkSerializer.SerializeWithLengthPrefix(packet);
+        byte[] data = SocketPacketReceiver.SerializeWithLengthPrefix(packet, packetSerializer);
 
         if (LogServerPackets)
         {
-            DebugLog.Message($"sent {data.Length} byte {packet.Prototype.Name} to {client.RemoteEndPoint}");
+            DebugLog.Message($"sent {data.Length} byte {packet.GetType().Name} to {client.RemoteEndPoint}");
         }
 
         client.Send(data);

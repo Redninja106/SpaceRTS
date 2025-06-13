@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using SpaceGame.Economy;
 using SpaceGame.Planets;
+using SpaceGame.Serialization;
 using SpaceGame.Teams;
 using SpaceGame.Tiles;
 using System;
@@ -11,6 +12,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
+
+[Serializable]
 internal class Grid : Actor
 {
     public static Vector2[] hexagon = [
@@ -21,25 +24,26 @@ internal class Grid : Actor
         Angle.ToVector(4 * MathF.Tau / 6),
         Angle.ToVector(5 * MathF.Tau / 6),
     ];
-
+    
+    [Serialize]
+    public required Actor parent;
+    [Serialize]
     public Dictionary<HexCoordinate, GridCell> cells = [];
-    private ActorReference<Actor> parent;
-
+    
     //public PowerLevel PowerLevel { get; private set; }
-    public Actor Parent => parent.Actor!;
+    public Actor Parent => parent;
 
-    public override ref Transform Transform => ref parent.Actor!.Transform;
-    public override Transform InterpolatedTransform => parent.Actor!.InterpolatedTransform;
+    public override ref Transform Transform => ref parent.Transform;
+    public override Transform InterpolatedTransform => parent.InterpolatedTransform;
 
-    public Grid(GridPrototype prototype, ulong id, ActorReference<Actor> parent) : base(prototype, id, Transform.Default)
+    public Grid(GridPrototype prototype, ulong id) : base(prototype, id)
     {
-        this.parent = parent;
     }
 
     public void AddCell(HexCoordinate location)
     {
         // CollisionRadius = Math.Max(CollisionRadius, location.ToCartesian().Length());
-        cells.Add(location, new(Prototypes.Get<TilePrototype>("ground_tile")));
+        cells.Add(location, new() { Tile = Prototypes.Get<TilePrototype>("ground_tile") });
     }
 
     public void RemoveCell(HexCoordinate location)
@@ -52,7 +56,7 @@ internal class Grid : Actor
         foreach (var footprintCell in structure.Footprint)
         {
             var cell = GetCell(location + footprintCell.Rotated(rotation));
-            if (cell is null || !cell.Structure.IsNull)
+            if (cell is null || cell.Structure != null)
             {
                 return true;
             }
@@ -77,26 +81,26 @@ internal class Grid : Actor
 
             if (World.CurrentInteractionContext == World.ConstructionInteractionContext)
             {
-                if (cell?.Structure.IsNull ?? false)
+                if (cell?.Structure != null)
                 {
                     canvas.DrawLine(hexagon[0], hexagon[1]);
                     canvas.DrawLine(hexagon[1], hexagon[2]);
                     canvas.DrawLine(hexagon[2], hexagon[3]);
 
                     GridCell? neighbor = GetCell(coord + new HexCoordinate(-1, 0));
-                    if (neighbor is null || !neighbor.Structure.IsNull)
+                    if (neighbor is null || neighbor.Structure != null)
                     {
                         canvas.DrawLine(hexagon[3], hexagon[4]);
                     }
 
                     neighbor = GetCell(coord + new HexCoordinate(0, -1));
-                    if (neighbor is null || !neighbor.Structure.IsNull)
+                    if (neighbor is null || neighbor.Structure != null)
                     {
                         canvas.DrawLine(hexagon[4], hexagon[5]);
                     }
 
                     neighbor = GetCell(coord + new HexCoordinate(1, -1));
-                    if (neighbor is null || !neighbor.Structure.IsNull)
+                    if (neighbor is null || neighbor.Structure != null)
                     {
                         canvas.DrawLine(hexagon[5], hexagon[0]);
                     }
@@ -129,19 +133,23 @@ internal class Grid : Actor
 
     public void PlaceStructure(StructurePrototype prototype, HexCoordinate location, int rotation, Team team, List<HexCoordinate>? footprint = null)
     {
-        var structure = prototype.CreateStructure(World.NewID(), team.AsReference(), this.AsReference(), location, rotation);
+        var structure = prototype.CreateActor(World.NewID());
+        structure.Team = team;
+        structure.Grid = this;
+        structure.Location = location;
+        structure.Rotation = rotation;
         World.Add(structure);
 
         foreach (var footprintPart in prototype.Footprint)
         {
             var cellLocation = location + footprintPart.Rotated(rotation);
-            GetCell(cellLocation)!.Structure = structure.AsReference();
+            GetCell(cellLocation)!.Structure = structure;
             // GetCell(cellLocation)!.Tile = new Tile(Prototypes.Get<TilePrototype>("foundation_tile"), World.NewID(), Transform.Default);
         }
 
         foreach (var cell in structure.GetAdjacentCells())
         {
-            var neighbor = GetCell(structure.Location + cell)?.Structure.Actor;
+            var neighbor = GetCell(cell)?.Structure;
 
             if (neighbor != null)
             {
@@ -186,10 +194,10 @@ internal class Grid : Actor
 
     internal void RemoveStructure(Structure structure)
     {
-        foreach (var adj in structure.GetAdjacentCells())
+        foreach (var neighbor in structure.neighbors)
         {
-            var neighbor = GetCell(structure.Location + adj)?.Structure.Actor;
-            neighbor?.OnNeighborRemoved(structure);
+            neighbor.neighbors.Remove(structure);
+            neighbor.OnNeighborRemoved(structure);
         }
 
         foreach (var cellLoc in structure.Prototype.Footprint)
@@ -197,26 +205,26 @@ internal class Grid : Actor
             var cell = GetCell(structure.Location + cellLoc.Rotated(structure.Rotation));
             if (cell != null)
             {
-                cell.Structure = ActorReference<Structure>.Null;
+                cell.Structure = null;
             }
         }
 
         // UpdatePowerLevel();
     }
 
-    public override void Serialize(BinaryWriter writer)
-    {
-        writer.Write(ID);
-        writer.Write(parent);
+    //public override void Serialize(BinaryWriter writer)
+    //{
+    //    writer.Write(ID);
+    //    writer.Write(parent);
 
-        writer.Write(cells.Count);
-        foreach (var (coordinate, cell) in cells)
-        {
-            writer.Write(coordinate);
-            writer.Write(cell.Structure);
-            //writer.Write(cell.Tile.Prototype.Name);
-        }
-    }
+    //    writer.Write(cells.Count);
+    //    foreach (var (coordinate, cell) in cells)
+    //    {
+    //        writer.Write(coordinate);
+    //        writer.Write(cell.Structure);
+    //        //writer.Write(cell.Tile.Prototype.Name);
+    //    }
+    //}
 
     public override void DebugLayout()
     {
@@ -224,26 +232,28 @@ internal class Grid : Actor
     }
 }
 
-class GridPrototype : ActorPrototype
+class GridPrototype : Prototype
 {
-    public override Actor Deserialize(BinaryReader reader)
-    {
-        ulong id = reader.ReadUInt64();
-        ActorReference<Actor> parent = reader.ReadActorReference<Actor>();
+    public override Type ActorType => typeof(Grid);
 
-        Dictionary<HexCoordinate, GridCell> cells = new();
-        int cellCount = reader.ReadInt32();
-        for (int i = 0; i < cellCount; i++)
-        {
-            HexCoordinate coordinate = reader.ReadHexCoordinate();
-            ActorReference<Structure> cell = reader.ReadActorReference<Structure>();
-            cells.Add(coordinate, new(Prototypes.Get<TilePrototype>("ground_tile")) { Structure = cell });
-        }
+    //public override Actor Deserialize(BinaryReader reader)
+    //{
+    //    ulong id = reader.ReadUInt64();
+    //    ActorReference<Actor> parent = reader.ReadActorReference<Actor>();
 
-        return new Grid(this, id, parent)
-        {
-            cells = cells,
-        };
+    //    Dictionary<HexCoordinate, GridCell> cells = new();
+    //    int cellCount = reader.ReadInt32();
+    //    for (int i = 0; i < cellCount; i++)
+    //    {
+    //        HexCoordinate coordinate = reader.ReadHexCoordinate();
+    //        ActorReference<Structure> cell = reader.ReadActorReference<Structure>();
+    //        cells.Add(coordinate, new(Prototypes.Get<TilePrototype>("ground_tile")) { Structure = cell });
+    //    }
 
-    }
+    //    return new Grid(this, id, parent)
+    //    {
+    //        cells = cells,
+    //    };
+
+    //}
 }

@@ -23,11 +23,6 @@ internal class SpriteModel : ModelPrototype, IInspectable
         base.InitializePrototype();
     }
 
-    public override PrototypeObject Deserialize(BinaryReader reader)
-    {
-        throw new NotSupportedException();
-    }
-
     public virtual void Render(ICanvas canvas, Transform transform, ColorF tint)
     {
         int sprite = (int)MathF.Round(Angle.Normalize(transform.Rotation) / MathF.Tau * SpriteCount) % SpriteCount;
@@ -49,7 +44,7 @@ internal class SpriteModel : ModelPrototype, IInspectable
         for (int i = 0; i < SpriteCount; i++)
         {
             sprites[i]?.Dispose();
-            sprites[i] = Graphics.LoadTexture($"./Assets/Sprites/{SpritesFolder}/{i}.png");
+            sprites[i] = Graphics.LoadTexture($"./Assets/Sprites/{SpritesFolder}/{i}.png", TextureOptions.Constant);
             sprites[i].Filter = TextureFilter.Point;
             Graphics.GenerateMipmaps(sprites[i]);
         }
@@ -97,7 +92,7 @@ class NormalMappedSpriteModel : SpriteModel
         for (int i = 0; i < SpriteCount; i++)
         {
             spriteNormalMaps[i]?.Dispose();
-            spriteNormalMaps[i] = Graphics.LoadTexture($"./Assets/Sprites/{SpritesFolder}/{i}_normal.png");
+            spriteNormalMaps[i] = Graphics.LoadTexture($"./Assets/Sprites/{SpritesFolder}/{i}_normal.png", TextureOptions.Constant);
             spriteNormalMaps[i].Filter = TextureFilter.Point;
             Graphics.GenerateMipmaps(spriteNormalMaps[i]);
         }

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SpaceGame.Tiles;
 
-class TilePrototype : Prototype
+class TilePrototype : DataPrototype
 {
     public bool BlocksStructures { get; set; }
     public ColorF? Color { get; set; } = null;
@@ -22,11 +22,6 @@ class TilePrototype : Prototype
     public override void InitializePrototype()
     {
         base.InitializePrototype();
-    }
-
-    public override PrototypeObject Deserialize(BinaryReader reader)
-    {
-        throw new NotSupportedException();
     }
 
     public void RenderTile(ICanvas canvas, Grid grid, GridCell cell, HexCoordinate coord)

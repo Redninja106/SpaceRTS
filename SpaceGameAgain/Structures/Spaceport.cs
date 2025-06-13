@@ -6,9 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
+[Serializable]
 internal class Spaceport : Structure
 {
-    public Spaceport(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
+    public Spaceport(StructurePrototype prototype, ulong id) : base(prototype, id)
     {
     }
 }

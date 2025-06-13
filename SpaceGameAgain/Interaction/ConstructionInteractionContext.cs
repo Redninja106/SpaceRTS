@@ -55,16 +55,15 @@ internal class ConstructionInteractionContext : IInteractionContext
                 var cell = hoveredGrid.GetCell(hoveredLocation);
                 if (cell != null && !hoveredGrid.IsStructureObstructed(prototype, hoveredLocation, rotation))
                 {
-                    var command = new ConstructionCommand(
-                        Prototypes.Get<ConstructionCommandPrototype>("construction_command"),
-                        constructionShip,
-                        hoveredGrid.AsReference(),
-                        hoveredLocation,
-                        rotation,
-                        prototype
-                        );
+                    var command = new ConstructionCommand() {
+                        ship = constructionShip,
+                        Grid = hoveredGrid,
+                        Location = hoveredLocation,
+                        Rotation = rotation,
+                        Structure = prototype
+                        };
 
-                    var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.GetCommandProcessor();
+                    var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.GetCommandProcessor();
                     commandProcessor.AddCommand(command);
 
                     World.CurrentInteractionContext = World.SelectInteractionContext;
@@ -169,7 +168,7 @@ internal class ConstructionInteractionContext : IInteractionContext
             foreach (HexCoordinate adjacent in prototype.AdjacentCells)
             {
                 HexCoordinate neighborCell = this.hoveredLocation + adjacent.Rotated(this.rotation);
-                var neighbor = hoveredGrid.GetCell(neighborCell)?.Structure.Actor;
+                var neighbor = hoveredGrid.GetCell(neighborCell)?.Structure;
                 if (neighbor != null && neighbor.Team == World.PlayerTeam)
                 {
                     canvas.PushState();

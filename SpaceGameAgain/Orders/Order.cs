@@ -10,16 +10,24 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Orders;
-internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference<Unit> unit) : Actor(prototype, id, Transform.Default)
-{
-    public ActorReference<Unit> Unit { get; } = unit;
 
+[Serializable(Abstract = true)]
+internal abstract class Order
+{
+    [field: Serialize]
+    public required Unit Unit { get; set; }
     public bool IsCompleted { get; private set; } = false;
+
+    public abstract void Tick();
+
+    public virtual void RenderOverlay(ICanvas canvas)
+    {
+    }
 
     public bool MoveTo(DoubleVector targetPosition)
     {
-        ShipPrototype prototype = (ShipPrototype)Unit.Actor!.Prototype;
-        Ship s = (Ship)Unit.Actor!;
+        ShipPrototype prototype = (ShipPrototype)Unit.Prototype;
+        Ship s = (Ship)Unit;
 
         var delta = targetPosition - s.Transform.Position;
         double dist = delta.Length();
@@ -44,7 +52,6 @@ internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference
         {
             return false;
         }
-        this.Transform.Rotation = targetAngle;
 
         float timeToTarget = (float)delta.Length() / (float)s.velocity.Length();
         float timeToStop = (float)s.velocity.Length() / prototype.FlySpeed;
@@ -114,8 +121,8 @@ internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference
 
     public bool TurnTo(float rotation)
     {
-        ShipPrototype prototype = (ShipPrototype)Unit.Actor!.Prototype;
-        Ship s = (Ship)Unit.Actor!;
+        ShipPrototype prototype = (ShipPrototype)Unit.Prototype;
+        Ship s = (Ship)Unit!;
 
         float delta = Angle.SignedDistance(rotation, s.Transform.Rotation);
 
@@ -145,9 +152,9 @@ internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference
 
     public bool MoveToOld(DoubleVector targetPosition, float? targetRotation = null)
     {
-        ShipPrototype prototype = (ShipPrototype)Unit.Actor!.Prototype;
+        ShipPrototype prototype = (ShipPrototype)Unit.Prototype;
 
-        ref Transform transform = ref Unit.Actor!.Transform;
+        ref Transform transform = ref Unit.Transform;
 
         var delta = targetPosition - transform.Position;
 
@@ -180,10 +187,10 @@ internal abstract class Order(OrderPrototype prototype, ulong id, ActorReference
         IsCompleted = true;
     }
 
-    public override void Serialize(BinaryWriter writer)
-    {
-        writer.Write(ID);
-        writer.Write(Unit);
-    }
+    //public override void Serialize(BinaryWriter writer)
+    //{
+    //    writer.Write(ID);
+    //    writer.Write(Unit);
+    //}
 
 }

@@ -8,51 +8,50 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Orders;
+
+[Serializable]
 internal class MoveOrder : Order
 {
-    public MoveOrder(MoveOrderPrototype prototype, ulong id, ActorReference<Unit> unit, DoubleVector target) : base(prototype, id, unit)
-    {
-        Teleport(Transform.Default with { Position = target });
-    }
+    [Serialize]
+    public required DoubleVector target;
 
     public override void Tick()
     {
-        base.Tick();
-        var soi = World.GetSphereOfInfluence(Transform.Position);
+        var soi = World.GetSphereOfInfluence(target);
         if (soi != null)
         {
-            Transform.Position = soi.ApplyTickTo(Transform.Position);
+            target = soi.ApplyTickTo(target);
         }
-        if (MoveTo(Transform.Position))
+        if (MoveTo(target))
         {
             Complete();
         }
     }
 
-    public override void Update(float tickProgress)
-    {
-        base.Update(tickProgress);
-    }
+    //public override void Update(float tickProgress)
+    //{
+    //    base.Update(tickProgress);
+    //}
 
-    public override void Render(ICanvas canvas)
+    public override void RenderOverlay(ICanvas canvas)
     {
         canvas.PushState();
         canvas.ResetState();
 
         Transform t = Transform.Default with
         {
-            Position = this.InterpolatedTransform.Position,
+            Position = target,
         };
         t.ApplyTo(canvas, World.Camera);
 
         canvas.Stroke(Color.White with { A = 200 });
-        canvas.DrawLine(Vector2.Zero, (Unit.Actor!.InterpolatedTransform.Position - t.Position).ToVector2());
+        canvas.DrawLine(Vector2.Zero, (Unit.InterpolatedTransform.Position - t.Position).ToVector2());
         canvas.PopState();
     }
 
-    public override void Serialize(BinaryWriter writer)
-    {
-        base.Serialize(writer);
-        writer.Write(this.Transform.Position);
-    }
+    //public override void Serialize(BinaryWriter writer)
+    //{
+    //    base.Serialize(writer);
+    //    writer.Write(this.Transform.Position);
+    //}
 }

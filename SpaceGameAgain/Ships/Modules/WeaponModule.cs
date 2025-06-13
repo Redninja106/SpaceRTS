@@ -1,4 +1,4 @@
-﻿using SpaceGame.Combat;
+﻿ using SpaceGame.Combat;
 using SpaceGame.GUI;
 using SpaceGame.Rendering;
 using System;
@@ -10,13 +10,23 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships.Modules;
 internal class WeaponModule : Module
 {
-    public ActorReference<WeaponSystem> system;
+    public override WeaponModulePrototype Prototype => (WeaponModulePrototype)base.Prototype;
+
+    public required WeaponSystem system;
 
     public override ITexture Icon => Icons.Defensive;
 
-    public WeaponModule(WeaponModulePrototype prototype, ulong id, ActorReference<Ship> ship, ActorReference<WeaponSystem> system) : base(prototype, id, ship)
+    public WeaponModule(WeaponModulePrototype prototype, ulong id) : base(prototype, id)
     {
-        this.system = system;
+    }
+
+    public override void InitializeActor()
+    {
+        base.InitializeActor();
+
+        WeaponSystem weaponSystem = Prototype.WeaponSystemPrototype.CreateActor(World.NewID());
+        weaponSystem.Unit = this.Ship;
+        World.Add(weaponSystem);
     }
 
     public override void Layout(GUIWindow window)
@@ -43,30 +53,33 @@ internal class WeaponModule : Module
         // system.Update();
     }
 
-    public override void Serialize(BinaryWriter writer)
-    {
-        writer.Write(ID);
-        writer.Write(Ship);
-    }
+    //public override void Serialize(BinaryWriter writer)
+    //{
+    //    writer.Write(ID);
+    //    writer.Write(system);
+    //}
 }
 
 class WeaponModulePrototype : ModulePrototype
 {
+    public override Type ActorType => typeof(WeaponModule);
+
     public WeaponSystemPrototype WeaponSystemPrototype { get; set; }
 
-    public override Actor Deserialize(BinaryReader reader)
-    {
-        ulong id = reader.ReadUInt64();
-        ActorReference<Ship> ship = reader.ReadActorReference<Ship>();
-        ActorReference<WeaponSystem> weapon = reader.ReadActorReference<WeaponSystem>();
+    //public override Actor Deserialize(BinaryReader reader)
+    //{
+    //    ulong id = reader.ReadUInt64();
+    //    ActorReference<Ship> ship = reader.ReadActorReference<Ship>();
+    //    WeaponSystem> weapon = reader.ReadActorReference<WeaponSystem>();
 
-        return new WeaponModule(this, id, ship, weapon);
-    }
+    //    return new WeaponModule(this, id, ship, weapon);
+    //}
 
-    public override Module CreateModule(ulong id, ActorReference<Ship> ship)
-    {
-        WeaponSystem weaponSystem = WeaponSystemPrototype.CreateWeapon(World.NewID(), ship.Cast<Unit>());
-        World.Add(weaponSystem);
-        return new WeaponModule(this, id, ship, weaponSystem.AsReference());
-    }
+    //public override Module CreateModule(ulong id, Ship ship)
+    //{
+    //    WeaponSystem weaponSystem = WeaponSystemPrototype.CreateActor(World.NewID());
+    //    weaponSystem.Unit = ship;
+    //    World.Add(weaponSystem);
+    //    return new WeaponModule(this, id, ship, weaponSystem);
+    //}
 }

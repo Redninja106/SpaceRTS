@@ -58,14 +58,14 @@ namespace SpaceGame.Interaction;
 //                }
 //            }
 
-//            //if (target != null && World.PlayerTeam.Actor!.GetRelation(target.Team.Actor!) == Teams.TeamRelation.Enemies)
+//            //if (target != null && World.PlayerTeam.GetRelation(target.Team) == Teams.TeamRelation.Enemies)
 //            //{
 //            //    elements.Add(new TextButton("attack", () =>
 //            //    {
 //            //        World.ContextMenu.Hide();
 //            //        foreach (var unit in World.SelectionHandler.GetSelectedUnits())
 //            //        {
-//            //            PlayerCommandProcessor commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+//            //            PlayerCommandProcessor commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.CommandProcessor;
 //            //            commandProcessor.AddCommand(new AttackCommand(Prototypes.Get<AttackCommandPrototype>("attack_command"), unit.AsReference(), target.AsReference()));
 //            //        }
 //            //    }, true));
@@ -77,7 +77,7 @@ namespace SpaceGame.Interaction;
 //            //    World.ContextMenu.Hide();
 //            //    foreach (var unit in World.SelectionHandler.GetSelectedUnits())
 //            //    {
-//            //        PlayerCommandProcessor commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+//            //        PlayerCommandProcessor commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.CommandProcessor;
 //            //        commandProcessor.AddCommand(new MoveCommand(Prototypes.Get<MoveCommandPrototype>("move_command"), (Ship)unit, mousePos));
 //            //    }
 //            //}, true));

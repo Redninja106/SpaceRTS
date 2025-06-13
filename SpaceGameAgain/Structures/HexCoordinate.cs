@@ -1,4 +1,5 @@
 ﻿using SimulationFramework.Drawing.Shaders;
+using SpaceGame.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,11 +11,12 @@ using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
 
+[Serializable]
 struct HexCoordinate : IEquatable<HexCoordinate>
 {
-    public int Q;
-    public int R;
-    public int S;
+    [Serialize] public int Q;
+    [Serialize] public int R;
+    [Serialize] public int S;
 
     public static readonly HexCoordinate UnitQ = new(1, 0);
     public static readonly HexCoordinate UnitR = new(0, 1);

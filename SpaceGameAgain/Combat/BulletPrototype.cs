@@ -7,17 +7,20 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal class BulletPrototype() : ActorPrototype()
+internal class BulletPrototype : Prototype
 {
+    public override Type ActorType => typeof(Bullet);
+
     public float Speed { get; set; }
+    public int Lifetime { get; set; } = 100;
 
-    public override Actor Deserialize(BinaryReader reader)
-    {
-        ulong id = reader.ReadUInt64();
-        Transform transform = reader.ReadTransform();
-        ActorReference<Missile> target = reader.ReadActorReference<Missile>();
-        float lifetime = reader.ReadSingle();
+    //public override Actor Deserialize(BinaryReader reader)
+    //{
+    //    ulong id = reader.ReadUInt64();
+    //    Transform transform = reader.ReadTransform();
+    //    ActorReference<Missile> target = reader.ReadActorReference<Missile>();
+    //    float lifetime = reader.ReadSingle();
 
-        return new Bullet(this, id, transform, target, lifetime);
-    }
+    //    return new Bullet(this, id, transform, target, lifetime);
+    //}
 }

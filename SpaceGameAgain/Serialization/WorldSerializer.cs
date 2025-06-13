@@ -12,84 +12,86 @@ internal class WorldSerializer
 {
     public void Deserialize(BinaryReader reader)
     {
-        World = new();
+        World = new GameWorld();
+        // fieldSerializer.Deserialize(reader, world);
+
         World.NextID = reader.ReadUInt64();
-        World.PlayerTeam = reader.ReadActorReference<Team>();
+        ulong playerTeamId = reader.ReadUInt64();
         World.TurnProcessor.startingTurn = World.TurnProcessor.turn = reader.ReadUInt64();
         World.TurnProcessor.RemainingTicks = reader.ReadInt32();
         World.tick = reader.ReadUInt64();
 
         int prototypeCount = reader.ReadInt32();
+        ActorDeserializationList[] actorLists = new ActorDeserializationList[prototypeCount];
+        for (int i = 0; i < prototypeCount; i++)
+        {
+            actorLists[i] = new ActorDeserializationList(reader, World);
+        }
 
         for (int i = 0; i < prototypeCount; i++)
         {
-            string prototypeName = reader.ReadString();
-            int actorCount = reader.ReadInt32();
-
-            ActorPrototype prototype = Prototypes.Get<ActorPrototype>(prototypeName);
-
-            for (int j = 0; j < actorCount; j++)
-            {
-                World.Add(prototype.Deserialize(reader));
-
-                if (reader.ReadInt32() != 0)
-                {
-                    throw new("invalid save!");
-                }
-            }
-
-            if (reader.ReadInt32() != 0)
-            {
-                throw new("invalid save!");
-            }
+            actorLists[i].Deserialize(reader);
         }
 
-        foreach (var (id, actor) in World.Actors)
+
+        for (int i = 0; i < prototypeCount; i++)
         {
-            actor.FinalizeDeserialization();
+            actorLists[i].FinishDeserialization();
         }
 
-        // foreach (var team in World.Teams)
-        // {
-        //     team.CommandProcessor = new PlayerCommandProcessor();
-        // }
+        World.PlayerTeam = (Team)World.Actors[playerTeamId];
     }
 
     public void Serialize(GameWorld world, BinaryWriter writer)
     {
-        ActorPrototype[] prototypes = Prototypes.RegisteredPrototypes.OfType<ActorPrototype>().ToArray();
+        // fieldSerializer.Serialize(writer, world);
 
         writer.Write(world.NextID);
-        writer.Write(world.PlayerTeam);
+        writer.Write(world.PlayerTeam.ID);
         writer.Write(world.TurnProcessor.turn);
         writer.Write(world.TurnProcessor.RemainingTicks);
         writer.Write(world.tick);
 
+        Prototype[] prototypes = Prototypes.RegisteredPrototypes.OfType<Prototype>().Where(p => World.GetActorsByPrototype(p).Any()).ToArray();
         writer.Write(prototypes.Length);
 
-        foreach (var prototype in prototypes)
+        ActorSerializationList[] serializationLists = new ActorSerializationList[prototypes.Length];
+        for (int i = 0; i < prototypes.Length; i++)
         {
-            Actor[] actors = world.GetActorsByPrototype(prototype).ToArray();
-
-            writer.Write(prototype.Name);
-            writer.Write(actors.Length);
-
-            foreach (Actor actor in actors)
-            {
-                actor.Serialize(writer);
-                writer.Write(0);
-            }
-
-            writer.Write(0);
+            serializationLists[i] = new(prototypes[i], World.GetActorsByPrototype(prototypes[i]).ToArray());
         }
+
+        for (int i = 0; i < serializationLists.Length; i++)
+        {
+            serializationLists[i].SerializeIDs(writer);
+        }
+
+        for (int i = 0; i < serializationLists.Length; i++)
+        {
+            serializationLists[i].SerializeFields(writer);
+        }
+
+        //foreach (var prototype in prototypes)
+        //{
+        //    Actor[] actors = world.GetActorsByPrototype(prototype).ToArray();
+        //    ActorSerializer serializer = new ActorSerializer(prototype);
+
+        //    writer.Write(prototype.Name);
+        //    writer.Write(actors.Length);
+
+        //    foreach (Actor actor in actors)
+        //    {
+        //        serializer.Serialize(writer, actor);
+        //        // actor.Serialize(writer);
+        //        writer.Write(0);
+        //    }
+
+        //    writer.Write(0);
+        //}
+
+
+        //writer.Write(prototypes.Length);
+
     }
-}
 
-class ActorSerializer
-{
-}
-
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
-class SerializeAttribute : Attribute
-{
 }

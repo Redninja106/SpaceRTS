@@ -11,24 +11,24 @@ using SpaceGame.Economy;
 using SimulationFramework.Drawing.Shaders;
 using SpaceGame.Debugging;
 using SpaceGame.Rendering;
+using SpaceGame.Serialization;
 
 namespace SpaceGame;
+
 internal class GameWorld
 {
     public static GameWorld World { get; set; }
 
-    public ulong NextID { get; set; } = 1;
-
     public Dictionary<ulong, Actor> Actors = [];
 
-    public WorldActorList<Ship> Ships { get; } = [];
-    public WorldActorList<Planet> Planets { get; } = [];
-    public WorldActorList<Team> Teams { get; } = [];
-    public WorldActorList<Missile> Missiles { get; } = [];
-    public WorldActorList<Bullet> Bullets { get; } = [];
-    public WorldActorList<Structure> Structures { get; } = [];
-    public WorldActorList<Grid> Grids { get; } = [];
-    public WorldActorList<WeaponSystem> WeaponSystems { get; } = [];
+    public ActorList<Ship> Ships { get; } = [];
+    public ActorList<Planet> Planets { get; } = [];
+    public ActorList<Team> Teams { get; } = [];
+    public ActorList<Missile> Missiles { get; } = [];
+    public ActorList<Bullet> Bullets { get; } = [];
+    public ActorList<Structure> Structures { get; } = [];
+    public ActorList<Grid> Grids { get; } = [];
+    public ActorList<WeaponSystem> WeaponSystems { get; } = [];
     
     //public List<Station> Stations { get; } = [];
     // public List<Asteroid> Asteroids { get; } = [];
@@ -40,10 +40,13 @@ internal class GameWorld
     // GLOBALS
     public Camera Camera { get; set; } = new FreeCamera();
 
-    public ActorReference<Team> PlayerTeam;
 
     // public Sidebar LeftSidebar;
     // public Sidebar RightSidebar;
+
+    public Team PlayerTeam;
+    
+    public ulong NextID { get; set; } = 1;
 
     public DoubleVector MousePosition;
 
@@ -122,7 +125,6 @@ internal class GameWorld
         var soi = World.GetSphereOfInfluence(Camera.Transform.Position);
         soi?.ApplyUpdateTo(ref Camera.Transform);
         soi?.ApplyUpdateTo(ref Camera.SmoothTransform);
-
 
         leftMouse.Update();
         rightMouse.Update();
@@ -212,7 +214,7 @@ internal class GameWorld
         DebugOverlays.Tick();
 
         // MapWindow.Stack.Clear();
-        // foreach (var (name, count) in PlayerTeam.Actor!.Resources)
+        // foreach (var (name, count) in PlayerTeam.Resources)
         // {
         //     MapWindow.Stack.Add(new Label($"{name}: {count}"));
         // }
@@ -221,8 +223,6 @@ internal class GameWorld
 
         DebugMenu.PopMetric();
     }
-
-    NoiseShader ns = new();
 
     public void Render(ICanvas canvas)
     {
@@ -426,7 +426,7 @@ internal class GameWorld
         return smallest;
     }
 
-    public IEnumerable<Actor> GetActorsByPrototype(ActorPrototype prototype)
+    public IEnumerable<Actor> GetActorsByPrototype(Prototype prototype)
     {
         foreach (var a in Actors.Values)
         {
@@ -437,7 +437,7 @@ internal class GameWorld
         }
     }
 
-    public void Add(Actor actor)
+    public void Add(Actor actor, bool skipInit = false)
     {
         Actors.Add(actor.ID, actor);
 
@@ -449,6 +449,11 @@ internal class GameWorld
         Missiles.AddIfApplicable(actor);
         Grids.AddIfApplicable(actor);
         WeaponSystems.AddIfApplicable(actor);
+
+        if (!skipInit)
+        {
+            actor.InitializeActor();
+        }
     }
 
     /// <summary>

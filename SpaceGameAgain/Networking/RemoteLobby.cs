@@ -1,5 +1,6 @@
 ﻿using SpaceGame.Commands;
 using SpaceGame.Debugging;
+using SpaceGame.Networking.Packets;
 using SpaceGame.Serialization;
 using System.Diagnostics.CodeAnalysis;
 
@@ -17,7 +18,7 @@ class RemoteLobby : Lobby
     {
         this.client = client;
 
-        client.SendPacket(new HelloPacket(Prototypes.Get<HelloPacketPrototype>("hello_packet"), "jerry"));
+        client.SendPacket(new HelloPacket() {  ClientName = "jerry" });
     }
 
     public override void Update()
@@ -55,7 +56,8 @@ class RemoteLobby : Lobby
                 using var ms = new MemoryStream(combinedData.ToArray());
                 using var reader = new BinaryReader(ms);
                 serializer.Deserialize(reader);
-                World.PlayerTeam = currentDownload!.teamToPlayAs;
+
+                World.PlayerTeam = (Teams.Team)World.Actors[currentDownload!.teamIDToPlayAs];
                 //foreach (var team in World.Teams)
                 //{
                 //    if (team == currentDownload.teamToPlayAs.Actor)
@@ -73,7 +75,7 @@ class RemoteLobby : Lobby
 
                 DebugLog.Message("downloaded world!");
 
-                client.SendPacket(new WorldDownloadCompletePacket(Prototypes.Get<WorldDownloadCompletePacketPrototype>("world_download_complete_packet")));
+                client.SendPacket(new WorldDownloadCompletePacket());
             }
         }
 
@@ -81,7 +83,7 @@ class RemoteLobby : Lobby
         {
             DebugLog.Message($"got a request for turn {turnRequest.turn}");
 
-            var cmdProc = (PlayerCommandProcessor)World.PlayerTeam.Actor!.GetCommandProcessor();
+            var cmdProc = (PlayerCommandProcessor)World.PlayerTeam.GetCommandProcessor();
             for (ulong t = World.TurnProcessor.turn; t < turnRequest.turn; t++)
             {
                 var turnHistory = turnRequest.history.GetTurn(t);
@@ -107,7 +109,7 @@ class RemoteLobby : Lobby
             //if (World.TurnProcessor.turn >= turnRequest.turn - TurnProcessor.TurnDelay)
             //{
             //    //var turnDict = World.TurnProcessor.history.GetTurn(turnRequest.turn);
-            //    //var commands = turnDict[World.PlayerTeam.Actor!];
+            //    //var commands = turnDict[World.PlayerTeam];
 
             //}
         }

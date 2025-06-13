@@ -9,10 +9,15 @@
     [ 1, 0 ],
     [ 0, 1 ]
   ],
-  "weapon_system_prototype": "missile_system",
+  "weapon_systems": [
+    {
+      "offset": [ 0, 0 ],
+      "prototype": "missile_system"
+    }
+  ],
   "model": "missile_turret_base_model",
   "turret_model": "missile_turret_model",
   "cost": 25,
   "category": "Defense",
-  "reveal_radius": 12,
+  "reveal_radius": 12
 }

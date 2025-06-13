@@ -4,17 +4,22 @@ using SpaceGame.Teams;
 
 namespace SpaceGame;
 
-abstract class UnitPrototype : ActorPrototype
+abstract class UnitPrototype : Prototype
 {
     public int MaxHealth { get; set; } = 1;
     public string Title { get; set; } = "";
     public double CollisionRadius { get; set; } = .5f;
     public double RevealRadius { get; set; } = 1;
 
-    public void DeserializeArgs(BinaryReader reader, out ulong id, out Transform transform, out ActorReference<Team> team, out int health)
-    {
-        base.DeserializeArgs(reader, out id, out transform);
-        team = reader.ReadActorReference<Team>();
-        health = reader.ReadInt32();
-    }
+    public int Armor { get; set; } = 0;
+    public float ArmorEffectiveness { get; set; } = .5f;
+
+    public DefenseInfo BaseDefenseInfo { get; set; } = DefenseInfo.Default;
+
+    // public void DeserializeArgs(BinaryReader reader, out ulong id, out Transform transform, out ActorReference<Team> team, out int health)
+    // {
+    //     // base.DeserializeArgs(reader, out id, out transform);
+    //     team = reader.ReadActorReference<Team>();
+    //     health = reader.ReadInt32();
+    // }
 }

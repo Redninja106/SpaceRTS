@@ -81,7 +81,7 @@ internal static class UnitBar
     //        {
     //            foreach (var m in s.modules)
     //            {
-    //                windows.Add(new(m.Actor!));
+    //                windows.Add(new(m));
     //            }
     //        }
     //        else
@@ -148,7 +148,7 @@ internal static class UnitBar
         //                Image(Icons.Construction);
         //            }
 
-        //            if (s.modules.Select(ar => ar.Actor!).OfType<ConstructionModule>().Any())
+        //            if (s.modules.Select(ar => ar).OfType<ConstructionModule>().Any())
         //            {
         //                if (LastItemHovered())
         //                {
@@ -191,9 +191,8 @@ internal static class UnitBar
             
             if (window.TextButton("Create Fleet", 12))
             {
-                PlayerCommandProcessor playerCommandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor.GetCommandProcessor();
-                ActorReference<Ship>[] ships = units.OfType<Ship>().Select(u => u.AsReference()).ToArray();
-                playerCommandProcessor.AddCommand(new CreateFleetCommand(Prototypes.Get<CreateFleetCommandPrototype>("create_fleet_command"), "fleet", World.PlayerTeam, ships));
+                PlayerCommandProcessor playerCommandProcessor = (PlayerCommandProcessor)World.PlayerTeam.GetCommandProcessor();
+                playerCommandProcessor.AddCommand(new CreateFleetCommand("fleet", World.PlayerTeam, units.OfType<Ship>().ToArray()));
             }
         }
 
@@ -249,12 +248,12 @@ internal static class UnitBar
                         //window.Cursor += new Vector2(0, 4);
                         foreach (var module in s.modules)
                         {
-                            window.Image(module.Actor!.Icon, new(24, 24));
+                            window.Image(module.Icon, new(24, 24));
                             if (window.LastItemHovered())
                             {
                                 World.GUIViewport.SetTooltip(w =>
                                 {
-                                    w.Text(module.Actor.Prototype.Name);
+                                    w.Text(module.Prototype.Name);
                                 });
                             }
                         }
@@ -273,9 +272,9 @@ internal static class UnitBar
                     status = "unpowered";
                 }
 
-                if (unit.Team.Actor != World.PlayerTeam.Actor)
+                if (unit.Team != World.PlayerTeam)
                 {
-                    window.Text(unit.Team.Actor!.Name, color: Color.Gray);
+                    window.Text(unit.Team.Name, color: Color.Gray);
                 }
                 else
                 {

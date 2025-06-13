@@ -11,11 +11,12 @@ using ImGuiNET;
 
 namespace SpaceGame;
 
+[Serializable]
 public struct Transform
 {
-    public DoubleVector Position = DoubleVector.Zero;
-    public float Rotation = 0;
-    public Vector2 Scale = Vector2.One;
+    [Serialize] public DoubleVector Position = DoubleVector.Zero;
+    [Serialize] public float Rotation = 0;
+    [Serialize] public Vector2 Scale = Vector2.One;
 
     public DoubleVector Forward => DoubleVector.FromVector2(Angle.ToVector(Rotation));
     

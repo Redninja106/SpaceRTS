@@ -9,9 +9,11 @@ using System.Threading.Tasks;
 namespace SpaceGame.Teams;
 internal class PlayerTeamPrototype : TeamPrototype
 {
+    public override Type ActorType => typeof(Team);
+
     public override ICommandProcessor CreateCommandProcessor(Team team)
     {
-        if (team == World.PlayerTeam.Actor)
+        if (team == World.PlayerTeam)
         {
             return new PlayerCommandProcessor();
         }

@@ -8,52 +8,61 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Commands;
+
+[Serializable]
 internal class ConstructionCommand : Command
 {
-    public Ship ship;
-    public ActorReference<Grid> Grid;
-    public HexCoordinate Location;
-    public int Rotation;
-    public StructurePrototype Structure;
+    [Serialize] public required Ship ship;
+    [Serialize] public required Grid Grid;
+    [Serialize] public required HexCoordinate Location;
+    [Serialize] public required int Rotation;
+    [Serialize] public required StructurePrototype Structure;
 
-    public ConstructionCommand(CommandPrototype prototype, Ship ship, ActorReference<Grid> grid, HexCoordinate location, int rotation, StructurePrototype structure) : base(prototype)
-    {
-        this.ship = ship;
-        Grid = grid;
-        Location = location;
-        Rotation = rotation;
-        Structure = structure;
-    }
+    //public ConstructionCommand(Ship ship, Grid grid, HexCoordinate location, int rotation, StructurePrototype structure)
+    //{
+    //    this.ship = ship;
+    //    Grid = grid;
+    //    Location = location;
+    //    Rotation = rotation;
+    //    Structure = structure;
+    //}
 
     public override void Apply()
     {
-        var order = new ConstructionOrder(Prototypes.Get<ConstructionOrderPrototype>("construction_order"), World.NewID(), ship.AsReference().Cast<Unit>(), Grid, Structure, Location, Rotation);
-        ship.orders.Enqueue(order.AsReference().Cast<Order>());
+        var order = new ConstructionOrder()
+        {
+            Unit = ship,
+            Grid = Grid,
+            Structure = Structure,
+            Location = Location, 
+            Rotation = Rotation
+        };
+        ship.orders.Enqueue(order);
     }
 
-    public override void Serialize(BinaryWriter writer)
-    {
-        writer.Write(ship.AsReference());
-        writer.Write(Grid);
+    //public override void Serialize(BinaryWriter writer)
+    //{
+    //    writer.Write(ship.AsReference());
+    //    writer.Write(Grid);
 
-        writer.Write(Location);
-        writer.Write(Rotation);
-        writer.Write(Structure.Name);
-    }
+    //    writer.Write(Location);
+    //    writer.Write(Rotation);
+    //    writer.Write(Structure.Name);
+    //}
 }
 
-class ConstructionCommandPrototype : CommandPrototype
-{
-    public override ConstructionCommand Deserialize(BinaryReader reader)
-    {
-        var ship = reader.ReadActorReference<Ship>();
-        var grid = reader.ReadActorReference<Grid>();
+//class ConstructionCommandPrototype : CommandPrototype
+//{
+//    public override ConstructionCommand Deserialize(BinaryReader reader)
+//    {
+//        var ship = reader.ReadActorReference<Ship>();
+//        var grid = reader.ReadActorReference<Grid>();
 
-        var location = reader.ReadHexCoordinate();
-        var rotation = reader.ReadInt32();
-        var structure = Prototypes.Get<StructurePrototype>(reader.ReadString());
+//        var location = reader.ReadHexCoordinate();
+//        var rotation = reader.ReadInt32();
+//        var structure = Prototypes.Get<StructurePrototype>(reader.ReadString());
 
-        return new ConstructionCommand(this, ship.Actor!, grid, location, rotation, structure);
-    }
+//        return new ConstructionCommand(this, ship, grid, location, rotation, structure);
+//    }
 
-}
+//}

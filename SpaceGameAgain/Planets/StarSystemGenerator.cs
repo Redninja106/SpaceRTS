@@ -26,10 +26,10 @@ internal class StarSystemGenerator
 
     public void GenerateSystem()
     {
-        var star = new Planet(Prototypes.Get<PlanetPrototype>("star"), World.NewID(), Transform.Default, null)
+        var star = new Planet(Prototypes.Get<PlanetPrototype>("star"), World.NewID())
         {
             Radius = random.NextSingle(75, 125),
-            Color = Color.Yellow,
+            orbit = null
         };
         World.Add(star);
 
@@ -43,22 +43,18 @@ internal class StarSystemGenerator
 
             var planet = new Planet(
                 random.GetItems(planetPrototypes, 1)[0],
-                World.NewID(),
-                Transform.Default,
-                new Orbit(
-                    star.AsReference<Actor>(),
-                    orbitDistance,
-                    random.NextSingle(0, MathF.PI * orbitDistance)
-                )
+                World.NewID()
             )
             { 
+                orbit = new Orbit(
+                    star,
+                    orbitDistance,
+                    random.NextSingle(0, MathF.PI * orbitDistance)
+                ),
                 Radius = planetRadius,
-                Color = Color.FromHSV(random.NextSingle(), random.NextSingle(), random.NextSingle() * .75f + .25f)
+                // Color = Color.FromHSV(random.NextSingle(), random.NextSingle(), random.NextSingle() * .75f + .25f)
             };
 
-            planet.SphereOfInfluence.Radius = planetRadius * 5;
-
-            Grid.FillRadius(planet.Grid, planetRadius);
             //if (random.NextSingle() < 1)
             //{
             //    var cell = planet.Grid.GetCell(new(
@@ -71,6 +67,9 @@ internal class StarSystemGenerator
             //    }
             //}
             World.Add(planet);
+
+            planet.SphereOfInfluence.Radius = planetRadius * 5;
+            Grid.FillRadius(planet.Grid, planetRadius);
 
             orbitDistance += planetRadius * 10;
         }

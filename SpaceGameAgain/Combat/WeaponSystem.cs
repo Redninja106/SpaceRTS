@@ -13,15 +13,14 @@ internal abstract class WeaponSystem : Actor, IDestructable
     [DebugOverlay]
     public static bool ShowWeaponRotation;
 
-    public ActorReference<Unit> unit;
+    public required Unit Unit;
     public Vector2 Offset { get; set; }
 
-    protected WeaponSystem(WeaponSystemPrototype prototype, ulong id, ActorReference<Unit> unit) : base(prototype, id, Transform.Default)
+    protected WeaponSystem(WeaponSystemPrototype prototype, ulong id) : base(prototype, id)
     {
-        this.unit = unit;
     }
 
-    public bool IsDestroyed => ((IDestructable)unit.Actor!).IsDestroyed;
+    public bool IsDestroyed => ((IDestructable)Unit).IsDestroyed;
 
     public override void Render(ICanvas canvas)
     {
@@ -36,7 +35,7 @@ internal abstract class WeaponSystem : Actor, IDestructable
     {
         base.Tick();
 
-        this.Transform.Position = unit.Actor.Transform.Position + DoubleVector.FromVector2(Offset.Rotated(unit.Actor.Transform.Rotation));
+        this.Transform.Position = Unit.Transform.Position + DoubleVector.FromVector2(Offset.Rotated(Unit.Transform.Rotation));
 
         if (ShowWeaponRotation)
         {

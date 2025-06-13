@@ -574,7 +574,7 @@ class ChunkedSpatialHash<T>
         int chunkX = binX >> Chunk.SizeBits;
         int chunkY = binY >> Chunk.SizeBits;
 
-        return (uint)chunkX < this.Width && (uint)chunkY < this.Height;
+        return (uint)chunkX < this.chunkWidth && (uint)chunkY < this.chunkHeight;
     }
 
     private ref Chunk? GetChunkRef(int binX, int binY)

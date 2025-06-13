@@ -141,6 +141,14 @@ internal static class DebugMenu
             editorTeam = teams[teamIdx];
         }
 
+        if (ImGui.Button("delete selected units"))
+        {
+            foreach (var unit in World.SelectionHandler.GetSelectedUnits())
+            {
+                unit.Health = 0;
+            }
+        }
+
         {
             ImGui.SeparatorText("Place Ship (F2)");
             ShipPrototype[] shipPrototypes = Prototypes.GetAll<ShipPrototype>();
@@ -186,11 +194,14 @@ internal static class DebugMenu
 
             if (editorShipPrototype != null && Keyboard.IsKeyPressed(Key.F2))
             {
-                var ship = new Ship(editorShipPrototype, World.NewID(), new Transform() { Position = World.MousePosition }, editorTeam.AsReference());
+                var ship = new Ship(editorShipPrototype, World.NewID()) { Team = editorTeam };
+                ship.Teleport(new Transform() { Position = World.MousePosition });
                 foreach (var modulePrototype in editorModules)
                 {
-                    var module = modulePrototype.CreateModule(World.NewID(), ship.AsReference());
-                    ship.modules.Add(module.AsReference());
+                    var module = modulePrototype.CreateActor(World.NewID());
+                    module.Ship = ship;
+                    ship.modules.Add(module);
+                    World.Add(module);
                 }
                 World.Add(ship);
             }

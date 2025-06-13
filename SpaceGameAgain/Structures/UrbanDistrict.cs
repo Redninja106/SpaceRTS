@@ -7,17 +7,17 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
+
+[Serializable]
 internal class UrbanDistrict : Structure
 {
     public override UrbanDistrictPrototype Prototype => (UrbanDistrictPrototype)base.Prototype;
 
     int nearbyTradeHubs = 0;
+    [Serialize]
     int payoutCooldown;
 
-    float widgetHeight = 0;
-    string widgetText = "";
-
-    public UrbanDistrict(UrbanDistrictPrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
+    public UrbanDistrict(UrbanDistrictPrototype prototype, ulong id) : base(prototype, id)
     {
         this.payoutCooldown = prototype.PayoutInterval;
     }
@@ -35,10 +35,10 @@ internal class UrbanDistrict : Structure
                 payout *= 2;
             }
 
-            this.Team.Actor!.Money += payout;
+            this.Team.Money += payout;
             payoutCooldown = Prototype.PayoutInterval;
 
-            World.TextWidgets.AddEventWidget(new TextWidget(this.Transform, $"${payout}k"));
+            World.TextWidgets.AddEventWidget(new TextWidget(this.Transform with { Rotation = 0 }, $"${payout}k"));
         }
 
         base.Tick();

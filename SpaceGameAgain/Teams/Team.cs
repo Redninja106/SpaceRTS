@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using SpaceGame.Commands;
 using SpaceGame.Economy;
+using SpaceGame.Serialization;
 using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Teams;
+
+[Serializable]
 internal class Team : Actor
 {
     public override TeamPrototype Prototype => (TeamPrototype)base.Prototype;
@@ -18,18 +21,20 @@ internal class Team : Actor
     public static readonly Color NeutralColor = Color.LightGray;
     public static readonly Color EnemyColor = Color.Red;
 
-    private Dictionary<ActorReference<Team>, TeamRelation> relationships = [];
+    private Dictionary<Team, TeamRelation> relationships = [];
     internal Dictionary<ResourcePrototype, ResourceValues> resources = [];
 
+    [field: Serialize]
     public string Name { get; set; }
+    [field: Serialize]
     public int Money { get; set; }
 
     private ICommandProcessor CommandProcessor;
 
-    public Team(TeamPrototype prototype, ulong id, Transform transform, Dictionary<ActorReference<Team>, TeamRelation>? relationships = null, int money = 0, string? name = null) : base(prototype, id, transform)
+    public Team(TeamPrototype prototype, ulong id) : base(prototype, id)
     {
-        this.Money = money;
-        this.Name = name ?? "Player " + ID;
+        // this.Money = money;
+        this.Name = "Player " + ID;
 
         if (relationships != null)
         {
@@ -39,7 +44,7 @@ internal class Team : Actor
         {
             this.relationships = new()
             {
-                [this.AsReference()] = TeamRelation.Self,
+                [this] = TeamRelation.Self,
             };
         }
 
@@ -66,8 +71,8 @@ internal class Team : Actor
 
     public void MakeEnemies(Team other)
     {
-        this.relationships.Add(other.AsReference(), TeamRelation.Enemies);
-        other.relationships.Add(this.AsReference(), TeamRelation.Enemies);
+        // this.relationships.Add(other.AsReference(), TeamRelation.Enemies);
+        // other.relationships.Add(this.AsReference(), TeamRelation.Enemies);
     }
 
     public TeamRelation GetRelation(Team other)
@@ -79,7 +84,7 @@ internal class Team : Actor
 
         return TeamRelation.Enemies;
 
-        return relationships.TryGetValue(other.AsReference(), out var result) ? result : TeamRelation.Neutral;
+        // return relationships.TryGetValue(other.AsReference(), out var result) ? result : TeamRelation.Neutral;
     }
 
     public Color GetRelationColor(Team team)
@@ -105,18 +110,18 @@ internal class Team : Actor
         }
     }
 
-    public override void Serialize(BinaryWriter writer)
-    {
-        writer.Write(ID);
+    //public override void Serialize(BinaryWriter writer)
+    //{
+    //    writer.Write(ID);
 
-        writer.Write(Money);
-        writer.Write(relationships.Count);
-        foreach (var (team, relation) in relationships)
-        {
-            writer.Write(team);
-            writer.Write((int)relation);
-        }
-    }
+    //    writer.Write(Money);
+    //    writer.Write(relationships.Count);
+    //    foreach (var (team, relation) in relationships)
+    //    {
+    //        writer.Write(team);
+    //        writer.Write((int)relation);
+    //    }
+    //}
 
     public ResourceValues GetResource(ResourcePrototype resource)
     {

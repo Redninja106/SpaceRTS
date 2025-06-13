@@ -6,15 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Ships.Modules;
-internal abstract class Module : Actor, IGUIProvider
-{
-    public ActorReference<Ship> Ship { get; }
-    public abstract ITexture Icon { get; }
 
-    public Module(ModulePrototype prototype, ulong id, ActorReference<Ship> ship) : base(prototype, id, Transform.Default)
-    {
-        this.Ship = ship;
-    }
+[Serializable]
+internal abstract class Module(ModulePrototype prototype, ulong id) : Actor(prototype, id), IGUIProvider
+{
+    [field: Serialize]
+    public required Ship Ship { get; set; }
+    public abstract ITexture Icon { get; }
 
     //public abstract Element[] BuildGUI();
     public abstract void RenderSelected(ICanvas canvas);
@@ -22,12 +20,7 @@ internal abstract class Module : Actor, IGUIProvider
     public abstract void Layout(GUIWindow window);
 }
 
-abstract class ModulePrototype : ActorPrototype
+abstract class ModulePrototype : Prototype
 {
-    public override Actor Deserialize(BinaryReader reader)
-    {
-        return null;
-    }
-
-    public abstract Module CreateModule(ulong id, ActorReference<Ship> ship);
+    public override Module CreateActor(ulong id) => (Module)base.CreateActor(id);
 }

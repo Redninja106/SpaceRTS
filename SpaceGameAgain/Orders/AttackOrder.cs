@@ -7,36 +7,27 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Orders;
+
+[Serializable]
 internal class AttackOrder : Order
 {
-    public ActorReference<Unit> target;
+    [Serialize]
+    public Unit target;
 
-    public AttackOrder(AttackOrderPrototype prototype, ulong id, ActorReference<Unit> unit, ActorReference<Unit> target) : base(prototype, id, unit)
-    {
-        this.target = target;
-    }
-
-    public override void Render(ICanvas canvas)
+    public override void RenderOverlay(ICanvas canvas)
     {
         canvas.Stroke(Color.Red);
         canvas.DrawRect(0, 0, 1, 1, Alignment.Center);
-        canvas.DrawLine(Unit.Actor!.Transform.Position.ToVector2(), target.Actor!.Transform.Position.ToVector2());
-
-        base.Render(canvas);
+        canvas.DrawLine(Unit.Transform.Position.ToVector2(), target.Transform.Position.ToVector2());
     }
 
 
     public override void Tick()
     {
-        if (target.Actor!.Health <= 0)
+        if (target.Health <= 0)
         {
             Complete();
         }
     }
 
-    public override void Serialize(BinaryWriter writer)
-    {
-        base.Serialize(writer);
-        writer.Write(target);
-    }
 }

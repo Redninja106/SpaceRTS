@@ -6,7 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Commands;
-internal abstract class Command(CommandPrototype prototype) : PrototypeObject(prototype)
+
+[Serializable(Abstract = true)]
+internal abstract class Command
 {
     public abstract void Apply();
 }

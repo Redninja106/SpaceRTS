@@ -16,22 +16,25 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures.Shipyards;
+
+[Serializable]
 internal class AssemblyBay : Structure
 {
     public override AssemblyBayPrototype Prototype => (AssemblyBayPrototype)base.Prototype;
 
-    // serialized
+    [Serialize]
     internal bool isBuildingShip;
+    [Serialize]
     internal int productionProgress;
 
     // computed
     private int manufactoryCount;
 
-    public AssemblyBay(AssemblyBayPrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
+    public AssemblyBay(AssemblyBayPrototype prototype, ulong id) : base(prototype, id)
     {
         // SelectionGUI = new TextButton("make ship", () =>
         // {
-        //     var cmdProc = (PlayerCommandProcessor)World.PlayerTeam.Actor!.CommandProcessor;
+        //     var cmdProc = (PlayerCommandProcessor)World.PlayerTeam.CommandProcessor;
         //     cmdProc.AddCommand(new AssembleShipCommand(Prototypes.Get<AssembleShipCommandPrototype>("assemble_ship_command"), this));
         // });
     }
@@ -41,9 +44,9 @@ internal class AssemblyBay : Structure
     {
         ResourcePrototype aluminum = Prototypes.Get<ResourcePrototype>("aluminum");
 
-        if (this.Team.Actor!.Money >= this.Prototype.ProductionCost)
+        if (this.Team.Money >= this.Prototype.ProductionCost)
         {
-            this.Team.Actor!.Money -= this.Prototype.ProductionCost;
+            this.Team.Money -= this.Prototype.ProductionCost;
             isBuildingShip = true;
         }
     }
@@ -69,13 +72,15 @@ internal class AssemblyBay : Structure
             shipTransform.Rotation = this.Rotation * MathF.Tau / 6f - (MathF.PI / 2f);
             shipTransform.Position.Y -= Prototype.ShipPrototype.FlyHeight;
 
-            var ship = new Ship(Prototype.ShipPrototype, World.NewID(), shipTransform, this.Team);
+            var ship = new Ship(Prototype.ShipPrototype, World.NewID()) { Team = this.Team };
+            ship.Teleport(shipTransform);
             foreach (var moduleFactory in neighbors.OfType<ModuleFactory>())
             {
                 if (moduleFactory.Enabled)
                 {
-                    var module = moduleFactory.Prototype.ProvidedModule.CreateModule(World.NewID(), ship.AsReference());
-                    ship.modules.Add(module.AsReference());
+                    var module = moduleFactory.Prototype.ProvidedModule.CreateActor(World.NewID());
+                    module.Ship = ship;
+                    ship.modules.Add(module);
                     World.Add(module);
                 }
             }
@@ -97,18 +102,18 @@ internal class AssemblyBay : Structure
     //     return [new ElementReference(() => SelectionGUI)];
     // }
 
-    public override void FinalizeDeserialization()
+    public override void FinishDeserialization()
     {
-        base.FinalizeDeserialization();
+        base.FinishDeserialization();
         manufactoryCount = neighbors.Count(n => n is Manufactory);
     }
 
-    public override void Serialize(BinaryWriter writer)
-    {
-        base.Serialize(writer);
-        writer.Write(isBuildingShip);
-        writer.Write(productionProgress);
-    }
+    //public override void Serialize(BinaryWriter writer)
+    //{
+    //    base.Serialize(writer);
+    //    writer.Write(isBuildingShip);
+    //    writer.Write(productionProgress);
+    //}
 
     public override void Layout(GUIWindow window)
     {
@@ -122,8 +127,8 @@ internal class AssemblyBay : Structure
             {
                 if (window.TextButton("assemble ship") && manufactoryCount > 0)
                 {
-                    var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.Actor!.GetCommandProcessor();
-                    commandProcessor.AddCommand(new AssembleShipCommand(Prototypes.Get<AssembleShipCommandPrototype>("assemble_ship_command"), this));
+                    var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.GetCommandProcessor();
+                    commandProcessor.AddCommand(new AssembleShipCommand() { assemblyBay = this });
                 }
 
                 if (window.LastItemHovered() && manufactoryCount == 0)
@@ -140,27 +145,29 @@ internal class AssemblyBay : Structure
 
 class AssemblyBayPrototype : StructurePrototype
 {
+    public override Type ActorType => typeof(AssemblyBay);
+
     public ShipPrototype ShipPrototype { get; set; }
     public int ProductionTime { get; set; }
     public int ProductionCost { get; set; }
 
-    public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
-    {
-        return new AssemblyBay(this, id, grid, location, rotation, team);
-    }
+    //public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
+    //{
+    //    return new AssemblyBay(this, id, grid, location, rotation, team);
+    //}
 
-    public override Actor Deserialize(BinaryReader reader)
-    {
-        base.DeserializeArgs(reader, out var id, out var team, out var grid, out var location, out var rotation);
-        bool isBuildingShip = reader.ReadBoolean();
-        int progress = reader.ReadInt32();
+    //public override Actor Deserialize(BinaryReader reader)
+    //{
+    //    base.DeserializeArgs(reader, out var id, out var team, out var grid, out var location, out var rotation);
+    //    bool isBuildingShip = reader.ReadBoolean();
+    //    int progress = reader.ReadInt32();
 
-        return new AssemblyBay(this, id, grid, location, rotation, team)
-        {
-            isBuildingShip = isBuildingShip,
-            productionProgress = progress,
-        };
-    }
+    //    return new AssemblyBay(this, id, grid, location, rotation, team)
+    //    {
+    //        isBuildingShip = isBuildingShip,
+    //        productionProgress = progress,
+    //    };
+    //}
 
     public override void RenderAdjacencyOverlay(ICanvas canvas, Vector2 position, StructurePrototype otherPrototype)
     {

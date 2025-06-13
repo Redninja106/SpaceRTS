@@ -7,21 +7,21 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures.Shipyards;
-internal class ModuleFactory : Structure
+
+[Serializable]
+internal class ModuleFactory(StructurePrototype prototype, ulong id) : Structure(prototype, id)
 {
     public override ModuleFactoryPrototype Prototype => (ModuleFactoryPrototype)base.Prototype;
-
-    public ModuleFactory(StructurePrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
-    {
-    }
 }
 
 class ModuleFactoryPrototype : StructurePrototype
 {
+    public override Type ActorType => typeof(ModuleFactory);
+
     public ModulePrototype ProvidedModule { get; set; }
 
-    public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
-    {
-        return new ModuleFactory(this, id, grid, location, rotation, team);
-    }
+    //public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
+    //{
+        //return new ModuleFactory(this, id, grid, location, rotation, team);
+    //}
 }

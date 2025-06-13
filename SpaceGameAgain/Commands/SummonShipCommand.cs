@@ -9,64 +9,32 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Commands;
+
+[Serializable]
 internal class SummonShipCommand : Command
 {
-    private ActorReference<Team> team;
-    private ShipPrototype shipPrototype;
-    private ModulePrototype[] modulePrototypes;
-    private Transform transform;
-
-    public SummonShipCommand(SummonShipCommandPrototype prototype, ActorReference<Team> team, ShipPrototype shipPrototype, ModulePrototype[] modulePrototypes, Transform transform) : base(prototype)
-    {
-        this.team = team;
-        this.shipPrototype = shipPrototype;
-        this.modulePrototypes = modulePrototypes;
-        this.transform = transform;
-    }
+    [Serialize]
+    public required Team team;
+    [Serialize]
+    public required ShipPrototype shipPrototype;
+    [Serialize]
+    public required ModulePrototype[] modulePrototypes;
+    [Serialize]
+    public required Transform transform;
 
     public override void Apply()
     {
-        var ship = new Ship(shipPrototype, World.NewID(), transform, team);
+        var ship = new Ship(shipPrototype, World.NewID()) { Team = team };
+        ship.Teleport(transform);
         foreach (var modulePrototype in modulePrototypes)
         {
-            var module = modulePrototype.CreateModule(World.NewID(), ship.AsReference());
-            ship.modules.Add(module.AsReference());
+            var module = modulePrototype.CreateActor(World.NewID());
+            module.Ship = ship;
+            ship.modules.Add(module);
             World.Add(module);
         }
-        DebugLog.Message("summoned ship");
         World.Add(ship);
-    }
 
-    public override void Serialize(BinaryWriter writer)
-    {
-        writer.Write(team);
-        writer.Write(shipPrototype.Name);
-        
-        writer.Write(modulePrototypes.Length);
-        foreach (var module in modulePrototypes)
-        {
-            writer.Write(module.Name);
-        }
-        writer.Write(transform);
-    }
-}
-
-class SummonShipCommandPrototype : CommandPrototype
-{
-    public override SummonShipCommand Deserialize(BinaryReader reader)
-    {
-        ActorReference<Team> team = reader.ReadActorReference<Team>();
-        ShipPrototype shipPrototype = Prototypes.Get<ShipPrototype>(reader.ReadString());
-
-        int moduleCount = reader.ReadInt32();
-        ModulePrototype[] modulePrototypes = new ModulePrototype[moduleCount];
-        for (int i = 0; i < moduleCount; i++)
-        {
-            modulePrototypes[i] = Prototypes.Get<ModulePrototype>(reader.ReadString());
-        }
-
-        Transform transform = reader.ReadTransform();
-
-        return new SummonShipCommand(this, team, shipPrototype, modulePrototypes, transform);
+        DebugLog.Message("summoned ship " + ship.ID);
     }
 }

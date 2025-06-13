@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using SimulationFramework.Drawing;
 using SpaceGame.Debugging;
+using SpaceGame.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +10,18 @@ using System.Threading.Tasks;
 
 namespace SpaceGame;
 
-internal abstract class Actor(ActorPrototype prototype, ulong id, Transform transform) : PrototypeObject(prototype)
+[Serializable]
+public abstract class Actor(Prototype prototype, ulong id) : IInspectable
 {
+    public virtual Prototype Prototype { get; } = prototype;
+
+    // serialized manually -- necessary for reference handling
     private readonly ulong id = id;
-    private Transform transform = transform;
-    private Transform previousTransform = transform;
-    private Transform interpolatedTransform = transform;
+    
+    [Serialize] 
+    private Transform transform = Transform.Default;
+    private Transform previousTransform = Transform.Default;
+    private Transform interpolatedTransform = Transform.Default;
 
     public virtual Transform InterpolatedTransform => interpolatedTransform;
     public virtual ref Transform Transform => ref transform;
@@ -22,17 +29,29 @@ internal abstract class Actor(ActorPrototype prototype, ulong id, Transform tran
 
     public ulong ID => id;
 
+    /// <summary>
+    /// Called when the actor is just added to the world. Not called when the actor is deserialized.
+    /// </summary>
+    public virtual void InitializeActor()
+    {
+        this.Teleport(transform);
+    }
+
     public virtual void Update(float tickProgress)
     {
         interpolatedTransform = Transform.Lerp(previousTransform, Transform, tickProgress);
     }
-    
+
     public virtual void Tick()
     {
         previousTransform = Transform;
     }
 
     public virtual void Render(ICanvas canvas)
+    {
+    }
+
+    public virtual void FinishDeserialization()
     {
     }
 
@@ -46,9 +65,9 @@ internal abstract class Actor(ActorPrototype prototype, ulong id, Transform tran
         this.interpolatedTransform = destination;
     }
 
-    public override void DebugLayout()
+    public virtual void DebugLayout()
     {
-        base.DebugLayout();
+        ImGui.Text("Prototype: " + Prototype.Name);
 
         ImGui.Text("ID: " + ID);
         Transform.Layout();

@@ -5,6 +5,7 @@
 /// </summary>
 struct GUIScope(GUIWindow window, LayoutMode mode) : IDisposable
 {
+    //
     public void Dispose()
     {
         window.EndScope(mode);

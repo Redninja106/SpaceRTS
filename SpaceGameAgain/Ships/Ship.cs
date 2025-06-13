@@ -10,6 +10,7 @@ using SpaceGame.Interaction;
 using SpaceGame.Orders;
 using SpaceGame.Planets;
 using SpaceGame.Rendering;
+using SpaceGame.Serialization;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Fleets;
 using SpaceGame.Ships.Modules;
@@ -23,7 +24,8 @@ using System.Threading.Tasks;
 
 namespace SpaceGame.Ships;
 
-internal class Ship(ShipPrototype prototype, ulong id, Transform transform, ActorReference<Team> team, float height = 0) : Unit(prototype, id, transform, team)
+[Serializable]
+internal class Ship(ShipPrototype prototype, ulong id) : Unit(prototype, id)
 {
     public override ShipPrototype Prototype => (ShipPrototype)base.Prototype;
 
@@ -35,18 +37,24 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
         new(-.5f / 2f, -.2f / 2f),
     ];
 
+    [Serialize]
     public DoubleVector velocity;
+    [Serialize]
     public float angularVelocity;
     
-    public float height = height;
+    [Serialize]
+    public float height = 0;
     public Stance stance;
 
-    public Queue<ActorReference<Order>> orders = [];
-    public List<ActorReference<Module>> modules = [];
+    [Serialize]
+    public Queue<Order> orders = [];
+    [Serialize]
+    public List<Module> modules = [];
 
+    [Serialize]
     public Fleet? Fleet;
 
-    public override bool CanAttack => modules.Any(m => m.Actor is WeaponModule);
+    public override bool CanAttack => modules.Any(m => m is WeaponModule);
 
     // PER CLIENT -- an order the player submitted that hasn't been processed yet
     public Order? potentialOrder = null;
@@ -57,8 +65,8 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
         //if (selected)
         //{
-        //    Team playerTeam = World.PlayerTeam.Actor!;
-        //    canvas.Stroke(playerTeam.GetRelationColor(Team.Actor!));
+        //    Team playerTeam = World.PlayerTeam;
+        //    canvas.Stroke(playerTeam.GetRelationColor(Team));
         //    canvas.StrokeWidth(0);
         //    canvas.DrawCircle(0, 0, MathF.Max((float)GetCollisionRadius(), World.Camera.ScreenDistanceToWorldDistance(2.5f/2f)));
         //}
@@ -87,14 +95,14 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
             if (potentialOrder != null)
             {
                 canvas.PushState();
-                potentialOrder.Render(canvas);
+                potentialOrder.RenderOverlay(canvas);
                 canvas.PopState();
             }
             else if (orders.Count > 0)
             {
                 var order = orders.Peek();
                 canvas.PushState();
-                order.Actor!.Render(canvas);
+                order.RenderOverlay(canvas);
                 canvas.PopState();
             }
         }
@@ -105,7 +113,7 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
     public override void DrawHighlightBelow(ICanvas canvas, Camera camera, bool selected)
     {
         canvas.Transform(World.Camera.CreateRelativeMatrix(InterpolatedTransform));
-        canvas.Stroke(World.PlayerTeam.Actor!.GetRelationColor(Team.Actor!) with { A = (byte)(selected ? 255 : 100) });
+        canvas.Stroke(World.PlayerTeam.GetRelationColor(Team) with { A = (byte)(selected ? 255 : 100) });
         canvas.DrawCircle(0, 0, (float)GetCollisionRadius());
 
         base.DrawHighlightBelow(canvas, camera, selected);
@@ -121,14 +129,14 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
         {
             foreach (var module in modules)
             {
-                module.Actor!.Tick();
+                module.Tick();
             }
 
             if (orders.Count > 0)
             {
                 var order = orders.Peek();
-                order.Actor!.Tick();
-                if (order.Actor!.IsCompleted)
+                order.Tick();
+                if (order.IsCompleted)
                 {
                     orders.Dequeue();
                 }
@@ -155,7 +163,7 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
         foreach (var order in orders)
         {
-            order.Actor!.Update(tickProgress);
+            //order.Update(tickProgress);
         }
     }
 
@@ -187,19 +195,19 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
         canvas.PopState();
     }
 
-    public override void Serialize(BinaryWriter writer)
-    {
-        writer.Write(ID);
-        writer.Write(Transform);
-        writer.Write(Team);
-        writer.Write(height);
+    //public override void Serialize(BinaryWriter writer)
+    //{
+    //    writer.Write(ID);
+    //    writer.Write(Transform);
+    //    writer.Write(Team);
+    //    writer.Write(height);
 
-        writer.Write(modules.Count);
-        foreach (var module in modules)
-        {
-            writer.Write(module);
-        }
-    }
+    //    writer.Write(modules.Count);
+    //    foreach (var module in modules)
+    //    {
+    //        writer.Write(module);
+    //    }
+    //}
 
     public override void DebugLayout()
     {
@@ -210,11 +218,11 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
 
     public override void Layout(GUIWindow window)
     {
-        if (this.Team == World.PlayerTeam && this.modules.FirstOrDefault(m => m.Actor is ConstructionModule) is ActorReference<Module> m && !m.IsNull)
+        if (this.Team == World.PlayerTeam && this.modules.FirstOrDefault(m => m is ConstructionModule) is Module m)
         {
             if (window.TextButton("build"))
             {
-                World.GUIViewport.SetPopup(m.Cast<ConstructionModule>().Actor!.Layout, window.LastItemBounds.GetAlignedPoint(Alignment.TopCenter), Alignment.BottomCenter);
+                World.GUIViewport.SetPopup(m.Layout, window.LastItemBounds.GetAlignedPoint(Alignment.TopCenter), Alignment.BottomCenter);
             }
         }
 
@@ -230,7 +238,7 @@ internal class Ship(ShipPrototype prototype, ulong id, Transform transform, Acto
         //window.LayoutMode = LayoutMode.Horizontal;
         //foreach (var mod in modules)
         //{
-        //    window.Image(mod.Actor!.Icon, new(16));
+        //    window.Image(mod.Icon, new(16));
         //    if (window.LastItemHovered())
         //    {
         //        World.SetTooltip(w => w.Text(mod.Actor.Prototype.Name));

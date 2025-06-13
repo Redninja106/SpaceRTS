@@ -7,21 +7,35 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
-internal class Turret : Structure
+
+[Serializable]
+internal class Turret(TurretPrototype prototype, ulong id) : Structure(prototype, id)
 {
     public override TurretPrototype Prototype => (TurretPrototype)base.Prototype;
-
-    public ActorReference<WeaponSystem>[] weaponSystems;
+    
+    [Serialize]
+    public WeaponSystem[] weaponSystems;
     public override bool CanAttack => true;
 
-    public Turret(TurretPrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
+    public override void InitializeActor()
     {
+        base.InitializeActor();
+
+        weaponSystems = new WeaponSystem[Prototype.WeaponSystems.Length];
+        for (int i = 0; i < weaponSystems.Length; i++)
+        {
+            var weapon = Prototype.WeaponSystems[i].Prototype.CreateActor(World.NewID());
+            weapon.Unit = this;
+            weapon.Offset = this.Prototype.Center + Prototype.WeaponSystems[i].Offset.Rotated(this.Transform.Rotation);
+            weaponSystems[i] = weapon;
+            World.Add(weapon);
+        }
     }
 
     public override void Render(ICanvas canvas)
     {
         base.Render(canvas);
-        // Prototype.TurretModel?.Render(canvas, this.InterpolatedTransform with { Rotation = weaponSystem.Actor!.InterpolatedTransform.Rotation }, ColorF.White);
+        // Prototype.TurretModel?.Render(canvas, this.InterpolatedTransform with { Rotation = weaponSystem.InterpolatedTransform.Rotation }, ColorF.White);
     }
 
     public override void DrawHighlightAbove(ICanvas canvas, Camera camera, bool selected)
@@ -33,7 +47,7 @@ internal class Turret : Structure
             canvas.PushState();
             Transform.Create(GetCenter(), 0).ApplyTo(canvas, camera);
             canvas.Stroke(Color.White with { A = 40 });
-            canvas.DrawCircle(0, 0, system.Actor!.Prototype.Range);
+            canvas.DrawCircle(0, 0, system.Prototype.Range);
             canvas.PopState();
         }
     }
@@ -41,15 +55,5 @@ internal class Turret : Structure
     public override void Tick()
     {
         base.Tick();
-    }
-
-    public override void Serialize(BinaryWriter writer)
-    {
-        base.Serialize(writer);
-        writer.Write(weaponSystems.Length);
-        for (int i = 0; i < weaponSystems.Length; i++)
-        {
-            writer.Write(weaponSystems.Length);
-        }
     }
 }

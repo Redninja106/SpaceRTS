@@ -13,9 +13,9 @@ internal class ResourceBar
         window.Visible = true;
         window.Anchor = Alignment.BottomLeft;
         window.Alignment = Alignment.BottomLeft;
-        window.Text("$" + World.PlayerTeam.Actor!.Money.ToString() + "k");
+        window.Text("$" + World.PlayerTeam.Money.ToString() + "k");
 
-        foreach (var (proto, values) in World.PlayerTeam.Actor!.resources)
+        foreach (var (proto, values) in World.PlayerTeam.resources)
         {
             window.Text(proto.Name + ": " + values.Remaining);
         }

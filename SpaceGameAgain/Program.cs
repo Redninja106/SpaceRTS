@@ -14,6 +14,7 @@ using SpaceGame.Structures.Shipyards;
 using SpaceGame.Teams;
 using SpaceGame.Tiles;
 using System.Diagnostics;
+using System.Xml.Linq;
 
 DesktopPlatform.Register();
 
@@ -59,7 +60,8 @@ else
 
 partial class Program : Simulation
 {
-    
+    public const int ViewportPixels = 480;
+
     public static IFont font;
     public static Vector2 ViewportMousePosition;
     public static float uiscale = 2f;
@@ -75,7 +77,6 @@ partial class Program : Simulation
     public static float timeAccumulated = 0;
 
     public static Lobby? Lobby;
-    public static NetworkSerializer NetworkSerializer = new();
 
     public static float ViewportScale;
 
@@ -96,19 +97,19 @@ partial class Program : Simulation
 
         World = new();
         
-        var playerTeam = new Team(Prototypes.Get<PlayerTeamPrototype>("player_team"), World.NewID(), Transform.Default);
+        var playerTeam = new Team(Prototypes.Get<PlayerTeamPrototype>("player_team"), World.NewID());
         playerTeam.Money += 1000;
         // playerTeam.CommandProcessor = new PlayerCommandProcessor();
-        World.PlayerTeam = playerTeam.AsReference();
+        World.PlayerTeam = playerTeam;
         World.Add(playerTeam);
 
-        var starterShip = new Ship(Prototypes.Get<ShipPrototype>("small_ship"), World.NewID(), Transform.Default, playerTeam.AsReference());
-        var module = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), starterShip.AsReference());
-        starterShip.modules.Add(module.AsReference<Module>());
+        var starterShip = new Ship(Prototypes.Get<ShipPrototype>("small_ship"), World.NewID()) { Team = playerTeam };
+        var module = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID()) { Ship = starterShip };
+        starterShip.modules.Add(module);
         World.Add(starterShip);
         World.Add(module);
 
-        var spacePirates = new Team(Prototypes.Get<TeamPrototype>("null_team"), World.NewID(), Transform.Default, name: "Space Pirates");
+        var spacePirates = new Team(Prototypes.Get<TeamPrototype>("null_team"), World.NewID()) { Name = "Space Pirates" };
         // spacePirates.CommandProcessor = new NullCommandProcessor();
         World.Add(spacePirates);
 
@@ -134,6 +135,7 @@ partial class Program : Simulation
         generator.GenerateSystem();
 
         Planet starterPlanet = World.Planets[Random.Shared.Next(1, World.Planets.Count)];
+        DebugLog.Message($"starting planet id: {starterPlanet.ID}");
         starterShip.Teleport(starterPlanet.Transform);
         World.Camera.Transform = World.Camera.SmoothTransform = starterPlanet.Transform;
 
@@ -241,21 +243,21 @@ partial class Program : Simulation
         }
 
         float aspectRatio = canvas.Width / (float)canvas.Height;
-        int targetViewWidth = (int)(480 * aspectRatio);
+        int targetViewWidth = (int)(ViewportPixels * aspectRatio);
 
         if (viewTexture is null || viewTexture.Width != targetViewWidth)
         {
             viewTexture?.Dispose();
-            viewTexture = Graphics.CreateTexture(targetViewWidth, 480);
+            viewTexture = Graphics.CreateTexture(targetViewWidth, ViewportPixels);
 
             visibilityTexture?.Dispose();
-            visibilityTexture = Graphics.CreateTexture(targetViewWidth, 480);
+            visibilityTexture = Graphics.CreateTexture(targetViewWidth, ViewportPixels);
 
             groundTexture?.Dispose();
-            groundTexture = Graphics.CreateTexture(targetViewWidth, 480);
+            groundTexture = Graphics.CreateTexture(targetViewWidth, ViewportPixels);
 
             skyTexture?.Dispose();
-            skyTexture = Graphics.CreateTexture(targetViewWidth, 480);
+            skyTexture = Graphics.CreateTexture(targetViewWidth, ViewportPixels);
         }
 
         // if (vpScaleY < vpScaleX)

@@ -8,53 +8,51 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Orders;
+
+[Serializable]
 internal class ConstructionOrder : Order
 {
-    public ActorReference<Grid> Grid;
+    [Serialize]
+    public Grid Grid;
+    [Serialize]
     public HexCoordinate Location;
+    [Serialize]
     public int Rotation;
+    [Serialize]
     public StructurePrototype Structure;
-
-    public ConstructionOrder(ConstructionOrderPrototype prototype, ulong id, ActorReference<Unit> unit, ActorReference<Grid> grid, StructurePrototype structure, HexCoordinate location, int rotation) : base(prototype, id, unit)
-    {
-        Grid = grid;
-        Structure = structure;
-        Location = location;
-        Rotation = rotation;
-    }
 
     public override void Tick()
     {
-        if (!MoveTo(DoubleVector.FromVector2(Grid.Actor!.Transform.LocalToWorld(Location.ToCartesian()) + Structure.Center.Rotated(Rotation * MathF.Tau / 6f))))
+        if (!MoveTo(DoubleVector.FromVector2(Grid.Transform.LocalToWorld(Location.ToCartesian()) + Structure.Center.Rotated(Rotation * MathF.Tau / 6f))))
         {
             return;
         }
 
-        if (!Grid.Actor!.IsStructureObstructed(Structure, Location, Rotation))
+        if (!Grid.IsStructureObstructed(Structure, Location, Rotation))
         {
-            Unit.Actor!.Team.Actor!.Money -= Structure.Cost;
-            Grid.Actor!.PlaceStructure(Structure, Location, Rotation, Unit.Actor!.Team.Actor!);
-            // Unit.Actor!.Team.Actor!.Resources["metals"] -= Structure.Price;
+            Unit.Team.Money -= Structure.Cost;
+            Grid.PlaceStructure(Structure, Location, Rotation, Unit.Team);
+            // Unit.Team.Resources["metals"] -= Structure.Price;
             Complete();
         }
     }
 
-    public override void Render(ICanvas canvas)
+    public override void RenderOverlay(ICanvas canvas)
     {
-        //Grid.Actor!.Transform.ApplyTo(canvas, World.Camera);
+        //Grid.Transform.ApplyTo(canvas, World.Camera);
         // canvas.Rotate(Rotation * (MathF.Tau / 6f));
         //Structure.Model.Render(canvas, this.InterpolatedTransform with { Rotation = 0 }, ColorF.White with { A = 100 });
 
-        base.Render(canvas);
+        base.RenderOverlay(canvas);
     }
 
 
-    public override void Serialize(BinaryWriter writer)
-    {
-        base.Serialize(writer);
-        writer.Write(Grid);
-        writer.Write(Structure.Name);
-        writer.Write(Location);
-        writer.Write(Rotation);
-    }
+    //public override void Serialize(BinaryWriter writer)
+    //{
+    //    base.Serialize(writer);
+    //    writer.Write(Grid);
+    //    writer.Write(Structure.Name);
+    //    writer.Write(Location);
+    //    writer.Write(Rotation);
+    //}
 }

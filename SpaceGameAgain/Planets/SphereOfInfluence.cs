@@ -7,17 +7,22 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Planets;
+
+[Serializable]
 internal class SphereOfInfluence
 {
+    [field: Serialize]
     public float Radius { get; set; }
 
-    public Planet planet;
+    [Serialize]
+    public required Planet planet;
+    [Serialize]
     public DoubleVector lastUpdatePosition;
+    [Serialize]
     public DoubleVector lastTickPosition;
 
-    public SphereOfInfluence(Planet planet)
+    public void Initialize()
     {
-        this.planet = planet;
         this.lastUpdatePosition = planet.InterpolatedTransform.Position;
         this.lastTickPosition = planet.Transform.Position;
     }

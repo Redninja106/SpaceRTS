@@ -1,5 +1,6 @@
 ﻿using Silk.NET.OpenGL;
 using SpaceGame.Debugging;
+using SpaceGame.Networking.Packets;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -16,6 +17,7 @@ internal class SocketClient
     private Socket connection;
     private List<Packet> receivedPackets = [];
     private SocketPacketReceiver packetReceiver;
+    private Serializer packetSerializer;
 
 
     public SocketClient(string host, int port)
@@ -31,6 +33,7 @@ internal class SocketClient
         DebugLog.Message("connected to " + connection.RemoteEndPoint?.ToString());
 
         packetReceiver = new(connection);
+        packetSerializer = Serializer.GetSerializer(typeof(Packet));
     }
 
     public string GetEndPoint() 
@@ -45,11 +48,11 @@ internal class SocketClient
 
     public void SendPacket(Packet packet)
     {
-        byte[] packetData = Program.NetworkSerializer.SerializeWithLengthPrefix(packet);
+        byte[] packetData = SocketPacketReceiver.SerializeWithLengthPrefix(packet, packetSerializer);
         connection.Send(packetData);
         if (NetworkSettings.LogOutgoingPackets)
         {
-            DebugLog.Message($"sent packet {packet.Prototype.Name}, data [{string.Join(',', packetData)}]");
+            DebugLog.Message($"sent packet {packet.GetType().Name}, data [{string.Join(',', packetData)}]");
         }
     }
 

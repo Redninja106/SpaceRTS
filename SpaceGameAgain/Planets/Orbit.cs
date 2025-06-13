@@ -1,17 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Planets;
+
+[Serializable]
 internal class Orbit
 {
-    public ActorReference<Actor> center;
-    public float radius;
-    public float phase;
+    [Serialize]
+    public required Actor center;
+    [Serialize]
+    public required float radius;
+    [Serialize]
+    public required float phase;
 
-    public Orbit(ActorReference<Actor> center, float radius, float phase)
+    public Orbit()
+    {
+    }
+
+    [SetsRequiredMembers]
+    public Orbit(Actor center, float radius, float phase)
     {
         this.center = center;
         this.radius = radius;
@@ -25,11 +36,11 @@ internal class Orbit
 
     public Transform GetLocation()
     {
-        return center.Actor!.Transform.Translated(DoubleVector.FromVector2(Angle.ToVector(phase) * radius));
+        return center.Transform.Translated(DoubleVector.FromVector2(Angle.ToVector(phase) * radius));
     }
 
     // public void Apply(WorldActor actor)
     // {
-    //     actor.Transform.Position = center.Actor!.Transform.Position + DoubleVector.FromVector2(Angle.ToVector(phase) * radius);
+    //     actor.Transform.Position = center.Transform.Position + DoubleVector.FromVector2(Angle.ToVector(phase) * radius);
     // }
 }

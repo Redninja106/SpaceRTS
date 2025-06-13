@@ -10,5 +10,8 @@ global using SpaceGame;
 global using SpaceGame.Data;
 global using SpaceGame.Extensions;
 global using SpaceGame.Debugging;
+global using SpaceGame.Serialization;
 
 global using static SpaceGame.GameWorld;
+
+global using SerializableAttribute = SpaceGame.Serialization.SerializableAttribute;

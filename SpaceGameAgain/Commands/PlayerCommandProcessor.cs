@@ -45,9 +45,14 @@ internal class PlayerCommandProcessor : ICommandProcessor
             return;
         }
 
-        var prototype = Prototypes.Get<TurnPacketPrototype>("turn_packet");
         var cmds = GetCommands(turn);
-        var packet = new TurnPacket(prototype, turn, World.PlayerTeam, cmds.ToList(), GetCommands(turn-1).ToList());
+        var packet = new TurnPacket()
+        {
+            turn = turn, 
+            team = World.PlayerTeam, 
+            commands = cmds.ToList(), 
+            prevTurnCommands = GetCommands(turn-1).ToList()
+        };
 
         if (Program.Lobby is RemoteLobby networkLobby)
         {

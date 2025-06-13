@@ -11,65 +11,66 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Planets;
+
+[Serializable]
 internal class Planet : Actor
 {
     public override PlanetPrototype Prototype => (PlanetPrototype)base.Prototype;
 
+    [field: Serialize]
     public float Radius { get; init; } = 26;
 
-    public Color Color 
-    { 
-        get
-        {
-            return shader.color.ToColor();
-        }
-        init
-        {
-            shader.color = value.ToColorF();
-        }
-    }
+    //public Color Color 
+    //{ 
+    //    get
+    //    {
+    //        return shader.color.ToColor();
+    //    }
+    //    init
+    //    {
+    //        shader.color = value.ToColorF();
+    //    }
+    //}
 
-    public Orbit? Orbit 
-    { 
-        get 
-        {
-            return orbit;
-        }
-        set
-        {
-            this.orbit = value;
-        }
-    }
+    public Grid Grid => grid;
 
-    public Grid Grid => grid.Actor!;
+    [field: Serialize]
+    public SphereOfInfluence SphereOfInfluence { get; set; }
 
-    public SphereOfInfluence SphereOfInfluence { get; }
-
-    private ActorReference<Grid> grid;
-    private Orbit? orbit;
+    [Serialize]
+    private Grid grid;
+    [Serialize]
+    public required Orbit? orbit;
     private PlanetShader shader;
 
-    public Planet(PlanetPrototype prototype, ulong id, Transform transform, Orbit? orbit, ActorReference<Grid> grid = default) : base(prototype, id, transform)
+    public Planet(PlanetPrototype prototype, ulong id) : base(prototype, id)
     {
-        this.orbit = orbit;
+        shader = new PlanetShader();
+    }
+
+    public override void InitializeActor()
+    {
+        base.InitializeActor();
+
+        if (grid == null)
+        {
+            this.grid = new Grid(Prototypes.Get<GridPrototype>("grid"), World.NewID()) { parent = this };
+            World.Add(this.grid);
+        }
 
         if (this.orbit != null)
         {
             this.Teleport(this.orbit.GetLocation());
         }
 
-        if (grid.IsNull)
-        {
-            this.grid = new Grid(Prototypes.Get<GridPrototype>("grid"), World.NewID(), this.AsReference().Cast<Actor>()).AsReference();
-            World.Add(this.grid.Actor!);
-        }
-        else
-        {
-            this.grid = grid;
-        }
+        SphereOfInfluence = new() { planet = this };
+        SphereOfInfluence.Initialize();
+    }
 
-        SphereOfInfluence = new(this);
-        shader = new PlanetShader();
+    public override void FinishDeserialization()
+    {
+        base.FinishDeserialization();
+        SphereOfInfluence.Initialize();
     }
 
     public override void Tick()
@@ -114,33 +115,33 @@ internal class Planet : Actor
 
     public void TickOrbit()
     {
-        if (Orbit != null)
+        if (orbit != null)
         {
-            Orbit.Tick(Program.Timestep);
-            this.Transform = Orbit.GetLocation();
+            orbit.Tick(Program.Timestep);
+            this.Transform = orbit.GetLocation();
         }
     }
 
-    public override void Serialize(BinaryWriter writer)
-    {
-        writer.Write(ID);
-        writer.Write(Transform);
-        writer.Write(Radius);
-        writer.Write(Color.Value);
-        writer.Write(SphereOfInfluence.Radius);
+    //public override void Serialize(BinaryWriter writer)
+    //{
+    //    writer.Write(ID);
+    //    writer.Write(Transform);
+    //    writer.Write(Radius);
+    //    writer.Write(Color.Value);
+    //    writer.Write(SphereOfInfluence.Radius);
 
-        writer.Write(grid);
+    //    writer.Write(grid);
 
-        writer.Write(Orbit is not null);
+    //    writer.Write(Orbit is not null);
 
-        if (Orbit is not null)
-        {
-            writer.Write(Orbit.center);
-            writer.Write(Orbit.phase);
-            writer.Write(Orbit.radius);
-        }
+    //    if (Orbit is not null)
+    //    {
+    //        writer.Write(Orbit.center);
+    //        writer.Write(Orbit.phase);
+    //        writer.Write(Orbit.radius);
+    //    }
 
-    }
+    //}
 
     public override void DebugLayout()
     {

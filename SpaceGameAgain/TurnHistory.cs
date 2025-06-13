@@ -1,4 +1,5 @@
 ﻿using SpaceGame.Commands;
+using SpaceGame.Serialization;
 using SpaceGame.Teams;
 using System;
 using System.Collections.Generic;
@@ -7,9 +8,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame;
+
+[Serializable]
 internal class TurnHistory
 {
-    private SortedDictionary<ulong, Dictionary<Team, Command[]>> turns = [];
+    [Serialize]
+    private Dictionary<ulong, Dictionary<Team, Command[]>> turns = [];
 
     public Dictionary<Team, Command[]> GetTurn(ulong turn) => turns[turn];
 
@@ -64,42 +68,43 @@ internal class TurnHistory
                 writer.Write(commands.Length);
                 foreach (var command in commands)
                 {
-                    Program.NetworkSerializer.Serialize(command, writer);
+                    var serializer = Serializer.GetSerializer(command.GetType());
+                    serializer.Serialize(writer, command);
                 }
             }
         }
     }
 
-    internal static TurnHistory Deserialize(BinaryReader reader)
-    {
-        Dictionary<ulong, Dictionary<Team, Command[]>> turns = [];
+    //internal static TurnHistory Deserialize(BinaryReader reader)
+    //{
+    //    Dictionary<ulong, Dictionary<Team, Command[]>> turns = [];
 
-        int turnCount = reader.ReadInt32();
-        for (int i = 0; i < turnCount; i++)
-        {
-            ulong turn = reader.ReadUInt64();
-            Dictionary<Team, Command[]> teams = [];
-            int teamCount = reader.ReadInt32();
-            for (int j = 0; j < teamCount; j++)
-            {
-                ActorReference<Team> team = reader.ReadActorReference<Team>();
+    //    int turnCount = reader.ReadInt32();
+    //    for (int i = 0; i < turnCount; i++)
+    //    {
+    //        ulong turn = reader.ReadUInt64();
+    //        Dictionary<Team, Command[]> teams = [];
+    //        int teamCount = reader.ReadInt32();
+    //        for (int j = 0; j < teamCount; j++)
+    //        {
+    //            ActorReference<Team> team = reader.ReadActorReference<Team>();
 
-                List<Command> commands = [];
-                int commandCount = reader.ReadInt32();
-                for (int k = 0; k < commandCount; k++)
-                {
-                    Command command = (Command)Program.NetworkSerializer.Deserialize(reader);
-                    commands.Add(command);
-                }
+    //            List<Command> commands = [];
+    //            int commandCount = reader.ReadInt32();
+    //            for (int k = 0; k < commandCount; k++)
+    //            {
+    //                Command command = (Command)Program.NetworkSerializer.Deserialize(reader);
+    //                commands.Add(command);
+    //            }
 
-                teams.Add(team.Actor!, commands.ToArray());
-            }
-            turns.Add(turn, teams);
-        }
+    //            teams.Add(team, commands.ToArray());
+    //        }
+    //        turns.Add(turn, teams);
+    //    }
 
-        return new TurnHistory()
-        {
-            turns = new(turns)
-        };
-    }
+    //    return new TurnHistory()
+    //    {
+    //        turns = new(turns)
+    //    };
+    //}
 }

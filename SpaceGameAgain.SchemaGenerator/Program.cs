@@ -1,4 +1,5 @@
-﻿using SpaceGame.Data;
+﻿using SpaceGame;
+using SpaceGame.Data;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
@@ -39,8 +40,8 @@ foreach (var prototypeFile in prototypeFileNames)
         }
         prototypeClass = prototypeClass.BaseType!;
     }
-
-    string schemaProperty = $"""{prototypeFile.ToLower().Replace("_", "_3").Replace("\\", "_4").Replace(".", "_1")}__JsonSchema="..\Schemas\{prototype}.schema.json" """;
+    var relativePath = Path.GetRelativePath(Path.GetDirectoryName(prototypeFile)!, $"Schemas/{prototype}.schema.json");
+    string schemaProperty = $"""{prototypeFile.ToLower().Replace("_", "_3").Replace("\\", "_4").Replace(".", "_1")}__JsonSchema="{relativePath}" """;
     schemaProperties += schemaProperty;
 }
 

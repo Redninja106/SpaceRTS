@@ -4,8 +4,7 @@
   "title": "Power Plant",
   "max_health": 10,
   "can_be_rotated": true,
-  "provided_power_level": "low",
-  "required_power_level": "none",
+  "provided_power_level": "Medium",
   "cost": 20,
   "category": "Power",
   "footprint": [ [0, 0], [1, 0], [0, 1] ]

@@ -1,4 +1,5 @@
 ﻿using SpaceGame.Orders;
+using SpaceGame.Serialization;
 using SpaceGame.Ships;
 using System;
 using System.Collections.Generic;
@@ -7,12 +8,14 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Commands;
+
+[Serializable]
 internal class AttackCommand : Command
 {
-    ActorReference<Unit> unit;
-    ActorReference<Unit> target;
+    [Serialize] public Unit unit;
+    [Serialize] public Unit target;
 
-    public AttackCommand(CommandPrototype prototype, ActorReference<Unit> unit, ActorReference<Unit> target) : base(prototype)
+    public AttackCommand(Unit unit, Unit target)
     {
         this.unit = unit;
         this.target = target;
@@ -20,41 +23,15 @@ internal class AttackCommand : Command
 
     public override void Apply()
     {
-        var order = new AttackOrder(
-            Prototypes.Get<AttackOrderPrototype>("attack_order"),
-            World.NewID(),
-            unit,
-            target
-            );
-
-        if (unit.Actor is Ship s)
+        var order = new AttackOrder()
         {
-            s.orders.Enqueue(order.AsReference().Cast<Order>());
+            Unit = unit,
+            target = target
+        };
+
+        if (unit is Ship s)
+        {
+            s.orders.Enqueue(order);
         }
     }
-
-    public override void Serialize(BinaryWriter writer)
-    {
-        writer.Write(unit);
-        writer.Write(target);
-    }
-}
-
-class AttackCommandPrototype : CommandPrototype
-{
-    public override AttackCommand Deserialize(BinaryReader reader)
-    {
-        var unit = reader.ReadActorReference<Unit>();
-        var target = reader.ReadActorReference<Unit>();
-        return new AttackCommand(this, unit, target);
-    }
-
-    //public override void Issue(Unit? target, PlayerCommandProcessor processor)
-    //{
-    //    foreach (var unit in World.SelectionHandler.GetSelectedUnits())
-    //    {
-    //        processor.AddCommand(new AttackCommand(this, unit.AsReference(), target!.AsReference()));
-    //    }
-    //}
-
 }

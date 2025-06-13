@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 namespace SpaceGame.Teams;
 internal class NullTeamPrototype : TeamPrototype
 {
+    public override Type ActorType => typeof(Team);
+
     public override ICommandProcessor CreateCommandProcessor(Team team)
     {
         return new NullCommandProcessor();

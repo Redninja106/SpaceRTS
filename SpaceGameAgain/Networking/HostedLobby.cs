@@ -1,5 +1,6 @@
 ﻿using SpaceGame.Commands;
 using SpaceGame.Debugging;
+using SpaceGame.Networking.Packets;
 using SpaceGame.Planets;
 using SpaceGame.Serialization;
 using SpaceGame.Ships;
@@ -34,8 +35,7 @@ class HostedLobby : Lobby
             {
                 if (!team.GetCommandProcessor().HasCommands(World.TurnProcessor.turn))
                 {
-                    var prototype = Prototypes.Get<TurnRequestPacketPrototype>("turn_request");
-                    server.Send(new TurnRequestPacket(prototype, World.TurnProcessor.turn, World.TurnProcessor.history), associations[team]);
+                    server.Send(new TurnRequestPacket() { turn = World.TurnProcessor.turn, history = World.TurnProcessor.history }, associations[team]);
                     DebugLog.Message($"requested turn {World.TurnProcessor.turn} from team {team.ID}");
                 }
             }
@@ -46,14 +46,15 @@ class HostedLobby : Lobby
         {
             DebugLog.Message("got a hello from " + hello.ClientName);
             
-            Planet startingPlanet = (Planet)Random.Shared.GetItems(World.GetActorsByPrototype(Prototypes.Get<PlanetPrototype>("generic_planet")).ToArray(), 1).Single();
+            Planet startingPlanet = Random.Shared.GetItems(World.Planets.ToArray(), 1).Single();
 
-            CreateTeamPacket createTeamPacket = new CreateTeamPacket(
-                Prototypes.Get<CreateTeamPacketPrototype>("create_team_packet"),
-                hello.ClientName,
-                Prototypes.Get<TeamPrototype>("player_team"),
-                1000
-                );
+            CreateTeamPacket createTeamPacket = new CreateTeamPacket()
+            {
+                name = hello.ClientName,
+                teamPrototype = Prototypes.Get<TeamPrototype>("player_team"),
+                money = 1000
+            };
+
 
             // Team team = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
             // team.Money = 1000;
@@ -71,19 +72,21 @@ class HostedLobby : Lobby
             server.SendAll(createTeamPacket, s => s != connection);
 
             Team team = createTeamPacket.CreateTeam();
-            World.Add(team);
+            DebugLog.Message(hello.ClientName + "'s team is " + team.ID);
             associations[team] = connection;
-            SendWorld(connection, team.AsReference());
+            World.Add(team);
 
-            SummonShipCommand summonShipCommand = new SummonShipCommand(
-                Prototypes.Get<SummonShipCommandPrototype>("summon_ship_command"),
-                team.AsReference(),
-                Prototypes.Get<ShipPrototype>("small_ship"),
-                [Prototypes.Get<ModulePrototype>("construction_module")],
-                startingPlanet.Transform
-                );
+            SendWorld(connection, team);
 
-            ((PlayerCommandProcessor)World.PlayerTeam.Actor.GetCommandProcessor()).AddCommand(summonShipCommand);
+            SummonShipCommand summonShipCommand = new SummonShipCommand() 
+            {
+                team = team,
+                shipPrototype = Prototypes.Get<ShipPrototype>("small_ship"),
+                modulePrototypes = [Prototypes.Get<ModulePrototype>("construction_module")],
+                transform = startingPlanet.Transform
+            };
+
+            ((PlayerCommandProcessor)World.PlayerTeam.GetCommandProcessor()).AddCommand(summonShipCommand);
         }
 
         if (server.ReceivePacket<WorldDownloadCompletePacket>(out var _, out connection))
@@ -105,10 +108,11 @@ class HostedLobby : Lobby
         }
     }
 
-    private void SendWorld(Socket connection, ActorReference<Team> teamToPlayAs)
+    private void SendWorld(Socket connection, Team teamToPlayAs)
     {
         DebugLog.Message("sending world to " + (connection.RemoteEndPoint!.ToString()));
-        var prototype = Prototypes.Get<WorldDownloadPacketPrototype>("world_download_packet");
+        // var prototype = Prototypes.Get<WorldDownloadPacketPrototype>("world_download_packet");
+        
         WorldSerializer serializer = new();
         using MemoryStream ms = new();
         using BinaryWriter writer = new(ms);
@@ -121,13 +125,13 @@ class HostedLobby : Lobby
         {
             int length = Math.Min(data.Length - position, WorldDataPacket.ChunkSize);
             byte[] chunkData = data.AsSpan(position, length).ToArray();
-            chunks.Add(new WorldDataPacket(Prototypes.Get<WorldDataPacketPrototype>("world_data_packet"), index, chunkData));
+            chunks.Add(new WorldDataPacket() {  packetIndex = index, data = chunkData });
             
             position += WorldDataPacket.ChunkSize;
             index++;
         }
 
-        WorldDownloadPacket worldPacket = new(prototype, teamToPlayAs, chunks.Count);
+        WorldDownloadPacket worldPacket = new() { teamIDToPlayAs = teamToPlayAs.ID, numberOfChunks = chunks.Count };
 
         World.TurnProcessor.startingTurn = World.TurnProcessor.turn;
         server.Send(worldPacket, connection);

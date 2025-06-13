@@ -8,11 +8,19 @@ using System.Threading.Tasks;
 namespace SpaceGame.Structures;
 internal class UrbanDistrictPrototype : StructurePrototype
 {
+    public override Type ActorType => typeof(UrbanDistrict);
+
     public int PayoutInterval { get; set; }
     public int PayoutAmount { get; set; }
 
-    public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
-    {
-        return new UrbanDistrict(this, id, grid, location, rotation, team);
-    }
+    //public override UrbanDistrict CreateStructure(ulong id, Team team, Grid grid, HexCoordinate location, int rotation)
+    //{
+    //    return new UrbanDistrict(this, id)
+    //    {
+    //        Team = team,
+    //        Grid = grid,
+    //        Location = location,
+    //        Rotation = rotation,
+    //    };
+    //}
 }

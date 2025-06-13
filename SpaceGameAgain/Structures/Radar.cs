@@ -6,11 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures;
+
+[Serializable]
 internal class Radar : Structure
 {
     public override RadarPrototype Prototype => (RadarPrototype)base.Prototype;
 
-    public Radar(RadarPrototype prototype, ulong id, ActorReference<Grid> grid, HexCoordinate location, int rotation, ActorReference<Team> team) : base(prototype, id, grid, location, rotation, team)
+    public Radar(RadarPrototype prototype, ulong id) : base(prototype, id)
     {
     }
 
@@ -27,10 +29,12 @@ internal class Radar : Structure
 
 class RadarPrototype : StructurePrototype
 {
+    public override Type ActorType => typeof(Radar);
+
     public float PoweredRevealRadius { get; set; }
 
-    public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
-    {
-        return new Radar(this, id, grid, location, rotation, team);
-    }
+    //public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
+    //{
+    //    return new Radar(this, id, grid, location, rotation, team);
+    //}
 }
