@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Interaction;
-internal class MouseDragHandler
+internal class MouseDragHandler(GameWorld World)
 {
     public void Update()
     {

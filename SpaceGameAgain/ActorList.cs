@@ -1,8 +1,16 @@
-﻿namespace SpaceGame;
+﻿
+namespace SpaceGame;
 
-class ActorList<TActor> : List<TActor>
+public class ActorList<TActor> : List<TActor>
     where TActor : Actor
 {
+    public GameWorld World { get; }
+
+    public ActorList(GameWorld world)
+    {
+        this.World = world;
+    }
+
     public bool AddIfApplicable(Actor actor)
     {
         if (actor is TActor tActor)

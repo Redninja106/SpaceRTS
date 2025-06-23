@@ -32,7 +32,7 @@ internal class Structure : Unit
     public bool Powered { get; set; }
     public override ITexture Icon => Icons.Structure;
 
-    public Structure(StructurePrototype prototype, ulong id) : base(prototype, id)
+    public Structure(StructurePrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
         UpdateStatus();
     }
@@ -59,7 +59,7 @@ internal class Structure : Unit
     [DebugOverlay]
     public static void ShowStructureAdjacentCells()
     {
-        if (World.SelectInteractionContext.target is Structure structure)
+        if (Program.World.SelectInteractionContext.target is Structure structure)
         {
             foreach (var adjacent in structure.GetAdjacentCells())
             {
@@ -173,7 +173,7 @@ internal class Structure : Unit
         // window.Text(Prototype.Title);
     }
 
-    public override void DrawHighlightAbove(ICanvas canvas, Camera camera, bool selected)
+    public override void RenderBackgroundOverlay(ICanvas canvas, Camera camera, bool selected)
     {
         for (int i = 0; i < Prototype.Outline.Length; i += 2)
         {
@@ -213,10 +213,10 @@ internal class Structure : Unit
         //}
 
 
-        base.DrawHighlightAbove(canvas, camera, selected);
+        // base.DrawHighlightAbove(canvas, camera, selected);
     }
 
-    public override void DrawHighlightBelow(ICanvas canvas, Camera camera, bool selected)
+    public override void RenderGroundOverlay(ICanvas canvas, Camera camera, bool selected)
     {
         canvas.Transform(World.Camera.CreateRelativeMatrix(InterpolatedTransform));
         canvas.Stroke(World.PlayerTeam.GetRelationColor(Team) with { A = (byte)(selected ? 255 : 100) });
@@ -225,7 +225,7 @@ internal class Structure : Unit
             canvas.DrawLine(Prototype.Outline[i], Prototype.Outline[i + 1]);
         }
 
-        base.DrawHighlightBelow(canvas, camera, selected);
+        // base.DrawHighlightBelow(canvas, camera, selected);
     }
 
 }

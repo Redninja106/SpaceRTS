@@ -1,6 +1,6 @@
 ﻿namespace SpaceGame.Interaction;
 
-internal class MouseState(MouseButton button)
+public class MouseState(GameWorld World, MouseButton button)
 {
     public float DragThreshold = 10f;
 

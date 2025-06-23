@@ -11,9 +11,11 @@ internal class StarSystemGenerator
 {
     private PlanetPrototype[] planetPrototypes;
     private Random random;
+    private GameWorld World;
 
-    public StarSystemGenerator(PlanetPrototype planetPrototype, Random random)
+    public StarSystemGenerator(GameWorld world, PlanetPrototype planetPrototype, Random random)
     {
+        this.World = world;
         this.planetPrototypes = [
                 Prototypes.Get<PlanetPrototype>("mars"),
                 Prototypes.Get<PlanetPrototype>("sandy_planet"),
@@ -26,7 +28,7 @@ internal class StarSystemGenerator
 
     public void GenerateSystem()
     {
-        var star = new Planet(Prototypes.Get<PlanetPrototype>("star"), World.NewID())
+        var star = new Planet(Prototypes.Get<PlanetPrototype>("star"), World, World.NewID())
         {
             Radius = random.NextSingle(75, 125),
             orbit = null
@@ -43,6 +45,7 @@ internal class StarSystemGenerator
 
             var planet = new Planet(
                 random.GetItems(planetPrototypes, 1)[0],
+                World,
                 World.NewID()
             )
             { 

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Interaction;
-internal interface IInteractionContext
+interface IInteractionContext
 {
     void Update(MouseState leftMouse, MouseState rightMouse);
     void RenderBackgroundOverlay(ICanvas canvas, MouseState leftMouse, MouseState rightMouse);

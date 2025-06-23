@@ -1,1 +1,0 @@
-{"type":["object","null"],"properties":{"texture_file":{"type":"string"},"normal_map_file":{"type":"string"},"actor_type":{"$comment":"Unsupported .NET type","not":{"enum":["chaingun_system","missile_system"]}},"name":{"type":"string"}},"prototype":{"const":"BackgroundMaterial"}}

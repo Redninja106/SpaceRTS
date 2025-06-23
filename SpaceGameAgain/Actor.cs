@@ -11,8 +11,9 @@ using System.Threading.Tasks;
 namespace SpaceGame;
 
 [Serializable]
-public abstract class Actor(Prototype prototype, ulong id) : IInspectable
+public abstract class Actor(Prototype prototype, GameWorld world, ulong id) : IInspectable
 {
+    internal GameWorld World { get; } = world;
     public virtual Prototype Prototype { get; } = prototype;
 
     // serialized manually -- necessary for reference handling

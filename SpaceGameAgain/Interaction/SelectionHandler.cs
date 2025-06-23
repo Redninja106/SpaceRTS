@@ -9,11 +9,12 @@ using SpaceGame.GUI;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Fleets;
 using SpaceGame.Ships.Modules;
+using SpaceGame.Stations;
 using SpaceGame.Structures;
 using SpaceGame.Teams;
 
 namespace SpaceGame.Interaction;
-internal class SelectionHandler
+internal class SelectionHandler(GameWorld World)
 {
     private HashSet<Unit> selected = [];
 
@@ -42,33 +43,60 @@ internal class SelectionHandler
 
     public void RenderBackgroundOverlay(ICanvas canvas, Camera camera)
     {
-        foreach (var selectable in GetFocusedOrSelected())
+        foreach (var unit in GetFocusedOrSelected())
         {
-            if (selectable is Structure structure)
+            canvas.PushState();
+            //unit.InterpolatedTransform.ApplyTo(canvas, camera);
+            if (unit is Structure)
             {
-                canvas.PushState();
-                structure.DrawHighlightBelow(canvas, camera, true);
-                canvas.PopState();
+                RenderUnitOutline(canvas, unit, unit.Team.GetRelationColor(World.PlayerTeam));
             }
+            unit.RenderBackgroundOverlay(canvas, camera, true);
+            canvas.PopState();
         }
     }
 
     public void RenderGroundOverlay(ICanvas canvas, Camera camera)
     {
-        foreach (var selectable in GetFocusedOrSelected())
+        foreach (var unit in GetFocusedOrSelected())
         {
-            if (selectable is Structure structure)
+            canvas.PushState();
+            // unit.InterpolatedTransform.ApplyTo(canvas, camera);
+            unit.RenderGroundOverlay(canvas, camera, true);
+
+            if (unit is not Structure)
             {
-                canvas.PushState();
-                structure.DrawHighlightAbove(canvas, camera, true);
-                canvas.PopState();
+                RenderUnitOutline(canvas, unit, unit.Team.GetRelationColor(World.PlayerTeam));
             }
-            else if (selectable is Ship ship)
-            {
-                canvas.PushState();
-                ship.DrawHighlightBelow(canvas, camera, true);
-                canvas.PopState();
-            }
+            canvas.PopState();
+        }
+
+        //foreach (var selectable in GetFocusedOrSelected())
+        //{
+        //    canvas.PushState();
+        //    selectable.RenderGroundOverlay(canvas, camera, true);
+        //    canvas.PopState();
+
+        //    //else if (selectable is Fleet fleet)
+        //    //{
+        //    //    foreach (var fleetShip in fleet.ships)
+        //    //    {
+        //    //        canvas.PushState();
+        //    //        fleetShip.DrawHighlightAbove(canvas, camera, true);
+        //    //        canvas.PopState();
+        //    //    }
+        //    //}
+        //}
+    }
+
+    public void RenderSkyOverlay(ICanvas canvas, Camera camera)
+    {
+        foreach (var unit in GetFocusedOrSelected())
+        {
+            canvas.PushState();
+            unit.InterpolatedTransform.ApplyTo(canvas, camera);
+            unit.RenderSkyOverlay(canvas, camera, true);
+            canvas.PopState();
             //else if (selectable is Fleet fleet)
             //{
             //    foreach (var fleetShip in fleet.ships)
@@ -81,26 +109,23 @@ internal class SelectionHandler
         }
     }
 
-    public void RenderSkyOverlay(ICanvas canvas, Camera camera)
+    public static void RenderUnitOutline(ICanvas canvas, Unit unit, Color color)
     {
-        foreach (var selectable in GetFocusedOrSelected())
+        canvas.PushState();
+        canvas.Stroke(color);
+        if (unit is Structure structure)
         {
-            if (selectable is Ship ship)
+            for (int i = 0; i < structure.Prototype.Outline.Length; i += 2)
             {
-                canvas.PushState();
-                ship.DrawHighlightAbove(canvas, camera, true);
-                canvas.PopState();
+                canvas.DrawLine(structure.Prototype.Outline[i], structure.Prototype.Outline[i + 1]);
             }
-            //else if (selectable is Fleet fleet)
-            //{
-            //    foreach (var fleetShip in fleet.ships)
-            //    {
-            //        canvas.PushState();
-            //        fleetShip.DrawHighlightAbove(canvas, camera, true);
-            //        canvas.PopState();
-            //    }
-            //}
         }
+        else
+        {
+            canvas.DrawCircle(0, 0, (float)unit.GetCollisionRadius());
+        }
+
+        canvas.PopState();
     }
 
     private IEnumerable<Unit> GetFocusedOrSelected()

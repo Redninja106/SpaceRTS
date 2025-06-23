@@ -17,9 +17,9 @@ internal class CreateTeamPacket : Packet
     [Serialize]
     public required int money;
 
-    public Team CreateTeam()
+    public Team CreateTeam(GameWorld World)
     {
-        return new Team(teamPrototype, World.NewID())
+        return new Team(teamPrototype, World, World.NewID())
         {
             Money = money,
             Name = name

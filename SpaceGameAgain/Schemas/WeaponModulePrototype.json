@@ -1,0 +1,31 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "actor_type": {
+      "$comment": "Unsupported .NET type",
+      "not": true
+    },
+    "weapon_system_prototype": {
+      "oneOf": [
+        {
+          "$ref": "WeaponSystemPrototype.json"
+        }
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_anonymous": {
+      "type": "boolean"
+    }
+  },
+  "prototype": {
+    "const": "WeaponModulePrototype"
+  }
+}

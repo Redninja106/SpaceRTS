@@ -1,0 +1,30 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "texture_file": {
+      "type": "string"
+    },
+    "normal_map_file": {
+      "type": "string"
+    },
+    "actor_type": {
+      "$comment": "Unsupported .NET type",
+      "not": true
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_anonymous": {
+      "type": "boolean"
+    }
+  },
+  "prototype": {
+    "const": "BackgroundMaterial"
+  }
+}

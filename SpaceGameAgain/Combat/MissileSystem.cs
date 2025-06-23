@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal class MissileSystem(MissileSystemPrototype prototype, ulong id) : WeaponSystem(prototype, id)
+internal class MissileSystem(MissileSystemPrototype prototype, GameWorld world, ulong id) : WeaponSystem(prototype, world, id)
 {
     public override MissileSystemPrototype Prototype => (MissileSystemPrototype)base.Prototype;
 
@@ -25,11 +25,12 @@ internal class MissileSystem(MissileSystemPrototype prototype, ulong id) : Weapo
     public override void Tick()
     {
         base.Tick();
-        if (Unit is Ship ship && ship.orders.Count > 0 && ship.orders.Peek() is AttackOrder attackOrder)
-        {
-            target = attackOrder.target;
-        }
-        else if (target == null)
+        // if (Unit is Ship ship && ship.orders.Count > 0 && ship.orders.Peek() is AttackOrder attackOrder)
+        // {
+        //     target = attackOrder.target;
+        // }
+        // else 
+        if (target == null)
         {
             // TODO: replace this awful, no good, terrible way of doing this with some kind of bin system
             foreach (var s in World.Ships)
@@ -75,7 +76,7 @@ internal class MissileSystem(MissileSystemPrototype prototype, ulong id) : Weapo
 
     private void Fire(Unit target)
     {
-        var missile = new Missile(Prototypes.Get<MissilePrototype>("missile"), World.NewID())
+        var missile = new Missile(Prototypes.Get<MissilePrototype>("missile"), World, World.NewID())
         {
             Target = target,
             TargetOffset = DoubleVector.FromVector2(World.TickRandom.NextUnitVector2() * World.TickRandom.NextSingle() * 1.5f),

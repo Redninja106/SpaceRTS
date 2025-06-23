@@ -24,7 +24,7 @@ internal class Missile : Actor, IDestructable, IDamagable, ITargetable
     public float explosionProgress;
     public float age;
 
-    public Missile(MissilePrototype prototype, ulong id) : base(prototype, id)
+    public Missile(MissilePrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
         //Target = target;
         //TargetOffset = targetOffset;

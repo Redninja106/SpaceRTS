@@ -1,1 +1,0 @@
-{"type":["object","null"],"properties":{"actor_type":{"$comment":"Unsupported .NET type","not":{"enum":["grassy_material","mars_material","sandy_material","rocky_material","mud_material","star_material"]}},"name":{"type":"string"}},"prototype":{"const":"NullTeamPrototype"}}

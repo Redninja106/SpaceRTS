@@ -86,6 +86,8 @@ partial class Program : Simulation
     private ITexture visibilityTexture;
     private CompositingShader compositingShader = new CompositingShader();
 
+    public static GameWorld World;
+
     public override void OnInitialize()
     {
         Time.MaxDeltaTime = 1 / 30f;
@@ -97,19 +99,19 @@ partial class Program : Simulation
 
         World = new();
         
-        var playerTeam = new Team(Prototypes.Get<PlayerTeamPrototype>("player_team"), World.NewID());
+        var playerTeam = new Team(Prototypes.Get<PlayerTeamPrototype>("player_team"), World, World.NewID());
         playerTeam.Money += 1000;
         // playerTeam.CommandProcessor = new PlayerCommandProcessor();
         World.PlayerTeam = playerTeam;
         World.Add(playerTeam);
 
-        var starterShip = new Ship(Prototypes.Get<ShipPrototype>("small_ship"), World.NewID()) { Team = playerTeam };
-        var module = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID()) { Ship = starterShip };
+        var starterShip = new Ship(Prototypes.Get<ShipPrototype>("small_ship"), World, World.NewID()) { Team = playerTeam };
+        var module = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World, World.NewID()) { Ship = starterShip };
         starterShip.modules.Add(module);
         World.Add(starterShip);
         World.Add(module);
 
-        var spacePirates = new Team(Prototypes.Get<TeamPrototype>("null_team"), World.NewID()) { Name = "Space Pirates" };
+        var spacePirates = new Team(Prototypes.Get<TeamPrototype>("null_team"), World, World.NewID()) { Name = "Space Pirates" };
         // spacePirates.CommandProcessor = new NullCommandProcessor();
         World.Add(spacePirates);
 
@@ -130,14 +132,17 @@ partial class Program : Simulation
         // World.Ships[1].modules.Add(((Module)constMod2).AsReference());
         // World.Add(constMod2);
 
-        PlanetPrototype planetProto = Prototypes.Get<PlanetPrototype>("star");
-        StarSystemGenerator generator = new(planetProto, Random.Shared);
-        generator.GenerateSystem();
+        //PlanetPrototype planetProto = Prototypes.Get<PlanetPrototype>("star");
+        //StarSystemGenerator generator = new(planetProto, Random.Shared);
+        //generator.GenerateSystem();
 
-        Planet starterPlanet = World.Planets[Random.Shared.Next(1, World.Planets.Count)];
-        DebugLog.Message($"starting planet id: {starterPlanet.ID}");
-        starterShip.Teleport(starterPlanet.Transform);
-        World.Camera.Transform = World.Camera.SmoothTransform = starterPlanet.Transform;
+        //Planet starterPlanet = World.Planets[Random.Shared.Next(1, World.Planets.Count)];
+        //DebugLog.Message($"starting planet id: {starterPlanet.ID}");
+        //starterShip.Teleport(starterPlanet.Transform);
+        //World.Camera.Transform = World.Camera.SmoothTransform = starterPlanet.Transform;
+
+        PlanetGenerator solGenerator = Prototypes.Get<PlanetGenerator>("sol_generator");
+        Planet planet = solGenerator.Generate(World, Random.Shared);
 
         // Planet tradeUnionPlanet = World.Planets[Random.Shared.Next(1, World.Planets.Count)];
         // Team tradeUnion = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default, money: 1000);

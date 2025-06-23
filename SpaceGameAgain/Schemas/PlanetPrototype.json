@@ -1,0 +1,27 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "material": {
+      "oneOf": [
+        {
+          "$ref": "BackgroundMaterial.json"
+        }
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_anonymous": {
+      "type": "boolean"
+    }
+  },
+  "prototype": {
+    "const": "PlanetPrototype"
+  }
+}

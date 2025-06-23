@@ -1,0 +1,6 @@
+{
+  "prototype": "WormholeStationPrototype",
+  "name": "wormhole_station",
+  "collision_radius": 5,
+  "title": "Wormhole Station"
+}

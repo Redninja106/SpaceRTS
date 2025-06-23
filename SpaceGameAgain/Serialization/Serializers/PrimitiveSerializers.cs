@@ -13,6 +13,7 @@ internal static class PrimitiveSerializers
         typeSerializers.Add(typeof(ulong), new UInt64Serializer());
         typeSerializers.Add(typeof(float), new SingleSerializer());
         typeSerializers.Add(typeof(double), new DoubleSerializer());
+        typeSerializers.Add(typeof(bool), new BooleanSerializer());
     }
 
     public class Int32Serializer : Serializer
@@ -68,4 +69,16 @@ internal static class PrimitiveSerializers
         }
     }
 
+    public class BooleanSerializer : Serializer
+    {
+        public override object? Deserialize(BinaryReader reader)
+        {
+            return reader.ReadBoolean();
+        }
+
+        public override void Serialize(BinaryWriter writer, object value)
+        {
+            writer.Write((bool)value);
+        }
+    }
 }

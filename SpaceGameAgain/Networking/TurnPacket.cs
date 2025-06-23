@@ -34,7 +34,7 @@ internal class TurnPacket : Packet
             return;
         }
 
-        if (this.turn < World.TurnProcessor.turn)
+        if (this.turn < Program.World.TurnProcessor.turn)
         {
             return;
         }
@@ -48,7 +48,7 @@ internal class TurnPacket : Packet
             DebugLog.Warning($"received turn {turn} for {team} twice!");
         }
 
-        if (World.TurnProcessor.turn < turn && !commandProcessor.HasCommands(turn - 1))
+        if (Program.World.TurnProcessor.turn < turn && !commandProcessor.HasCommands(turn - 1))
         {
             commandProcessor.AddCommands(turn - 1, prevTurnCommands.ToArray());
         }

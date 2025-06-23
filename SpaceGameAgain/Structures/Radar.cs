@@ -12,7 +12,7 @@ internal class Radar : Structure
 {
     public override RadarPrototype Prototype => (RadarPrototype)base.Prototype;
 
-    public Radar(RadarPrototype prototype, ulong id) : base(prototype, id)
+    public Radar(RadarPrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
     }
 

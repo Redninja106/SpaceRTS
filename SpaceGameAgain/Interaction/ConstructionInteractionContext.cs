@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Interaction;
-internal class ConstructionInteractionContext : IInteractionContext
+internal class ConstructionInteractionContext(GameWorld World) : IInteractionContext
 {
     private StructurePrototype? prototype;
     private Grid? hoveredGrid;
@@ -189,13 +189,13 @@ internal class ConstructionInteractionContext : IInteractionContext
     [DebugOverlay]
     public static void ShowHoveredGridCoordinate()
     {
-        foreach (var planet in World.Planets)
+        foreach (var planet in Program.World.Planets)
         {
-            if (planet.Grid.GetCellFromPoint(World.MousePosition) != null)
+            if (planet.Grid.GetCellFromPoint(Program.World.MousePosition) != null)
             {
-                Vector2 hoveredPosition = planet.Grid.Transform.WorldToLocal(World.MousePosition.ToVector2());
+                Vector2 hoveredPosition = planet.Grid.Transform.WorldToLocal(Program.World.MousePosition.ToVector2());
                 HexCoordinate location = HexCoordinate.FromCartesian(hoveredPosition);
-                DebugDraw.Text(location.ToString(), World.Camera.VerticalSize / 30, location.ToCartesian(), planet.Grid.Transform);
+                DebugDraw.Text(location.ToString(), Program.World.Camera.VerticalSize / 30, location.ToCartesian(), planet.Grid.Transform);
                 return;
             }
         }

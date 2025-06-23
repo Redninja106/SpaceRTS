@@ -1,0 +1,67 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "actor_type": {
+      "$comment": "Unsupported .NET type",
+      "not": true
+    },
+    "rise_speed": {
+      "type": "number"
+    },
+    "scale": {
+      "type": "number"
+    },
+    "fly_speed": {
+      "type": "number"
+    },
+    "turn_speed": {
+      "type": "number"
+    },
+    "fly_height": {
+      "type": "number"
+    },
+    "model": {
+      "oneOf": [
+        {
+          "$ref": "SpriteModel.json"
+        }
+      ]
+    },
+    "max_health": {
+      "type": "integer"
+    },
+    "title": {
+      "type": "string"
+    },
+    "collision_radius": {
+      "type": "number"
+    },
+    "reveal_radius": {
+      "type": "number"
+    },
+    "armor": {
+      "type": "integer"
+    },
+    "armor_effectiveness": {
+      "type": "number"
+    },
+    "base_defense_info": {
+      "type": "object"
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_anonymous": {
+      "type": "boolean"
+    }
+  },
+  "prototype": {
+    "const": "ShipPrototype"
+  }
+}

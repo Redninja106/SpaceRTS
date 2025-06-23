@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 namespace SpaceGame.Data;
 internal class DataPrototype : Prototype
 {
-    public override Type ActorType => throw new Exception("DataPrototype does not have an actor type");
+    public override Type ActorType => throw new Exception($"Data Prototype {GetType().Name} does not have an actor type");
 }

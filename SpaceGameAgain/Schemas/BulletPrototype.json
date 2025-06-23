@@ -1,0 +1,33 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "actor_type": {
+      "$comment": "Unsupported .NET type",
+      "not": true
+    },
+    "speed": {
+      "type": "number"
+    },
+    "damage": {
+      "type": "number"
+    },
+    "lifetime": {
+      "type": "integer"
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_anonymous": {
+      "type": "boolean"
+    }
+  },
+  "prototype": {
+    "const": "BulletPrototype"
+  }
+}

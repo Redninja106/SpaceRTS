@@ -8,15 +8,17 @@ namespace SpaceGame.Networking;
 
 class RemoteLobby : Lobby
 {
+    public GameWorld World { get; set; }
     public SocketClient client;
     private WorldDataPacket?[]? chunks;
     private WorldDownloadPacket? currentDownload;
 
     public override bool IsDownloadingWorld => currentDownload != null;
 
-    public RemoteLobby(SocketClient client)
+    public RemoteLobby(GameWorld world, SocketClient client)
     {
         this.client = client;
+        this.World = world;
 
         client.SendPacket(new HelloPacket() {  ClientName = "jerry" });
     }
@@ -121,7 +123,7 @@ class RemoteLobby : Lobby
 
         if (client.ReceivePacket(out CreateTeamPacket? createTeam))
         {
-            World.Add(createTeam.CreateTeam());
+            World.Add(createTeam.CreateTeam(World));
         }
 
     }

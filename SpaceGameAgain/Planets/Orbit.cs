@@ -16,6 +16,8 @@ internal class Orbit
     public required float radius;
     [Serialize]
     public required float phase;
+    [Serialize]
+    public required float speed = 1;
 
     public Orbit()
     {
@@ -29,14 +31,22 @@ internal class Orbit
         this.phase = phase;
     }
 
-    public void Tick(float speed)
+    public void Tick()
     {
-        phase += speed / radius;
+        phase += Program.Timestep * speed / radius;
     }
 
     public Transform GetLocation()
     {
         return center.Transform.Translated(DoubleVector.FromVector2(Angle.ToVector(phase) * radius));
+    }
+
+    public DoubleVector Forecast(float time)
+    {
+        DoubleVector newCenter = (center as Planet)!.orbit?.Forecast(time) ?? center.Transform.Position;
+        float newPhase = phase + time * speed / radius;
+
+        return newCenter + new DoubleVector(double.Cos(newPhase) * radius, double.Sin(newPhase) * radius);
     }
 
     // public void Apply(WorldActor actor)

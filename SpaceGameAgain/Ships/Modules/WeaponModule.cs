@@ -16,7 +16,7 @@ internal class WeaponModule : Module
 
     public override ITexture Icon => Icons.Defensive;
 
-    public WeaponModule(WeaponModulePrototype prototype, ulong id) : base(prototype, id)
+    public WeaponModule(WeaponModulePrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
     }
 
@@ -24,7 +24,7 @@ internal class WeaponModule : Module
     {
         base.InitializeActor();
 
-        WeaponSystem weaponSystem = Prototype.WeaponSystemPrototype.CreateActor(World.NewID());
+        WeaponSystem weaponSystem = Prototype.WeaponSystemPrototype.CreateActor(World, World.NewID());
         weaponSystem.Unit = this.Ship;
         World.Add(weaponSystem);
     }

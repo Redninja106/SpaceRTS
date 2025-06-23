@@ -1,0 +1,49 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "minimum_size": {
+      "type": "number"
+    },
+    "maximum_size": {
+      "type": "number"
+    },
+    "planet_prototype": {
+      "oneOf": [
+        {
+          "$ref": "PlanetPrototype.json"
+        }
+      ]
+    },
+    "moon_passes": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ]
+      }
+    },
+    "actor_type": {
+      "$comment": "Unsupported .NET type",
+      "not": true
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_anonymous": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "planet_prototype"
+  ],
+  "prototype": {
+    "const": "PlanetGenerator"
+  }
+}

@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 namespace SpaceGame.Serialization;
 internal class WorldSerializer
 {
-    public void Deserialize(BinaryReader reader)
+    public GameWorld Deserialize(BinaryReader reader)
     {
-        World = new GameWorld();
+        var World = new GameWorld();
         // fieldSerializer.Deserialize(reader, world);
 
         World.NextID = reader.ReadUInt64();
@@ -40,6 +40,8 @@ internal class WorldSerializer
         }
 
         World.PlayerTeam = (Team)World.Actors[playerTeamId];
+
+        return World;
     }
 
     public void Serialize(GameWorld world, BinaryWriter writer)
@@ -52,13 +54,13 @@ internal class WorldSerializer
         writer.Write(world.TurnProcessor.RemainingTicks);
         writer.Write(world.tick);
 
-        Prototype[] prototypes = Prototypes.RegisteredPrototypes.OfType<Prototype>().Where(p => World.GetActorsByPrototype(p).Any()).ToArray();
+        Prototype[] prototypes = Prototypes.RegisteredPrototypes.OfType<Prototype>().Where(p => world.GetActorsByPrototype(p).Any()).ToArray();
         writer.Write(prototypes.Length);
 
         ActorSerializationList[] serializationLists = new ActorSerializationList[prototypes.Length];
         for (int i = 0; i < prototypes.Length; i++)
         {
-            serializationLists[i] = new(prototypes[i], World.GetActorsByPrototype(prototypes[i]).ToArray());
+            serializationLists[i] = new(prototypes[i], world.GetActorsByPrototype(prototypes[i]).ToArray());
         }
 
         for (int i = 0; i < serializationLists.Length; i++)

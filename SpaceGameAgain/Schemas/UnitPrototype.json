@@ -1,0 +1,45 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "max_health": {
+      "type": "integer"
+    },
+    "title": {
+      "type": "string"
+    },
+    "collision_radius": {
+      "type": "number"
+    },
+    "reveal_radius": {
+      "type": "number"
+    },
+    "armor": {
+      "type": "integer"
+    },
+    "armor_effectiveness": {
+      "type": "number"
+    },
+    "base_defense_info": {
+      "type": "object"
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_anonymous": {
+      "type": "boolean"
+    },
+    "actor_type": {
+      "$comment": "Unsupported .NET type",
+      "not": true
+    }
+  },
+  "prototype": {
+    "const": "UnitPrototype"
+  }
+}

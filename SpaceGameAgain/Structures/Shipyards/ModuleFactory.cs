@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Structures.Shipyards;
 
 [Serializable]
-internal class ModuleFactory(StructurePrototype prototype, ulong id) : Structure(prototype, id)
+internal class ModuleFactory(StructurePrototype prototype, GameWorld world, ulong id) : Structure(prototype, world, id)
 {
     public override ModuleFactoryPrototype Prototype => (ModuleFactoryPrototype)base.Prototype;
 }

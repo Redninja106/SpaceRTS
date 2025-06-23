@@ -1,1 +1,0 @@
-{"type":["object","null"],"properties":{"actor_type":{"$comment":"Unsupported .NET type","not":{"enum":["chaingun_system","missile_system"]}},"weapon_system_prototype":{"enum":["chaingun_system","missile_system"]},"name":{"type":"string"}},"prototype":{"const":"WeaponModulePrototype"}}

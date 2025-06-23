@@ -11,7 +11,7 @@ namespace SpaceGame.Structures.Shipyards;
 [Serializable]
 internal class Manufactory : Structure
 {
-    public Manufactory(StructurePrototype prototype, ulong id) : base(prototype, id)
+    public Manufactory(StructurePrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
     }
 }

@@ -18,7 +18,7 @@ internal class Planet : Actor
     public override PlanetPrototype Prototype => (PlanetPrototype)base.Prototype;
 
     [field: Serialize]
-    public float Radius { get; init; } = 26;
+    public float Radius { get; set; } = 26;
 
     //public Color Color 
     //{ 
@@ -43,7 +43,7 @@ internal class Planet : Actor
     public required Orbit? orbit;
     private PlanetShader shader;
 
-    public Planet(PlanetPrototype prototype, ulong id) : base(prototype, id)
+    public Planet(PlanetPrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
         shader = new PlanetShader();
     }
@@ -54,7 +54,7 @@ internal class Planet : Actor
 
         if (grid == null)
         {
-            this.grid = new Grid(Prototypes.Get<GridPrototype>("grid"), World.NewID()) { parent = this };
+            this.grid = new Grid(Prototypes.Get<GridPrototype>("grid"), World, World.NewID()) { parent = this };
             World.Add(this.grid);
         }
 
@@ -117,7 +117,7 @@ internal class Planet : Actor
     {
         if (orbit != null)
         {
-            orbit.Tick(Program.Timestep);
+            orbit.Tick();
             this.Transform = orbit.GetLocation();
         }
     }

@@ -54,26 +54,26 @@ internal class TurnHistory
         }
     }
 
-    internal void Serialize(BinaryWriter writer)
-    {
-        writer.Write(turns.Count);
-        foreach (var (turn, teamCommands) in turns)
-        {
-            writer.Write(turn);
-            writer.Write(teamCommands.Count);
-            foreach (var (team, commands) in teamCommands)
-            {
-                writer.Write(team.AsReference());
+    //internal void Serialize(BinaryWriter writer)
+    //{
+    //    writer.Write(turns.Count);
+    //    foreach (var (turn, teamCommands) in turns)
+    //    {
+    //        writer.Write(turn);
+    //        writer.Write(teamCommands.Count);
+    //        foreach (var (team, commands) in teamCommands)
+    //        {
+    //            writer.Write(team.AsReference());
 
-                writer.Write(commands.Length);
-                foreach (var command in commands)
-                {
-                    var serializer = Serializer.GetSerializer(command.GetType());
-                    serializer.Serialize(writer, command);
-                }
-            }
-        }
-    }
+    //            writer.Write(commands.Length);
+    //            foreach (var command in commands)
+    //            {
+    //                var serializer = Serializer.GetSerializer(command.GetType());
+    //                serializer.Serialize(writer, command);
+    //            }
+    //        }
+    //    }
+    //}
 
     //internal static TurnHistory Deserialize(BinaryReader reader)
     //{

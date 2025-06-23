@@ -33,7 +33,7 @@ internal class ShadowedModel : SpriteModel
 
     public override void Render(ICanvas canvas, Transform transform, ColorF tint)
     {
-        transform.Position = World.MousePosition;
+        // transform.Position = World.MousePosition;
         Vector2 v = -transform.Position.Normalized().ToVector2();
         float shadowAngle = Angle.FromVector(-transform.Position.Normalized().ToVector2());
         DebugDraw.Line(Vector2.Zero, Vector2.UnitX.Rotated(shadowAngle), transform with { Rotation = 0 });

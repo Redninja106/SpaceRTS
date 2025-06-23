@@ -116,4 +116,9 @@ public struct Transform
     {
         return this with { Position = position };
     }
+
+    public Transform PositionOnly()
+    {
+        return Default with { Position = this.Position };
+    }
 }

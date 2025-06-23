@@ -5,14 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Planets;
 internal class PlanetPrototype : Prototype
 {
+    [JsonIgnore]
     public override Type ActorType => typeof(Planet);
 
     public BackgroundMaterial Material { get; set; }
+
+    public override Planet CreateActor(GameWorld world, ulong id) => (Planet)base.CreateActor(world, id);
 
     //public override Actor Deserialize(BinaryReader reader)
     //{

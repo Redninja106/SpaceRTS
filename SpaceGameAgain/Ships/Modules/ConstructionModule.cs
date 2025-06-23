@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships.Modules;
 
 [Serializable]
-internal class ConstructionModule(ConstructionModulePrototype prototype, ulong id) : Module(prototype, id)
+internal class ConstructionModule(ConstructionModulePrototype prototype, GameWorld world, ulong id) : Module(prototype, world, id)
 {
     public override ConstructionModulePrototype Prototype => (ConstructionModulePrototype)base.Prototype;
     public override ITexture Icon => Icons.Construction;

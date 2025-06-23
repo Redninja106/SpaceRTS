@@ -21,7 +21,7 @@ internal class TextWidget(Transform transform, string text, float? size = null, 
         Transform.ApplyTo(canvas, camera);
         if (alwaysLegible)
         {
-            float scale = World.Camera.SmoothVerticalSize;
+            float scale = Program.World.Camera.SmoothVerticalSize;
             float minZoom = float.Log(2 * float.Min(camera.DisplayWidth, camera.DisplayHeight) / (128 * float.Sqrt(3)), 1.1f);
             canvas.Scale(scale / minZoom);
         }

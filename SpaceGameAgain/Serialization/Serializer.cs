@@ -6,7 +6,7 @@ namespace SpaceGame.Serialization;
 abstract class Serializer
 {
     private static Dictionary<Type, Serializer> typeSerializers = [];
-    private static ActorReferenceSerializer actorReferenceSerializer = new();
+    private static ActorReferenceSerializer actorReferenceSerializer = new(Program.World);
     private static PrototypeReferenceSerializer prototypeReferenceSerializer = new PrototypeReferenceSerializer();
 
     public abstract void Serialize(BinaryWriter writer, object value);

@@ -5,6 +5,7 @@ using SpaceGame.Orders;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Fleets;
 using SpaceGame.Ships.Formations;
+using SpaceGame.Stations;
 using SpaceGame.Structures;
 using SpaceGame.Teams;
 using System;
@@ -19,16 +20,36 @@ internal class SelectInteractionHandler : IInteractionContext
 {
     public Unit? target;
 
+    public GameWorld World { get; set; }
+
+    public SelectInteractionHandler(GameWorld world)
+    {
+        World = world;
+    }
+
     public void Update(MouseState leftMouse, MouseState rightMouse)
     {
         World.SelectionHandler.VisualFocus = null;
-        if (World.Collision.IsClientVisible(World.MousePosition))
+        if (!leftMouse.Dragging && World.Collision.IsClientVisible(World.MousePosition))
         {
             target = World.Collision.TestPoint(World.MousePosition).FirstOrDefault();
         }
         else
         {
             target = null;
+        }
+
+        if (target is WormholeStation wormhole && wormhole.Link != null)
+        {
+            DoubleVector linkLocation = wormhole.Link.Transform.Position + (World.MousePosition - wormhole.Transform.Position);
+
+            foreach (var ship in wormhole.Link.ships)
+            {
+                if (ship.TestPoint(linkLocation))
+                {
+                    target = ship;
+                }
+            }
         }
 
         if (leftMouse.Released)
@@ -82,7 +103,7 @@ internal class SelectInteractionHandler : IInteractionContext
 
                         if (!Keyboard.IsKeyDown(Key.LeftShift))
                         {
-                            commandProcessor.AddCommand(new CancelOrdersCommand() { target = ship });
+                            //commandProcessor.AddCommand(new CancelOrdersCommand() { target = ship });
                         }
 
                         var command = new AttackCommand(
@@ -113,35 +134,25 @@ internal class SelectInteractionHandler : IInteractionContext
 
                 for (int i = 0; i < ships.Count; i++)
                 {
-                    if (Keyboard.IsKeyDown(Key.LeftShift) && ships[i].orders.TryPeek(out Order? order) && order is MoveOrder)
+                    var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.GetCommandProcessor();
+                    // MoveOrder moveOrder = new MoveOrder(Prototypes.Get<MoveOrderPrototype>("move_order"), World.NewID(), ships[i].AsReference().Cast<Unit>(), World.MousePosition + positions[i]);
+
+
+                    ShipNavigator navigator = new(World);
+                    var path = navigator.GetPath(ships[i], World.MousePosition + positions[i]);
+                    path.Reverse();
+
+                    IssueOrdersCommand command = new()
                     {
-                        // moveOrder.targets.Add(World.MousePosition + positions[i]);
-                    }
-                    else
-                    {
-                        var commandProcessor = (PlayerCommandProcessor)World.PlayerTeam.GetCommandProcessor();
-                        // MoveOrder moveOrder = new MoveOrder(Prototypes.Get<MoveOrderPrototype>("move_order"), World.NewID(), ships[i].AsReference().Cast<Unit>(), World.MousePosition + positions[i]);
+                        Orders = path.ToArray(),
+                        ClearOrders = !Keyboard.IsKeyDown(Key.LeftShift),
+                        Ship = ships[i],
+                    };
+                    commandProcessor.AddCommand(command);
 
-                        if (!Keyboard.IsKeyDown(Key.LeftShift))
-                        {
-                            commandProcessor.AddCommand(new CancelOrdersCommand() { target = ships[i] });
-                        }
-
-                        IssueOrderCommand command = new()
-                        {
-                            Order = new MoveOrder()
-                            {
-                                Unit = ships[i],
-                                target = World.MousePosition + positions[i]
-                            }
-                        };
-
-                        commandProcessor.AddCommand(command);
                         // ships[i].Team.SubmitCommand(new UpdateOrdersCommand());
                         // IssueOrder(ships[i], o.AsReference().Cast<Order>(), ships[i].orders.ToList());
                         // ships[i].orders.Enqueue(o.AsReference().Cast<Order>());
-
-                    }
                 }
             }
 
@@ -286,31 +297,42 @@ internal class SelectInteractionHandler : IInteractionContext
 
     public void RenderBackgroundOverlay(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)
     {
-        if (target != null && !World.SelectionHandler.IsSelected(target) && target is Structure structure)
+        if (target is Structure structure && !World.SelectionHandler.IsSelected(target))
         {
-            canvas.PushState();
-            structure.DrawHighlightBelow(canvas, World.Camera, false);
-            canvas.PopState();
+            target.InterpolatedTransform.ApplyTo(canvas, World.Camera);
+            SelectionHandler.RenderUnitOutline(canvas, target, target.Team.GetRelationColor(World.PlayerTeam) with { A = 100 });
         }
     }
 
     public void RenderGroundOverlay(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)
     {
-        if (target != null && !World.SelectionHandler.IsSelected(target))
+        if (target != null && target is not Structure && !World.SelectionHandler.IsSelected(target))
         {
-            if (target is Ship ship)
-            {
-                canvas.PushState();
-                ship.DrawHighlightBelow(canvas, World.Camera, false);
-                canvas.PopState();
-            }
-            else if (target is Structure structure)
-            {
-                canvas.PushState();
-                structure.DrawHighlightAbove(canvas, World.Camera, false);
-                canvas.PopState();
-            }
+            target.InterpolatedTransform.ApplyTo(canvas, World.Camera);
+            SelectionHandler.RenderUnitOutline(canvas, target, target.Team.GetRelationColor(World.PlayerTeam) with { A = 100 });
         }
+
+        //if (target != null && !World.SelectionHandler.IsSelected(target))
+        //{
+        //    if (target is Ship ship)
+        //    {
+        //        canvas.PushState();
+        //        ship.RenderGroundOverlay(canvas, World.Camera, false);
+        //        canvas.PopState();
+        //    }
+        //    else if (target is Station station)
+        //    {
+        //        canvas.PushState();
+        //        station.RenderGroundOverlay(canvas, World.Camera, false);
+        //        canvas.PopState();
+        //    }
+        //    else if (target is Structure structure)
+        //    {
+        //        canvas.PushState();
+        //        structure.RenderBackgroundOverlay(canvas, World.Camera, false);
+        //        canvas.PopState();
+        //    }
+        //}
     }
 
     public void RenderSkyOverlay(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)
@@ -318,7 +340,7 @@ internal class SelectInteractionHandler : IInteractionContext
         if (target != null && !World.SelectionHandler.IsSelected(target) && target is Ship ship)
         {
             canvas.PushState();
-            ship.DrawHighlightAbove(canvas, World.Camera, false);
+            ship.RenderBackgroundOverlay(canvas, World.Camera, false);
             canvas.PopState();
         }
 

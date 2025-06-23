@@ -36,7 +36,7 @@ internal class Grid : Actor
     public override ref Transform Transform => ref parent.Transform;
     public override Transform InterpolatedTransform => parent.InterpolatedTransform;
 
-    public Grid(GridPrototype prototype, ulong id) : base(prototype, id)
+    public Grid(GridPrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
     }
 
@@ -133,7 +133,7 @@ internal class Grid : Actor
 
     public void PlaceStructure(StructurePrototype prototype, HexCoordinate location, int rotation, Team team, List<HexCoordinate>? footprint = null)
     {
-        var structure = prototype.CreateActor(World.NewID());
+        var structure = prototype.CreateActor(World, World.NewID());
         structure.Team = team;
         structure.Grid = this;
         structure.Location = location;

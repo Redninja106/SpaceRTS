@@ -1,0 +1,46 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "actor_type": {
+      "$comment": "Unsupported .NET type",
+      "not": true
+    },
+    "fire_interval": {
+      "type": "number"
+    },
+    "ammo_capacity": {
+      "type": "integer"
+    },
+    "turn_speed": {
+      "type": "number"
+    },
+    "reload_time": {
+      "type": "number"
+    },
+    "range": {
+      "type": "number"
+    },
+    "model": {
+      "oneOf": [
+        {
+          "$ref": "SpriteModel.json"
+        }
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_anonymous": {
+      "type": "boolean"
+    }
+  },
+  "prototype": {
+    "const": "ChaingunSystemPrototype"
+  }
+}

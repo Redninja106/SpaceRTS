@@ -23,13 +23,20 @@ internal class CreateFleetCommand : Command
 
     public override void Apply()
     {
-        var fleet = new Fleet(Prototypes.Get<FleetPrototype>(fleetPrototype), World.NewID(), ships[0].Transform, team, ships);
+        var fleet = new Fleet(Prototypes.Get<FleetPrototype>(fleetPrototype), team.World, team.World.NewID())
+        { 
+            team = team, 
+            ships = ships
+        };
+
+        fleet.Transform = ships[0].Transform;
+
         foreach (var ship in ships)
         {
             ship.Fleet = fleet;
         }
 
-        World.Add(fleet);
+        team.World.Add(fleet);
     }
 
     //public override void Serialize(BinaryWriter writer)

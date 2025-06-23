@@ -18,7 +18,7 @@ internal class PlayerCommandProcessor : ICommandProcessor
 
     public void AddCommand(Command command)
     {
-        ulong turn = World.TurnProcessor.turn + TurnProcessor.TurnDelay;
+        ulong turn = Program.World.TurnProcessor.turn + TurnProcessor.TurnDelay;
 
         if (!commands.TryGetValue(turn, out Command[]? cmds))
         {
@@ -30,7 +30,7 @@ internal class PlayerCommandProcessor : ICommandProcessor
 
     public bool HasCommands(ulong turn)
     {
-        return turn < (World.TurnProcessor.turn + TurnProcessor.TurnDelay);
+        return turn < (Program.World.TurnProcessor.turn + TurnProcessor.TurnDelay);
     }
 
     public void RemoveCommands(ulong turn)
@@ -49,7 +49,7 @@ internal class PlayerCommandProcessor : ICommandProcessor
         var packet = new TurnPacket()
         {
             turn = turn, 
-            team = World.PlayerTeam, 
+            team = Program.World.PlayerTeam, 
             commands = cmds.ToList(), 
             prevTurnCommands = GetCommands(turn-1).ToList()
         };

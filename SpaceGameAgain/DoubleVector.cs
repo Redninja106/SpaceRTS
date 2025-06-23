@@ -1,6 +1,8 @@
-﻿namespace SpaceGame;
+﻿using System.Diagnostics.CodeAnalysis;
 
-public struct DoubleVector
+namespace SpaceGame;
+
+public struct DoubleVector : IEquatable<DoubleVector>
 {
     public double X;
     public double Y;
@@ -36,7 +38,7 @@ public struct DoubleVector
 
     public double Length()
     {
-        return Math.Sqrt(X * X + Y * Y);
+        return double.Sqrt(X * X + Y * Y);
     }
 
     public double LengthSquared()
@@ -70,9 +72,14 @@ public struct DoubleVector
         return this * (1.0 / Length());
     }
 
-    public static float Distance(DoubleVector a, DoubleVector b)
+    public static double Distance(DoubleVector a, DoubleVector b)
     {
-        return Vector2.Distance(a.ToVector2(), b.ToVector2());
+        return (a - b).Length();
+    }
+
+    public static double DistanceSquared(DoubleVector a, DoubleVector b)
+    {
+        return (a - b).LengthSquared();
     }
 
     public static DoubleVector operator+(DoubleVector a, DoubleVector b)
@@ -88,6 +95,14 @@ public struct DoubleVector
         return new(
             a.X - b.X,
             a.Y - b.Y
+            );
+    }
+
+    public static DoubleVector operator -(DoubleVector vector)
+    {
+        return new(
+            -vector.X,
+            -vector.Y
             );
     }
 
@@ -115,8 +130,33 @@ public struct DoubleVector
             );
     }
 
+    public static bool operator ==(DoubleVector a, DoubleVector b)
+    {
+        return a.Equals(b);
+    }
+
+    public static bool operator !=(DoubleVector a, DoubleVector b)
+    {
+        return !a.Equals(b);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(X, Y);
+    }
+
     public override string ToString()
     {
         return $"<{X}, {Y}>";
+    }
+
+    public bool Equals(DoubleVector other)
+    {
+        return other.X == this.X && other.Y == this.Y;
+    }
+
+    public override bool Equals([NotNullWhen(true)] object? obj)
+    {
+        return obj is DoubleVector v && this.Equals(v);
     }
 }

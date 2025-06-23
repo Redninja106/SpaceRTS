@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Teams;
 internal abstract class TeamPrototype : Prototype
 {
-    public abstract ICommandProcessor CreateCommandProcessor(Team team);
+    public abstract ICommandProcessor CreateCommandProcessor(GameWorld world, Team team);
 
     //public override Actor Deserialize(BinaryReader reader)
     //{

@@ -35,10 +35,10 @@ internal static class BinaryReaderExtensions
         return new(q, r);
     }
 
-    public static ActorReference<TActor> ReadActorReference<TActor>(this BinaryReader reader)
-        where TActor : Actor
-    {
-        ulong id = reader.ReadUInt64();
-        return ActorReference<TActor>.Create(id);
-    }
+    //public static ActorReference<TActor> ReadActorReference<TActor>(this BinaryReader reader)
+    //    where TActor : Actor
+    //{
+    //    ulong id = reader.ReadUInt64();
+    //    return ActorReference<TActor>.Create(id);
+    //}
 }

@@ -1,4 +1,6 @@
-﻿using SpaceGame.Data;
+﻿using Newtonsoft.Json;
+using SpaceGame.Data;
+using SpaceGame.Data.Converters;
 using SpaceGame.Economy;
 using SpaceGame.Planets;
 using SpaceGame.Rendering;
@@ -7,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Tiles;
@@ -15,7 +16,8 @@ namespace SpaceGame.Tiles;
 class TilePrototype : DataPrototype
 {
     public bool BlocksStructures { get; set; }
-    public ColorF? Color { get; set; } = null;
+    [JsonConverter(typeof(NullableColorFConverter))]
+    public ColorF? Color { get; set; }
     public ResourcePrototype? Resource { get; set; }
     public BackgroundMaterial? Material { get; set; } = null;
 
@@ -31,7 +33,7 @@ class TilePrototype : DataPrototype
         }
         else if (Color != null)
         {
-            canvas.Fill(Color.Value);
+            canvas.Fill(Color!.Value);
             canvas.DrawPolygon(Grid.hexagon);
         }
     }

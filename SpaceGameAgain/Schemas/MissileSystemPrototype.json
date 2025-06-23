@@ -1,0 +1,43 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "actor_type": {
+      "$comment": "Unsupported .NET type",
+      "not": true
+    },
+    "salvo_size": {
+      "type": "integer"
+    },
+    "fire_interval": {
+      "type": "integer"
+    },
+    "salvo_interval": {
+      "type": "integer"
+    },
+    "range": {
+      "type": "number"
+    },
+    "model": {
+      "oneOf": [
+        {
+          "$ref": "SpriteModel.json"
+        }
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_anonymous": {
+      "type": "boolean"
+    }
+  },
+  "prototype": {
+    "const": "MissileSystemPrototype"
+  }
+}

@@ -11,20 +11,14 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships.Fleets;
 
 [Serializable]
-internal class Fleet(FleetPrototype prototype, ulong id) : Actor(prototype, id)
+internal class Fleet(FleetPrototype prototype, GameWorld world, ulong id) : Actor(prototype, world, id)
 {
     [Serialize]
-    public Team team;
+    public required Team team;
     
     [Serialize]
-    public Ship[] ships;
+    public required Ship[] ships;
 
-    public Fleet(FleetPrototype prototype, ulong id, Transform transform, Team team, Ship[] ships) : this(prototype, id)
-    {
-        this.team = team;
-        this.ships = ships;
-        this.Transform = transform;
-    }
 
     // public ITexture Icon { get; } => Icons.Ship;
 

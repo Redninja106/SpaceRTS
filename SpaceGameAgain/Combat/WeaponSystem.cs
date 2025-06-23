@@ -16,7 +16,7 @@ internal abstract class WeaponSystem : Actor, IDestructable
     public required Unit Unit;
     public Vector2 Offset { get; set; }
 
-    protected WeaponSystem(WeaponSystemPrototype prototype, ulong id) : base(prototype, id)
+    protected WeaponSystem(WeaponSystemPrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
     }
 

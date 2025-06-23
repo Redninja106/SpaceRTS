@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Reflection;
 using System.Diagnostics;
-using SpaceGame.Data;
+using static Program;
 
 namespace SpaceGame.Debugging;
 
@@ -68,11 +68,11 @@ class ObjectViewer
 
     public static object? ReflectionLayoutObject(string label, object? obj, bool isReadonly)
     {
-        if ((obj?.GetType()?.IsConstructedGenericType ?? false) && obj.GetType().GetGenericTypeDefinition() == typeof(ActorReference<>))
-        {
-            ReflectionLayoutObject(label, obj.GetType().GetField("actor", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(obj), isReadonly);
-            return obj;
-        }
+        //if ((obj?.GetType()?.IsConstructedGenericType ?? false) && obj.GetType().GetGenericTypeDefinition() == typeof(ActorReference<>))
+        //{
+        //    ReflectionLayoutObject(label, obj.GetType().GetField("actor", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(obj), isReadonly);
+        //    return obj;
+        //}
 
         if (obj != null)
         {
@@ -88,7 +88,7 @@ class ObjectViewer
                 }
                 return proto;
             case Actor actor:
-                bool missing = !World.Actors.ContainsKey(actor.ID);
+                bool missing = !Program.World.Actors.ContainsKey(actor.ID);
                 if (missing)
                 {
                     ImGui.PushStyleColor(ImGuiCol.Text, 0xFF0000FF);
@@ -220,6 +220,11 @@ class ObjectViewer
         }
         foreach (var member in type.GetMembers(bindFlags))
         {
+            if (member.GetCustomAttribute<DebugIgnoreAttribute>() != null)
+            {
+                continue;
+            }
+
             object? value;
             switch (member)
             {

@@ -260,8 +260,8 @@ internal sealed class GUIWindow
         
         InsertItem(bounds);
         
-        AddCommand(new DrawCommand.Rectangle(LastItemBounds, Color.Gray, true));
-        AddCommand(new DrawCommand.Rectangle(LastItemBounds with { Width = LastItemBounds.Width * progress }, Color.DarkGray, true));
+        AddCommand(new DrawCommand.Rectangle(LastItemBounds, new Color(0x40, 0x40, 0x40, 0xFF), true));
+        AddCommand(new DrawCommand.Rectangle(LastItemBounds with { Width = LastItemBounds.Width * progress }, new Color(0x80, 0x80, 0x80, 0xFF), true));
     }
 
     public void Separator()

@@ -15,7 +15,7 @@ internal class GhostStructure : Structure
     [Serialize]
     public StructurePrototype GhostPrototype;
 
-    public GhostStructure(StructurePrototype prototype, ulong id) : base(prototype, id)
+    public GhostStructure(StructurePrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
     }
 

@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SpaceGame.Commands;
 using SpaceGame.Ships.Fleets;
+using static Program;
 
 namespace SpaceGame.Interaction;
 internal static class UnitBar
@@ -236,27 +237,7 @@ internal static class UnitBar
                     window.Text(unit.Prototype.Title, 24);
                     if (unit is Ship s1 && s1.Fleet is Fleet fleet)
                     {
-                        //PushState();
                         window.Text("(fleet 1)", color: Color.Gray);
-                        //PopState();
-                    }
-                    // LayoutMode = LayoutMode.Vertical;
-
-                    // PushState();
-                    if (unit is Ship s)
-                    {
-                        //window.Cursor += new Vector2(0, 4);
-                        foreach (var module in s.modules)
-                        {
-                            window.Image(module.Icon, new(24, 24));
-                            if (window.LastItemHovered())
-                            {
-                                World.GUIViewport.SetTooltip(w =>
-                                {
-                                    w.Text(module.Prototype.Name);
-                                });
-                            }
-                        }
                     }
                 }
 
@@ -278,10 +259,29 @@ internal static class UnitBar
                 }
                 else
                 {
-                    window.Text(status, color: Color.Gray);
-                    if (window.LastItemHovered())
+                    using (window.Row())
                     {
-                        World.GUIViewport.SetTooltip(w => w.Text($"{unit.Health}/{unit.Prototype.MaxHealth}hp"));
+                        window.Text(status, color: Color.Gray);
+                        if (window.LastItemHovered())
+                        {
+                            World.GUIViewport.SetTooltip(w => w.Text($"{unit.Health}/{unit.Prototype.MaxHealth}hp"));
+                        }
+
+                        if (unit is Ship s)
+                        {
+                            //window.Cursor += new Vector2(0, 4);
+                            foreach (var module in s.modules)
+                            {
+                                window.Image(module.Icon, new(16, 16));
+                                if (window.LastItemHovered())
+                                {
+                                    World.GUIViewport.SetTooltip(w =>
+                                    {
+                                        w.Text(module.Prototype.Name);
+                                    });
+                                }
+                            }
+                        }
                     }
                 }
 

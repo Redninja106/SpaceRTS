@@ -1,0 +1,34 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "actor_type": {
+      "$comment": "Unsupported .NET type",
+      "not": true
+    },
+    "buildable_structures": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "StructurePrototype.json"
+          }
+        ]
+      }
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_anonymous": {
+      "type": "boolean"
+    }
+  },
+  "prototype": {
+    "const": "ConstructionModulePrototype"
+  }
+}

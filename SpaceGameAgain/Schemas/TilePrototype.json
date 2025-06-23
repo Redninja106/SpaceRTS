@@ -1,0 +1,47 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "blocks_structures": {
+      "type": "boolean"
+    },
+    "color": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "resource": {
+      "oneOf": [
+        {
+          "$ref": "ResourcePrototype.json"
+        }
+      ]
+    },
+    "material": {
+      "oneOf": [
+        {
+          "$ref": "BackgroundMaterial.json"
+        }
+      ]
+    },
+    "actor_type": {
+      "$comment": "Unsupported .NET type",
+      "not": true
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_anonymous": {
+      "type": "boolean"
+    }
+  },
+  "prototype": {
+    "const": "TilePrototype"
+  }
+}

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SpaceGame;
 
-internal abstract class Unit(UnitPrototype prototype, ulong id) : Actor(prototype, id), IDestructable, IGUIProvider, ISelectable, IDamagable
+internal abstract class Unit(UnitPrototype prototype, GameWorld world, ulong id) : Actor(prototype, world, id), IDestructable, IGUIProvider, ISelectable, IDamagable
 {
     public override UnitPrototype Prototype => (UnitPrototype)base.Prototype;
 
@@ -27,22 +27,45 @@ internal abstract class Unit(UnitPrototype prototype, ulong id) : Actor(prototyp
     public ulong LastClientVisibleTick { get; set; }
     public virtual bool CanAttack => false;
 
-    public abstract ITexture Icon { get; }
-
     bool IDestructable.IsDestroyed => Health <= 0;
 
-    public virtual void OnDestroyed()
+    public virtual bool CanReveal => Team == World.PlayerTeam;
+
+    public abstract ITexture Icon { get; }
+    public abstract void Layout(GUIWindow window);
+
+    public override void Render(ICanvas canvas)
+    {
+        base.Render(canvas);
+
+        canvas.PushState();
+        canvas.Rotate(-this.Transform.Rotation);
+        this.Prototype.Model?.Render(canvas, this.InterpolatedTransform, ColorF.White);
+        canvas.PopState();
+    }
+
+    public virtual void RenderBackgroundOverlay(ICanvas canvas, Camera camera, bool selected)
     {
     }
 
-    //public virtual Element[]? GetSelectionGUI()
-    //{
-    //    return null;
-    //}
+    public virtual void RenderGroundOverlay(ICanvas canvas, Camera camera, bool selected)
+    {
+        canvas.Transform(World.Camera.CreateRelativeMatrix(InterpolatedTransform));
+        canvas.Stroke(World.PlayerTeam.GetRelationColor(Team) with { A = (byte)(selected ? 255 : 100) });
+        canvas.DrawCircle(0, 0, (float)GetCollisionRadius());
+    }
+
+    public virtual void RenderSkyOverlay(ICanvas canvas, Camera camera, bool selected)
+    {
+    }
 
     public override void Tick()
     {
         base.Tick();
+    }
+
+    public virtual void OnDestroyed()
+    {
     }
 
     public virtual double GetCollisionRadius()
@@ -52,28 +75,18 @@ internal abstract class Unit(UnitPrototype prototype, ulong id) : Actor(prototyp
 
     public virtual double GetRevealRadius()
     {
-        return Prototype.RevealRadius;
+        return double.Max(GetCollisionRadius(), Prototype.RevealRadius);
     }
 
-    //public virtual CommandPrototype[] GetCommands()
-    //{
-    //    return [];
-    //}
-
-    public abstract bool TestPoint(DoubleVector point);
-    public abstract void Layout(GUIWindow window);
+    public virtual bool TestPoint(DoubleVector point)
+    {
+        double collisionRadius = this.GetCollisionRadius();
+        return DoubleVector.DistanceSquared(this.Transform.Position, point) <= collisionRadius * collisionRadius;
+    }
 
     public virtual DoubleVector GetCenter()
     {
         return Transform.Position;
-    }
-
-    public virtual void DrawHighlightAbove(ICanvas canvas, Camera camera, bool selected)
-    {
-    }
-
-    public virtual void DrawHighlightBelow(ICanvas canvas, Camera camera, bool selected)
-    {
     }
 
     public void Damage(DamageInfo damage)

@@ -38,14 +38,26 @@ namespace SpaceGame.Commands;
 //}
 
 [Serializable]
-class IssueOrderCommand : Command
+class IssueOrdersCommand : Command
 {
     [field: Serialize]
-    public required Order Order { get; set; }
+    public required Order[] Orders { get; set; }
+    [field: Serialize]
+    public required bool ClearOrders { get; set; }
+    [field: Serialize]
+    public required Ship Ship { get; set; }
 
     public override void Apply()
     {
-        ((Ship)Order.Unit).orders.Enqueue(Order);
+        if (ClearOrders)
+        {
+            Ship.ClearOrders();
+        }
+
+        foreach (var order in Orders)
+        {
+            Ship.EnqueueOrder(order);
+        }
     }
 }
 

@@ -33,9 +33,9 @@ internal static class BinaryWriterExtensions
         writer.Write(coordinate.R);
     }
 
-    public static void Write<TActor>(this BinaryWriter writer, ActorReference<TActor> actor)
-        where TActor : Actor
-    {
-        writer.Write(actor.ID);
-    }
+    //public static void Write<TActor>(this BinaryWriter writer, ActorReference<TActor> actor)
+    //    where TActor : Actor
+    //{
+    //    writer.Write(actor.ID);
+    //}
 }

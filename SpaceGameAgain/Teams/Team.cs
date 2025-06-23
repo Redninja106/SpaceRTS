@@ -31,7 +31,7 @@ internal class Team : Actor
 
     private ICommandProcessor CommandProcessor;
 
-    public Team(TeamPrototype prototype, ulong id) : base(prototype, id)
+    public Team(TeamPrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
         // this.Money = money;
         this.Name = "Player " + ID;
@@ -63,7 +63,7 @@ internal class Team : Actor
     {
         if (CommandProcessor == null)
         {
-            CommandProcessor = this.Prototype.CreateCommandProcessor(this);
+            CommandProcessor = this.Prototype.CreateCommandProcessor(World, this);
         }
 
         return CommandProcessor;

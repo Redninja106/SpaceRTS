@@ -26,7 +26,6 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
     public Vector2[] Outline { get; private set; } = [];
     public HexCoordinate[] AdjacentCells { get; private set; } = [];
     public Dictionary<ResourcePrototype, int> ResourceCosts { get; set; } = [];
-    public SpriteModel Model { get; set; } = Prototypes.Get<SpriteModel>("default_model");
 
     [JsonConverter(typeof(JsonStringEnumConverter<PowerLevel>))]
     public PowerLevel ProvidedPowerLevel { get; set; } = PowerLevel.None;
@@ -103,7 +102,7 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
         return segments.ToArray();
     }
 
-    public override Structure CreateActor(ulong id) => (Structure)base.CreateActor(id);
+    public override Structure CreateActor(GameWorld world, ulong id) => (Structure)base.CreateActor(world, id);
 
     //public virtual Structure CreateStructure(ulong id, Team team, Grid grid, HexCoordinate location, int rotation)
     //{
@@ -130,16 +129,6 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
     //    location = reader.ReadHexCoordinate();
     //    rotation = reader.ReadInt32();
     //}
-
-    [DebugButton]
-    public void Build()
-    {
-        var ctorShip = World.SelectionHandler.GetSelectedUnits().OfType<Ship>().FirstOrDefault(u => u is Ship s && s.modules.Any(m => m is ConstructionModule));
-        if (ctorShip != null)
-        {
-            World.ConstructionInteractionContext.BeginPlacing(this, ctorShip);
-        }
-    }
 
     public void Layout(GUIWindow window)
     {

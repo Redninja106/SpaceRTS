@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Structures.Shipyards;
@@ -30,7 +31,7 @@ internal class AssemblyBay : Structure
     // computed
     private int manufactoryCount;
 
-    public AssemblyBay(AssemblyBayPrototype prototype, ulong id) : base(prototype, id)
+    public AssemblyBay(AssemblyBayPrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
         // SelectionGUI = new TextButton("make ship", () =>
         // {
@@ -72,13 +73,13 @@ internal class AssemblyBay : Structure
             shipTransform.Rotation = this.Rotation * MathF.Tau / 6f - (MathF.PI / 2f);
             shipTransform.Position.Y -= Prototype.ShipPrototype.FlyHeight;
 
-            var ship = new Ship(Prototype.ShipPrototype, World.NewID()) { Team = this.Team };
+            var ship = new Ship(Prototype.ShipPrototype, World, World.NewID()) { Team = this.Team };
             ship.Teleport(shipTransform);
             foreach (var moduleFactory in neighbors.OfType<ModuleFactory>())
             {
                 if (moduleFactory.Enabled)
                 {
-                    var module = moduleFactory.Prototype.ProvidedModule.CreateActor(World.NewID());
+                    var module = moduleFactory.Prototype.ProvidedModule.CreateActor(World, World.NewID());
                     module.Ship = ship;
                     ship.modules.Add(module);
                     World.Add(module);

@@ -11,5 +11,5 @@ internal abstract class WeaponSystemPrototype : Prototype
     public float Range { get; set; } = 1;
     public SpriteModel? Model { get; set; }
 
-    public override WeaponSystem CreateActor(ulong id) => (WeaponSystem)base.CreateActor(id);
+    public override WeaponSystem CreateActor(GameWorld world, ulong id) => (WeaponSystem)base.CreateActor(world, id);
 }

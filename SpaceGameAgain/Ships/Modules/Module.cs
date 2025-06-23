@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships.Modules;
 
 [Serializable]
-internal abstract class Module(ModulePrototype prototype, ulong id) : Actor(prototype, id), IGUIProvider
+internal abstract class Module(ModulePrototype prototype, GameWorld world, ulong id) : Actor(prototype, world, id), IGUIProvider
 {
     [field: Serialize]
     public required Ship Ship { get; set; }
@@ -22,5 +22,5 @@ internal abstract class Module(ModulePrototype prototype, ulong id) : Actor(prot
 
 abstract class ModulePrototype : Prototype
 {
-    public override Module CreateActor(ulong id) => (Module)base.CreateActor(id);
+    public override Module CreateActor(GameWorld world, ulong id) => (Module)base.CreateActor(world, id);
 }

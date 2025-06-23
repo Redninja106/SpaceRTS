@@ -18,7 +18,7 @@ internal class Bullet : Actor, IDestructable
 
     public bool IsDestroyed => lifetime <= 0;
 
-    public Bullet(BulletPrototype prototype, ulong id) : base(prototype, id)
+    public Bullet(BulletPrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
         // this.target = target;
     }

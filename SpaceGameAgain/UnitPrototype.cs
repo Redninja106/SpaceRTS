@@ -1,5 +1,6 @@
 ﻿using SpaceGame.Commands;
 using SpaceGame.Extensions;
+using SpaceGame.Rendering;
 using SpaceGame.Teams;
 
 namespace SpaceGame;
@@ -10,16 +11,20 @@ abstract class UnitPrototype : Prototype
     public string Title { get; set; } = "";
     public double CollisionRadius { get; set; } = .5f;
     public double RevealRadius { get; set; } = 1;
+    public SpriteModel Model { get; set; }
 
     public int Armor { get; set; } = 0;
     public float ArmorEffectiveness { get; set; } = .5f;
 
     public DefenseInfo BaseDefenseInfo { get; set; } = DefenseInfo.Default;
 
-    // public void DeserializeArgs(BinaryReader reader, out ulong id, out Transform transform, out ActorReference<Team> team, out int health)
-    // {
-    //     // base.DeserializeArgs(reader, out id, out transform);
-    //     team = reader.ReadActorReference<Team>();
-    //     health = reader.ReadInt32();
-    // }
+    public override void InitializePrototype()
+    {
+        if (Model == null)
+        {
+            Model = Prototypes.Get<SpriteModel>("default_model");
+        }
+        base.InitializePrototype();
+    }
+
 }

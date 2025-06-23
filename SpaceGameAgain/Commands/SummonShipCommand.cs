@@ -24,16 +24,16 @@ internal class SummonShipCommand : Command
 
     public override void Apply()
     {
-        var ship = new Ship(shipPrototype, World.NewID()) { Team = team };
+        var ship = new Ship(shipPrototype, team.World, team.World.NewID()) { Team = team };
         ship.Teleport(transform);
         foreach (var modulePrototype in modulePrototypes)
         {
-            var module = modulePrototype.CreateActor(World.NewID());
+            var module = modulePrototype.CreateActor(team.World, team.World.NewID());
             module.Ship = ship;
             ship.modules.Add(module);
-            World.Add(module);
+            team.World.Add(module);
         }
-        World.Add(ship);
+        team.World.Add(ship);
 
         DebugLog.Message("summoned ship " + ship.ID);
     }

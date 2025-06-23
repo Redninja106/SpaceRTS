@@ -17,7 +17,7 @@ internal class UrbanDistrict : Structure
     [Serialize]
     int payoutCooldown;
 
-    public UrbanDistrict(UrbanDistrictPrototype prototype, ulong id) : base(prototype, id)
+    public UrbanDistrict(UrbanDistrictPrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
         this.payoutCooldown = prototype.PayoutInterval;
     }

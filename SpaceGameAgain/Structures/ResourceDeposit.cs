@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Structures;
 internal class ResourceDeposit : Structure
 {
-    public ResourceDeposit(StructurePrototype prototype, ulong id) : base(prototype, id)
+    public ResourceDeposit(StructurePrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
     }
 }

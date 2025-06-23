@@ -10,7 +10,7 @@ internal class NullTeamPrototype : TeamPrototype
 {
     public override Type ActorType => typeof(Team);
 
-    public override ICommandProcessor CreateCommandProcessor(Team team)
+    public override ICommandProcessor CreateCommandProcessor(GameWorld world, Team team)
     {
         return new NullCommandProcessor();
     }

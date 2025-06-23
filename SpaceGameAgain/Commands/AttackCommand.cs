@@ -25,13 +25,12 @@ internal class AttackCommand : Command
     {
         var order = new AttackOrder()
         {
-            Unit = unit,
             target = target
         };
 
         if (unit is Ship s)
         {
-            s.orders.Enqueue(order);
+            s.EnqueueOrder(order);
         }
     }
 }

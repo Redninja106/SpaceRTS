@@ -23,29 +23,23 @@ internal class ConstructionOrder : Order
 
     public override void Tick()
     {
-        if (!MoveTo(DoubleVector.FromVector2(Grid.Transform.LocalToWorld(Location.ToCartesian()) + Structure.Center.Rotated(Rotation * MathF.Tau / 6f))))
-        {
-            return;
-        }
-
         if (!Grid.IsStructureObstructed(Structure, Location, Rotation))
         {
-            Unit.Team.Money -= Structure.Cost;
-            Grid.PlaceStructure(Structure, Location, Rotation, Unit.Team);
+            Ship.Team.Money -= Structure.Cost;
+            Grid.PlaceStructure(Structure, Location, Rotation, Ship.Team);
             // Unit.Team.Resources["metals"] -= Structure.Price;
             Complete();
         }
     }
 
-    public override void RenderOverlay(ICanvas canvas)
+    public override void RenderOverlay(ICanvas canvas, ref Transform startTransform, ref Transform forecastedStartTransform)
     {
         //Grid.Transform.ApplyTo(canvas, World.Camera);
         // canvas.Rotate(Rotation * (MathF.Tau / 6f));
         //Structure.Model.Render(canvas, this.InterpolatedTransform with { Rotation = 0 }, ColorF.White with { A = 100 });
 
-        base.RenderOverlay(canvas);
+        base.RenderOverlay(canvas, ref startTransform, ref forecastedStartTransform);
     }
-
 
     //public override void Serialize(BinaryWriter writer)
     //{

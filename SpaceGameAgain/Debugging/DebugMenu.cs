@@ -2,11 +2,11 @@
 using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;
 using SpaceGame.Commands;
-using SpaceGame.Data;
 using SpaceGame.Networking;
 using SpaceGame.Serialization;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
+using SpaceGame.Stations;
 using SpaceGame.Structures;
 using SpaceGame.Teams;
 using System;
@@ -19,6 +19,7 @@ using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static Program;
 
 namespace SpaceGame.Debugging;
 internal static class DebugMenu
@@ -119,6 +120,7 @@ internal static class DebugMenu
     private static List<ModulePrototype> editorModules = [];
     private static ShipPrototype? editorShipPrototype = null;
     private static StructurePrototype? editorStructurePrototype = null;
+    private static StationPrototype? editorStationPrototype = null;
     private static int editorStructureRotation = 0;
 
     private static void LayoutEditorTab()
@@ -194,11 +196,11 @@ internal static class DebugMenu
 
             if (editorShipPrototype != null && Keyboard.IsKeyPressed(Key.F2))
             {
-                var ship = new Ship(editorShipPrototype, World.NewID()) { Team = editorTeam };
+                var ship = new Ship(editorShipPrototype, World, World.NewID()) { Team = editorTeam };
                 ship.Teleport(new Transform() { Position = World.MousePosition });
                 foreach (var modulePrototype in editorModules)
                 {
-                    var module = modulePrototype.CreateActor(World.NewID());
+                    var module = modulePrototype.CreateActor(World, World.NewID());
                     module.Ship = ship;
                     ship.modules.Add(module);
                     World.Add(module);
@@ -252,6 +254,28 @@ internal static class DebugMenu
                 }
             }
         }
+
+        {
+            ImGui.PushID("station");
+
+            ImGui.SeparatorText("Place Station (F5)");
+            StationPrototype[] stationPrototypes = Prototypes.GetAll<StationPrototype>();
+            int idx = Array.IndexOf(stationPrototypes, editorStationPrototype);
+            if (ImGui.Combo("prototype", ref idx, string.Join("\0", stationPrototypes.Select(s => s.Name))))
+            {
+                editorStationPrototype = stationPrototypes[idx];
+            }
+
+            if (editorStationPrototype != null && Keyboard.IsKeyPressed(Key.F5))
+            {
+                var station = (Station)editorStationPrototype.CreateActor(World, World.NewID());
+                station.Team = editorTeam;
+                station.Teleport(Transform.Default with { Position = World.MousePosition });
+                World.Add(station);
+            }
+
+            ImGui.PopID();
+        }
     }
 
     private static string addressOrPort = "45454";
@@ -266,7 +290,7 @@ internal static class DebugMenu
                 if (ParseAddressAndPort(out var _, out var port))
                 {
                     SocketServer server = new(port);
-                    Program.Lobby = new HostedLobby(server);
+                    Program.Lobby = new HostedLobby(Program.World, server);
                 }
             }
 
@@ -276,7 +300,7 @@ internal static class DebugMenu
                 if (ParseAddressAndPort(out var address, out var port))
                 {
                     SocketClient client = new(address, port);
-                    Program.Lobby = new RemoteLobby(client);
+                    Program.Lobby = new RemoteLobby(Program.World, client);
                 }
             }
 
@@ -404,7 +428,7 @@ internal static class DebugMenu
                 WorldSerializer serializer = new();
                 using var fs = new FileStream("./level", FileMode.Open);
                 BinaryReader reader = new(fs, Encoding.UTF8);
-                serializer.Deserialize(reader);
+                Program.World = serializer.Deserialize(reader);
             }
 
             ImGui.EndMenu();
@@ -429,7 +453,8 @@ internal static class DebugMenu
 
         ImGui.Separator();
 
-        ImGui.Text("next id:" + World.NextID);
+        ImGui.Text("next id: " + World.NextID);
+        ImGui.Text("interaction context: " + (World.CurrentInteractionContext?.GetType()?.Name ?? "null"));
 
         ImGui.Separator();
 

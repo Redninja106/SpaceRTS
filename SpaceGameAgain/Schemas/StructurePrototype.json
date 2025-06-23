@@ -1,0 +1,117 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "actor_type": {
+      "$comment": "Unsupported .NET type",
+      "not": true
+    },
+    "footprint": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "price": {
+      "type": "integer"
+    },
+    "center": {
+      "type": "object"
+    },
+    "can_be_rotated": {
+      "type": "boolean"
+    },
+    "outline": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "adjacent_cells": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/HexCoordinate/properties/footprint/items"
+      }
+    },
+    "resource_costs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "model": {
+      "oneOf": [
+        {
+          "$ref": "SpriteModel.json"
+        }
+      ]
+    },
+    "provided_power_level": {
+      "enum": [
+        "None",
+        "Low",
+        "Medium",
+        "High",
+        "Insane",
+        "Absurd"
+      ]
+    },
+    "required_power_level": {
+      "enum": [
+        "None",
+        "Low",
+        "Medium",
+        "High",
+        "Insane",
+        "Absurd"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cost": {
+      "type": "integer"
+    },
+    "category": {
+      "type": "string"
+    },
+    "max_health": {
+      "type": "integer"
+    },
+    "title": {
+      "type": "string"
+    },
+    "collision_radius": {
+      "type": "number"
+    },
+    "reveal_radius": {
+      "type": "number"
+    },
+    "armor": {
+      "type": "integer"
+    },
+    "armor_effectiveness": {
+      "type": "number"
+    },
+    "base_defense_info": {
+      "type": "object"
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_anonymous": {
+      "type": "boolean"
+    }
+  },
+  "prototype": {
+    "const": "StructurePrototype"
+  }
+}

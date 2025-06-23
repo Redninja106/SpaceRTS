@@ -20,6 +20,7 @@ namespace SpaceGame;
 class UnitCollision
 {
     public const int LayerCount = 7;
+    private const int SizeBits = 17;
 
     struct Bin(List<Unit> units, ulong lastClientVisibleTick)
     {
@@ -28,13 +29,15 @@ class UnitCollision
     }
     
     private readonly ChunkedSpatialHash<Bin>[] layers;
+    private readonly GameWorld World;
 
-    public UnitCollision()
+    public UnitCollision(GameWorld world)
     {
+        this.World = world;
         layers = new ChunkedSpatialHash<Bin>[LayerCount];
         for (int i = 0; i < layers.Length; i++)
         {
-            layers[i] = new(1 << (14 - i), 1 << (14 - i), 1 << i);
+            layers[i] = new(world, 1 << (SizeBits - i), 1 << (SizeBits - i), 1 << i);
         }
     }
 
@@ -65,11 +68,13 @@ class UnitCollision
         DebugMenu.PushMetric("Insert Units");
         InsertUnits(World.Ships);
         InsertUnits(World.Structures);
+        InsertUnits(World.Stations);
         DebugMenu.PopMetric();
 
         DebugMenu.PushMetric("Reveal Units");
         RevealUnits(World.Ships);
         RevealUnits(World.Structures);
+        RevealUnits(World.Stations);
         DebugMenu.PopMetric();
 
         DebugMenu.PushMetric("Prune bins");
@@ -86,12 +91,12 @@ class UnitCollision
     {
         foreach (var unit in units)
         {
-            if (unit.Team == World.PlayerTeam)
+            if (unit.CanReveal)
             {
                 DoubleVector position = unit switch
                 {
-                    Ship ship => ship.Transform.Position,
-                    Structure structure => structure.GetCenter()
+                    Structure structure => structure.GetCenter(),
+                    _ => unit.Transform.Position,
                 };
 
                 RevealCircle(position, (float)unit.GetRevealRadius());
@@ -158,8 +163,8 @@ class UnitCollision
         int targetLayer = int.Clamp((int)double.Ceiling(double.Log2(collisionRadius * 2)), 0, LayerCount);
         DoubleVector position = unit switch
         {
-            Ship ship => ship.Transform.Position,
-            Structure structure => structure.GetCenter()
+            Structure structure => structure.GetCenter(),
+            _ => unit.Transform.Position,
         };
 
         DoubleVector tl = position + new DoubleVector(-collisionRadius, -collisionRadius);
@@ -304,10 +309,10 @@ class UnitCollision
     [DebugOverlay]
     public static void ShowBinVisibility()
     {
-        double cx = World.Camera.SmoothTransform.Position.X;
-        double cy = World.Camera.SmoothTransform.Position.Y;
-        double w = World.Camera.SmoothVerticalSize * World.Camera.AspectRatio;
-        double h = World.Camera.SmoothVerticalSize;
+        double cx = Program.World.Camera.SmoothTransform.Position.X;
+        double cy = Program.World.Camera.SmoothTransform.Position.Y;
+        double w = Program.World.Camera.SmoothVerticalSize * Program.World.Camera.AspectRatio;
+        double h = Program.World.Camera.SmoothVerticalSize;
 
         int minX = (int)Math.Floor(cx - w * .5);
         int minY = (int)Math.Floor(cy - h * .5);
@@ -323,8 +328,8 @@ class UnitCollision
         {
             for (int x = minX; x < maxX; x++)
             {
-                ulong lastClientVisibleTick = World.Collision.GetLastClientVisibleTick(new(x, y));
-                long tickDelta = (long)(World.tick - lastClientVisibleTick);
+                ulong lastClientVisibleTick = Program.World.Collision.GetLastClientVisibleTick(new(x, y));
+                long tickDelta = (long)(Program.World.tick - lastClientVisibleTick);
                 if (tickDelta <= 1)
                 {
                     int scale = 1;
@@ -336,12 +341,18 @@ class UnitCollision
     }
 
     [DebugOverlay]
+    public static void ShowCollisionBounds()
+    {
+        DebugDraw.Rectangle(new(0, 0, Program.World.Collision.layers[0].Width, Program.World.Collision.layers[0].Height, Alignment.Center));
+    }
+
+    [DebugOverlay]
     public static void ShowCollisionBins()
     {
-        double cx = World.Camera.SmoothTransform.Position.X;
-        double cy = World.Camera.SmoothTransform.Position.Y;
-        double w = World.Camera.SmoothVerticalSize * World.Camera.AspectRatio;
-        double h = World.Camera.SmoothVerticalSize;
+        double cx = Program.World.Camera.SmoothTransform.Position.X;
+        double cy = Program.World.Camera.SmoothTransform.Position.Y;
+        double w = Program.World.Camera.SmoothVerticalSize * Program.World.Camera.AspectRatio;
+        double h = Program.World.Camera.SmoothVerticalSize;
 
         Color[] colors = [Color.Red, Color.OrangeRed, Color.Orange, Color.Yellow, Color.LightYellow, Color.White, Color.LightBlue];
 
@@ -368,7 +379,7 @@ class UnitCollision
             {
                 for (int x = minX; x < maxX; x++)
                 {
-                    if (World.Collision.layers[layer].TryGetValue(x, y, out Bin bin))
+                    if (Program.World.Collision.layers[layer].TryGetValue(x, y, out Bin bin))
                     {
                         DebugDraw.Rectangle(new(0, 0, scale, scale), new Transform { Position = new(x * scale, y * scale) }, colors[layer]);
                     }
@@ -380,26 +391,34 @@ class UnitCollision
     [DebugOverlay]
     public static void ShowCollisionRadius()
     {
-        foreach (var ship in World.Ships)
+        foreach (var ship in Program.World.Ships)
         {
             DebugDraw.Circle(new(0, 0, (float)ship.GetCollisionRadius()), ship.Transform);
         }
-        foreach (var structure in World.Structures)
+        foreach (var structure in Program.World.Structures)
         {
             DebugDraw.Circle(new(0, 0, (float)structure.GetCollisionRadius()), structure.Transform);
+        }
+        foreach (var station in Program.World.Stations)
+        {
+            DebugDraw.Circle(new(0, 0, (float)station.GetCollisionRadius()), station.Transform);
         }
     }
 
     [DebugOverlay]
     public static void ShowRevealRadius()
     {
-        foreach (var ship in World.Ships)
+        foreach (var ship in Program.World.Ships)
         {
             DebugDraw.Circle(new(0, 0, (float)ship.GetRevealRadius()), ship.Transform, Color.Blue);
         }
-        foreach (var structure in World.Structures)
+        foreach (var structure in Program.World.Structures)
         {
             DebugDraw.Circle(new(0, 0, (float)structure.GetRevealRadius()), Transform.Default with { Position = structure.GetCenter() }, Color.Blue);
+        }
+        foreach (var stations in Program.World.Stations)
+        {
+            DebugDraw.Circle(new(0, 0, (float)stations.GetRevealRadius()), Transform.Default with { Position = stations.GetCenter() }, Color.Blue);
         }
     }
 }
@@ -491,11 +510,13 @@ class ChunkedSpatialHash<T>
     private Chunk?[] chunks;
     private List<Chunk> chunkList;
     private int pruneIndex;
+    private GameWorld world;
 
     public List<Chunk> Chunks => chunkList;
 
-    public ChunkedSpatialHash(int width, int height, float scale)
+    public ChunkedSpatialHash(GameWorld world, int width, int height, float scale)
     {
+        this.world = world;
         this.Width = width;
         this.Height = height;
         this.scale = scale;
@@ -526,10 +547,10 @@ class ChunkedSpatialHash<T>
             ref Chunk? chunk = ref GetChunkRef(centerX + x, centerY + y);
             if (chunk == null)
             {
-                chunk = new((centerX + x) >> Chunk.SizeBits, (centerY + y) >> Chunk.SizeBits);
+                chunk = new((centerX + x) >> Chunk.SizeBits, (centerY + y) >> Chunk.SizeBits, world.tick);
                 this.chunkList.Add(chunk);
             }
-            chunk.LastModifiedTick = World.tick;
+            chunk.LastModifiedTick = world.tick;
             return ref chunk[x & Chunk.Mask, y & Chunk.Mask];
         }
     }
@@ -596,7 +617,7 @@ class ChunkedSpatialHash<T>
             }
 
             Chunk chunk = Chunks[pruneIndex];
-            if (chunk.LastModifiedTick != World.tick)
+            if (chunk.LastModifiedTick != world.tick)
             {
                 Chunks.RemoveAt(pruneIndex);
                 chunks[chunk.Y * chunkWidth + chunk.X] = null;
@@ -610,7 +631,7 @@ class ChunkedSpatialHash<T>
 
     public class Chunk
     {
-        public const int SizeBits = 4;
+        public const int SizeBits = 5;
         public const int Size = 1 << SizeBits;
         public const int Mask = (1 << SizeBits) - 1;
 
@@ -623,13 +644,12 @@ class ChunkedSpatialHash<T>
         public int Y => y;
         public int Count => Size * Size;
 
-        public Chunk(int x, int y)
+        public Chunk(int x, int y, ulong currentTick)
         {
             this.x = x;
             this.y = y;
-            LastModifiedTick = World.tick;
+            LastModifiedTick = currentTick;
         }
-
 
         public ref T this[int localX, int localY]
         {

@@ -9,7 +9,7 @@ namespace SpaceGame.Structures;
 [Serializable]
 internal class Spaceport : Structure
 {
-    public Spaceport(StructurePrototype prototype, ulong id) : base(prototype, id)
+    public Spaceport(StructurePrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
     }
 }

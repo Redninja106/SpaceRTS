@@ -17,7 +17,7 @@ internal class ResourceMine : Structure
     [Serialize]
     private ResourcePrototype? resource;
 
-    public ResourceMine(StructurePrototype prototype, ulong id) : base(prototype, id)
+    public ResourceMine(StructurePrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
         // resource = Grid.GetCell(location)!.Tile?.Resource;
         

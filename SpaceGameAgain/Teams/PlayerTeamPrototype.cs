@@ -11,9 +11,9 @@ internal class PlayerTeamPrototype : TeamPrototype
 {
     public override Type ActorType => typeof(Team);
 
-    public override ICommandProcessor CreateCommandProcessor(Team team)
+    public override ICommandProcessor CreateCommandProcessor(GameWorld world, Team team)
     {
-        if (team == World.PlayerTeam)
+        if (team == world.PlayerTeam)
         {
             return new PlayerCommandProcessor();
         }

@@ -18,7 +18,7 @@ class ActorDeserializationList
         for (int i = 0; i < actors.Length; i++)
         {
             ulong id = reader.ReadUInt64();
-            Actor actor = Prototype.CreateActor(id);
+            Actor actor = Prototype.CreateActor(world, id);
 
             world.Add(actor, true);
             actors[i] = actor;

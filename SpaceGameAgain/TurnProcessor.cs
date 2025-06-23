@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame;
-internal class TurnProcessor
+class TurnProcessor
 {
     public const int TicksPerTurn = 3;
     public const long TurnDelay = 2;
@@ -18,10 +18,12 @@ internal class TurnProcessor
     public ulong startingTurn = 0;
 
     public TurnHistory history = new();
+    private GameWorld World;
 
-    public TurnProcessor(ulong turn = 0)
+    public TurnProcessor(GameWorld world, ulong turn = 0)
     {
         this.turn = turn;
+        this.World = world;
     }
 
     public bool ShouldTick()

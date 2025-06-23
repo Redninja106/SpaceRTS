@@ -1,0 +1,106 @@
+{
+  "prototype": "PlanetGenerator",
+  "name": "sol_generator",
+  "minimum_size": 100,
+  "planet_prototype": "star",
+  "moon_passes": [
+    {
+      "type": "constant",
+      "generators": [
+        { // mercury
+          "planet_prototype": "rocky_planet",
+          "minimum_size": 9.758
+        },
+        { // venus
+          "planet_prototype": "rocky_planet",
+          "minimum_size": 24.207
+        },
+        { // earth
+          "minimum_size": 25.484,
+          "planet_prototype": "grassy_planet",
+          "moon_passes": [
+            {
+              "type": "constant",
+              "generators": [
+                { // the moon
+                  "minimum_size": 6.948,
+                  "planet_prototype": "rocky_planet"
+                }
+              ]
+            }
+          ]
+        },
+        { // mars
+          "material": "mars_material",
+          "planet_prototype": "mars",
+          "minimum_size": 13.556
+        },
+        { // jupiter
+          "minimum_size": 50,
+          "planet_prototype": "sandy_planet",
+          "moon_passes": [
+            {
+              "type": "constant",
+              "generators": [
+                { // io
+                  "minimum_size": 7.286,
+                  "planet_prototype": "sandy_planet"
+                },
+                { // europa
+                  "minimum_size": 6.243,
+                  "planet_prototype": "sandy_planet"
+                },
+                { // ganymede
+                  "minimum_size": 10.536,
+                  "planet_prototype": "sandy_planet"
+                },
+                { // callisto
+                  "minimum_size": 9.641,
+                  "planet_prototype": "sandy_planet"
+                }
+              ]
+            }
+          ]
+        },
+        { // saturn
+          "minimum_size": 45,
+          "planet_prototype": "sandy_planet",
+          "moon_passes": [
+            {
+              "type": "constant",
+              "generators": [
+                { // titan
+                  "minimum_size": 10.298,
+                  "planet_prototype": "sandy_planet"
+                }
+              ]
+            }
+          ]
+        },
+        { // uranus
+          "minimum_size": 25,
+          "planet_prototype": "sandy_planet"
+        },
+        { // neptune
+          "minimum_size": 22,
+          "planet_prototype": "sandy_planet",
+          "moon_passes": [
+            {
+              "type": "constant",
+              "generators": [
+                { // triton
+                  "minimum_size": 5.413,
+                  "planet_prototype": "sandy_planet"
+                }
+              ]
+            }
+          ]
+        },
+        { // pluto
+          "minimum_size": 4.753,
+          "planet_prototype": "sandy_planet"
+        }
+      ]
+    }
+  ]
+}

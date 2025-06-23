@@ -29,15 +29,24 @@ internal class ConstructionCommand : Command
 
     public override void Apply()
     {
+        ShipNavigator navigator = new(ship.World);
+        DoubleVector target = DoubleVector.FromVector2(Grid.Transform.LocalToWorld(Location.ToCartesian()) + Structure.Center.Rotated(Rotation * MathF.Tau / 6f));
+
+        List<MoveOrder> path = navigator.GetPath(ship, target);
+
         var order = new ConstructionOrder()
         {
-            Unit = ship,
             Grid = Grid,
             Structure = Structure,
             Location = Location, 
             Rotation = Rotation
         };
-        ship.orders.Enqueue(order);
+
+        foreach (MoveOrder moveOrder in path)
+        {
+            ship.EnqueueOrder(moveOrder);
+        }
+        ship.EnqueueOrder(order);
     }
 
     //public override void Serialize(BinaryWriter writer)

@@ -14,14 +14,16 @@ namespace SpaceGame.Networking;
 
 class HostedLobby : Lobby
 {
+    public GameWorld World { get; }
     public SocketServer server;
     public Dictionary<Team, Socket> associations = [];
     private List<Socket> currentWorldDownloads = [];
 
     public override bool IsDownloadingWorld => currentWorldDownloads.Count > 0;
 
-    public HostedLobby(SocketServer server)
+    public HostedLobby(GameWorld world, SocketServer server)
     {
+        this.World = world;
         this.server = server;
     }
 
@@ -71,7 +73,7 @@ class HostedLobby : Lobby
 
             server.SendAll(createTeamPacket, s => s != connection);
 
-            Team team = createTeamPacket.CreateTeam();
+            Team team = createTeamPacket.CreateTeam(World);
             DebugLog.Message(hello.ClientName + "'s team is " + team.ID);
             associations[team] = connection;
             World.Add(team);

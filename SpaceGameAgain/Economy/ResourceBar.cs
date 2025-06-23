@@ -1,4 +1,5 @@
 ﻿using SpaceGame.GUI;
+using SpaceGame.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,11 +14,31 @@ internal class ResourceBar
         window.Visible = true;
         window.Anchor = Alignment.BottomLeft;
         window.Alignment = Alignment.BottomLeft;
-        window.Text("$" + World.PlayerTeam.Money.ToString() + "k");
+        window.Text("$" + Program.World.PlayerTeam.Money.ToString() + "k");
 
-        foreach (var (proto, values) in World.PlayerTeam.resources)
+        //foreach (var (proto, values) in Program.World.PlayerTeam.resources)
+        //{
+        //    window.Text(proto.Name + ": " + values.Remaining);
+        //}
+
+        using (window.Row())
         {
-            window.Text(proto.Name + ": " + values.Remaining);
+            window.Image(Icons.Economic, new(16, 16));
+            window.Text("42");
+            window.Image(Icons.Industrial, new(16, 16));
+            window.Text("69");
+            window.Image(Icons.Research, new(16, 16));
+            window.Text("1 million");
+        }
+
+        using (window.Row())
+        {
+            window.Text("hello!");
+            window.ProgressBar(.5f, 100);
+            if (window.TextButton("DONT CLICK ME OR EVERYONE WILL DIE"))
+            {
+                Console.WriteLine("hey!");
+            }
         }
     }
 }

@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.Combat;
-internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id) : WeaponSystem(prototype, id)
+internal class ChaingunSystem(ChaingunSystemPrototype prototype, GameWorld world, ulong id) : WeaponSystem(prototype, world, id)
 {
     public override ChaingunSystemPrototype Prototype => (ChaingunSystemPrototype)base.Prototype;
 
@@ -33,7 +33,7 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id) : Wea
                 if (missile.exploding)
                     continue;
 
-                float dist = DoubleVector.Distance(missile.Transform.Position, this.Transform.Position);
+                float dist = (float)DoubleVector.Distance(missile.Transform.Position, this.Transform.Position);
                 if (dist < minDistance)
                 {
                     target = missile;
@@ -50,7 +50,7 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id) : Wea
 
             if (DoubleVector.Distance(ship.Transform.Position, this.Transform.Position) <= Prototype.Range)
             {
-                float dist = DoubleVector.Distance(ship.Transform.Position, this.Transform.Position);
+                float dist = (float)DoubleVector.Distance(ship.Transform.Position, this.Transform.Position);
                 if (dist < minDistance)
                 {
                     target = ship;
@@ -87,7 +87,7 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, ulong id) : Wea
                         Rotation = Angle.FromVector((targetPos - this.Transform.Position).ToVector2()) + World.TickRandom.NextSingle() * 0.05f
                     };
 
-                    Bullet bullet = new(bulletProto, World.NewID())
+                    Bullet bullet = new(bulletProto, World, World.NewID())
                     { 
                         target = target, 
                         lifetime = (int)(Program.TickRate * Prototype.Range / bulletProto.Speed)
