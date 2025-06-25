@@ -14,8 +14,6 @@ internal class WeaponModule : Module
 
     public required WeaponSystem system;
 
-    public override ITexture Icon => Icons.Defensive;
-
     public WeaponModule(WeaponModulePrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
     }
@@ -31,6 +29,8 @@ internal class WeaponModule : Module
 
     public override void Layout(GUIWindow window)
     {
+        base.Layout(window);
+
     }
 
     //public override Element[] BuildGUI()

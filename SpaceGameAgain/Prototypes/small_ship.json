@@ -10,8 +10,5 @@
   "collision_radius": 0.35,
   "model": "alt_small_ship_model",
   "reveal_radius": 10,
-  "commands": [
-    "move_command",
-    "attack_command"
-  ]
+  "icon": "ship_icon"
 }

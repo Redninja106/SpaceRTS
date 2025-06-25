@@ -25,6 +25,7 @@ internal class SelectionHandler(GameWorld World)
     public void ClearSelection()
     {
         selected.Clear();
+        SelectedFleet = null;
         //World.UnitBar.UpdateButtons();
         //UpdateGUI();
     }
@@ -135,6 +136,11 @@ internal class SelectionHandler(GameWorld World)
             return [VisualFocus];
         }
 
+        if (SelectedFleet != null)
+        {
+            return SelectedFleet.ships;
+        }
+
         return GetSelectedUnits();
     }
 
@@ -154,6 +160,11 @@ internal class SelectionHandler(GameWorld World)
 
     public HashSet<Unit> GetSelectedUnits()
     {
+        if (SelectedFleet != null)
+        {
+            return SelectedFleet.ships.Cast<Unit>().ToHashSet();
+        }
+
         return selected;
     }
 

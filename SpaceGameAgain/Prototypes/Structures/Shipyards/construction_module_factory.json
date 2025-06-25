@@ -13,6 +13,6 @@
   "can_be_rotated": true,
   "required_power_level": "low",
   "cost": 10,
-  "category": "Shipbuilding"
+  "category": "shipbuilding_category"
 
 }

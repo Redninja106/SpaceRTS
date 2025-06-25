@@ -26,8 +26,14 @@ internal class GUIViewport
 
     public GUIWindow popupWindow = new(null);
 
+    public GUIViewport()
+    {
+        popupWindow.Viewport = tooltipWindow.Viewport = this;
+    }
+
     public void Register(GUIWindow window)
     {
+        window.Viewport = this;
         windows.Add(window);
     }
 
@@ -83,7 +89,7 @@ internal class GUIViewport
     {
         foreach (var w in windows)
         {
-            w.Update(this);
+            w.Update();
         }
 
         if (popupWindow.Layout != null)
@@ -100,12 +106,12 @@ internal class GUIViewport
             }
         }
 
-        popupWindow.Update(this);
+        popupWindow.Update();
 
         if (tooltipWindow.Layout != null)
         {
             tooltipWindow.Offset = MousePosition;
-            tooltipWindow.Update(this);
+            tooltipWindow.Update();
             tooltipWindow.SetLayout(null);
         }
     }

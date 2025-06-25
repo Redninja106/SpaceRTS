@@ -6,6 +6,10 @@
   "can_be_rotated": true,
   "provided_power_level": "Medium",
   "cost": 20,
-  "category": "Power",
-  "footprint": [ [0, 0], [1, 0], [0, 1] ]
+  "category": "power_category",
+  "footprint": [
+    [ 0, 0 ],
+    [ 1, 0 ],
+    [ 0, 1 ]
+  ]
 }

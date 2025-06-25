@@ -16,6 +16,8 @@ internal class PlanetPrototype : Prototype
 
     public BackgroundMaterial Material { get; set; }
 
+    public bool CanBuild { get; set; } = false;
+
     public override Planet CreateActor(GameWorld world, ulong id) => (Planet)base.CreateActor(world, id);
 
     //public override Actor Deserialize(BinaryReader reader)

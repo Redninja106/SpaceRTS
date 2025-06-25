@@ -1,4 +1,5 @@
 ﻿using SpaceGame.Interaction;
+using SpaceGame.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,9 +7,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.GUI;
+
+delegate void GUILayout(GUIWindow window);
+
 internal sealed class GUIWindow
 {
     public static Color DefaultTextColor = Color.FromHSV(0, 0, .65f);
+    public static float CornerRadius = 10f;
 
     public Vector2 Offset = new(0, 0);
     public Alignment Anchor = Alignment.TopLeft;
@@ -34,13 +39,25 @@ internal sealed class GUIWindow
     public bool HasNewLayout;
 
     public GUILayout? Layout => layout;
+    public GUIViewport Viewport { get; set; }
 
     [DebugOverlay]
     public static bool ShowGUIItemBounds;
 
+
     public GUIWindow(GUILayout? layout)
     {
         SetLayout(layout);
+    }
+
+    public Vector2 GetLocalMousePosition()
+    {
+        return mousePosition - this.Offset;
+    }
+
+    public Vector2 GetLastItemMousePosition()
+    {
+        return mousePosition - this.LastItemBounds.Position;
     }
 
     public void SetLayout(GUILayout? layout)
@@ -52,11 +69,11 @@ internal sealed class GUIWindow
         }
     }
 
-    public void Update(GUIViewport viewport)
+    public void Update()
     {
         commands.Clear();
 
-        mousePosition = viewport.MousePosition;
+        mousePosition = Viewport.MousePosition;
 
         // finalWindowBounds = currentWindowBounds;
 
@@ -64,15 +81,15 @@ internal sealed class GUIWindow
         {
             // do an invisible layout to determine approximate window size
             Visible = false;
-            DoLayout(viewport, Vector2.Zero);
+            DoLayout(Viewport, Vector2.Zero);
             Visible = true;
             predictedWindowBounds = currentWindowBounds;
         }
 
-        DoLayout(viewport, predictedWindowBounds.Size);
+        DoLayout(Viewport, predictedWindowBounds.Size);
         HasNewLayout = false;
 
-        Hovered = Visible && currentWindowBounds.ContainsPoint(viewport.MousePosition);
+        Hovered = Visible && currentWindowBounds.ContainsPoint(Viewport.MousePosition);
     }
 
     private void DoLayout(GUIViewport viewport, Vector2 predictedSize)
@@ -89,11 +106,13 @@ internal sealed class GUIWindow
         currentScope = new()
         {
             bounds = new(windowOrigin, Vector2.Zero),
-            Cursor = windowOrigin,
+            Cursor = windowOrigin + new Vector2(Margin, Margin),
             LayoutMode = LayoutMode.Column,
         };
 
         layout?.Invoke(this);
+
+        this.currentWindowBounds.Size += new Vector2(Margin, Margin);
     }
 
     /// <summary>
@@ -142,14 +161,17 @@ internal sealed class GUIWindow
     public void Text(string text, float size = 16, Color? color = null, TextStyle style = TextStyle.Regular)
     {
         Rectangle textBounds = Program.font.MeasureText(text, size);
-        textBounds.Position += currentScope.Cursor + new Vector2(0, size);
-        textBounds.X -= Margin;
-        textBounds.Y -= Margin;
-        textBounds.Width += Margin * 2;
-        textBounds.Height += Margin * 2;
 
-        AddCommand(new DrawCommand.Text(text, size, currentScope.Cursor + new Vector2(0, size), color, style));
-        InsertItem(textBounds);
+        Rectangle textArea = new()
+        {
+            Position = currentScope.Cursor,
+            Size = textBounds.Size + new Vector2(Margin * 2)
+        };
+
+        Vector2 baseline = currentScope.Cursor + new Vector2(Margin) - textBounds.Position;
+
+        AddCommand(new DrawCommand.Text(text, size, baseline, color, style));
+        InsertItem(textArea);
     }
 
     public void InsertItem(Rectangle itemBounds)
@@ -174,57 +196,85 @@ internal sealed class GUIWindow
 
     public bool TextButton(string text, float size = 16, bool disabled = false)
     {
-        Rectangle textBounds = default;
-        textBounds.Width = Program.font.MeasureText(text, size).Width;
-        textBounds.Height = size;
-        textBounds.Position = currentScope.Cursor + new Vector2(0, Margin);
-        textBounds.X -= Margin;
-        textBounds.Y -= Margin;
-        textBounds.Width += Margin * 2;
-        textBounds.Height += Margin * 2;
-        
-        Vector2 baseline = currentScope.Cursor + new Vector2(0, size);
-         
-        InsertItem(textBounds);
+        Rectangle textBounds = Program.font.MeasureText(text, size);
+        Rectangle itemBounds = new()
+        {
+            Position = currentScope.Cursor,
+            Size = textBounds.Size + new Vector2(Margin * 4)
+        };
+
+        Rectangle buttonBounds = new()
+        {
+            Position = currentScope.Cursor + new Vector2(Margin),
+            Size = textBounds.Size + new Vector2(Margin * 2),
+        };
+
+        Vector2 baseline = currentScope.Cursor + new Vector2(Margin * 2) - textBounds.Position;
+
+        InsertItem(itemBounds);
         
         if (!LastItemHovered())
         {
-            AddCommand(new DrawCommand.Rectangle(textBounds, Color.FromHSV(.6f, .25f, .25f), true));
+            AddCommand(new DrawCommand.Rectangle(buttonBounds, Color.FromHSV(.6f, .25f, .25f), true));
         }
 
-        AddCommand(new DrawCommand.Rectangle(textBounds with { X = textBounds.X + 1, Y = textBounds.Y + 1 }, new Color(28, 33, 38), false));
-        AddCommand(new DrawCommand.Rectangle(textBounds, new Color(70, 79, 89), false));
+        AddCommand(new DrawCommand.Rectangle(buttonBounds with { X = buttonBounds.X + 1, Y = buttonBounds.Y + 1 }, new Color(28, 33, 38), false));
+        AddCommand(new DrawCommand.Rectangle(buttonBounds, new Color(70, 79, 89), false));
         
         if (LastItemHovered())
         {
-            AddCommand(new DrawCommand.Rectangle(textBounds, Color.Gray, true));
+            AddCommand(new DrawCommand.Rectangle(buttonBounds, Color.Gray, true));
         }
 
         AddCommand(new DrawCommand.Text(text, size, baseline));
 
-        return LastItemClicked(MouseButton.Left);
+        return AreaClicked(buttonBounds, MouseButton.Left);
     }
 
-    public void Image(ITexture image)
+    public void Image(ITexture image, bool inline = false)
     {
-        Image(image, new(image.Width, image.Height));
+        Image(image, new(image.Width, image.Height), inline);
     }
 
-    public void Image(ITexture image, Vector2 size)
+    public void Image(ITexture image, Vector2 size, bool inline = false)
     {
-        Rectangle bounds = new(currentScope.Cursor.X, currentScope.Cursor.Y, size.X, size.Y);
-        InsertItem(bounds);
-        AddCommand(new DrawCommand.Image(image, LastItemBounds));
+        Vector2 margin = inline ? Vector2.Zero : new Vector2(Margin);
+        Rectangle itemBounds = new(currentScope.Cursor, size + margin * 2);
+        Rectangle imageBounds = new(itemBounds.Position + margin, size);
+
+        //Rectangle bounds = new(currentScope.Cursor.X, currentScope.Cursor.Y, size.X, size.Y);
+        InsertItem(itemBounds);
+        AddCommand(new DrawCommand.Image(image, imageBounds));
+    }
+
+    public bool AreaHovered(Rectangle area)
+    {
+        return Visible && area.ContainsPoint(mousePosition);
+    }
+
+    public bool AreaClicked(Rectangle area, MouseButton button)
+    {
+        return AreaHovered(area) && Mouse.IsButtonPressed(button);
+    }
+
+    public bool AreaHeld(Rectangle area, MouseButton button)
+    {
+        return AreaHovered(area) && Mouse.IsButtonDown(button);
     }
 
     public bool LastItemHovered()
     {
-        return Visible && LastItemBounds.ContainsPoint(mousePosition);
+        return AreaHovered(LastItemBounds);
     }
 
     public bool LastItemClicked(MouseButton button)
     {
-        return Visible && LastItemHovered() && Mouse.IsButtonPressed(button);
+        return AreaClicked(LastItemBounds, button);
+    }
+
+    public bool LastItemHeld(MouseButton button)
+    {
+        return AreaHeld(LastItemBounds, button);
     }
 
     public void Render(ICanvas canvas, float displayWidth, float displayHeight)
@@ -237,13 +287,13 @@ internal sealed class GUIWindow
         canvas.PushState();
 
         canvas.Fill(new Color(12, 17, 23));
-        canvas.DrawRect(this.currentWindowBounds);
+        canvas.DrawRoundedRect(this.currentWindowBounds, CornerRadius);
 
         canvas.Stroke(new Color(28, 33, 38));
-        canvas.DrawRect(this.currentWindowBounds with { X = currentWindowBounds.X + 1, Y = currentWindowBounds.Y + 1 });
+        canvas.DrawRoundedRect(this.currentWindowBounds with { X = currentWindowBounds.X + 1, Y = currentWindowBounds.Y + 1 }, CornerRadius);
 
         canvas.Stroke(new Color(70, 79, 89));
-        canvas.DrawRect(this.currentWindowBounds);
+        canvas.DrawRoundedRect(this.currentWindowBounds, CornerRadius);
 
         foreach (var command in commands)
         {
@@ -264,13 +314,33 @@ internal sealed class GUIWindow
         AddCommand(new DrawCommand.Rectangle(LastItemBounds with { Width = LastItemBounds.Width * progress }, new Color(0x80, 0x80, 0x80, 0xFF), true));
     }
 
-    public void Separator()
+    public void Separator(Color? color = null)
     {
-        Rectangle itemBounds = new(currentScope.Cursor.X, currentScope.Cursor.Y + Margin, this.predictedWindowBounds.Width - 2 * Margin, 1);
-        // Cursor.Y += Margin;
+        Rectangle separatorBounds;
+        Rectangle itemBounds;
+
+        if (currentScope.LayoutMode == LayoutMode.Column)
+        {
+            separatorBounds = new(currentScope.Cursor.X, currentScope.Cursor.Y + Margin, this.predictedWindowBounds.Width - Margin - (currentScope.Cursor.X - currentWindowBounds.X), 1);
+            itemBounds = new(currentScope.Cursor.X, currentScope.Cursor.Y + Margin, 0, 1 + Margin);
+        }
+        else if (currentScope.LayoutMode == LayoutMode.Row)
+        {
+            separatorBounds = new(currentScope.Cursor.X + Margin, currentScope.Cursor.Y, 1, this.predictedWindowBounds.Height - 2 * Margin);
+            itemBounds = new(currentScope.Cursor.X + Margin, currentScope.Cursor.Y, 1 + Margin, 0);
+        }
+        else
+        {
+            throw new NotSupportedException();
+        }
 
         InsertItem(itemBounds);
-        AddCommand(new DrawCommand.Rectangle(LastItemBounds, DefaultTextColor, true));
+        AddCommand(new DrawCommand.Rectangle(separatorBounds, color ?? DefaultTextColor, true));
+    }
+
+    public Vector2 GetPosition()
+    {
+        return Viewport.Bounds.GetAlignedPoint(this.Anchor) + Offset;
     }
 
     public void AddCommand(DrawCommand command)
@@ -279,6 +349,26 @@ internal sealed class GUIWindow
         {
             commands.Add(command);
         }
+    }
+
+    public Vector2 GetPredictedSize()
+    {
+        return predictedWindowBounds.Size;
+    }
+
+    public Rectangle GetPredictedBounds()
+    {
+        return predictedWindowBounds;
+    }
+
+    public void ModelImage(SpriteModel model, Vector2 size)
+    {
+        Rectangle itemBounds = new(currentScope.Cursor, size + new Vector2(Margin * 2));
+        Rectangle imageBounds = new(itemBounds.Position + new Vector2(Margin), size);
+
+        //Rectangle bounds = new(currentScope.Cursor.X, currentScope.Cursor.Y, size.X, size.Y);
+        InsertItem(itemBounds);
+        AddCommand(new DrawCommand.Model(model, imageBounds.GetAlignedPoint(Alignment.Center), size));
     }
 
     private struct LayoutScope

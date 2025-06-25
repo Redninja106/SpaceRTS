@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "icon": {
+      "enum": [
+        "construction_icon",
+        "default_icon",
+        "defensive_icon",
+        "economic_icon",
+        "industrial_icon",
+        "research_icon",
+        "ship_icon",
+        "structure_icon"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "prototype": {
+      "const": "ConstructionCategory"
+    }
+  }
+}

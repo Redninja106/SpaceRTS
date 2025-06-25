@@ -1,4 +1,5 @@
-﻿using SpaceGame.GUI;
+﻿using SpaceGame.Economy;
+using SpaceGame.GUI;
 using SpaceGame.Interaction;
 using SpaceGame.Orders;
 using SpaceGame.Ships;
@@ -141,5 +142,28 @@ class WormholeStationPrototype : StationPrototype
     public override Type ActorType => typeof(WormholeStation);
 
     public required int LinkEstablishTime { get; set; } = 600;
+
+    public override void Layout(GUIWindow window)
+    {
+        using (window.Row())
+        {
+            window.ModelImage(this.Model, new(64, 64));
+
+            using (window.Column())
+            {
+                window.Text(this.Title, 24);
+
+                using (window.Row())
+                {
+                    window.Text("$" + this.Cost + "k");
+                }
+
+                if (!string.IsNullOrWhiteSpace(this.Description))
+                {
+                    window.Text(this.Description);
+                }
+            }
+        }
+    }
 }
 

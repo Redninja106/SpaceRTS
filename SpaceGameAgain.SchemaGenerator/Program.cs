@@ -1,9 +1,7 @@
-﻿using SpaceGame.Data;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Schema;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
+﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
+using SpaceGame.Data;
+using SpaceGameAgain.SchemaGenerator;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -12,23 +10,19 @@ string outputDirectory = "../../../../SpaceGameAgain/Schemas/";
 // ==== ==== ==== ==== PART 1 ==== ==== ==== ====
 // search prototype instances to make autocomplete enums
 
-string[] prototypeFileNames = Directory.GetFiles("Prototypes", "*", SearchOption.AllDirectories);
+string[] prototypeFileNames = Prototypes.FindPrototypeFiles(true);
 Dictionary<Type, List<string>> prototypesByClass = [];
 string schemaProperties = "";
 
 foreach (var prototypeFile in prototypeFileNames)
 {
-    JsonDocumentOptions opts = new()
+    JObject doc = JObject.Parse(File.ReadAllText(prototypeFile), new JsonLoadSettings() 
     {
-        CommentHandling = JsonCommentHandling.Skip,
-        AllowTrailingCommas = true,
-        MaxDepth = 64,
-    };
-    
-    JsonDocument doc = JsonDocument.Parse(File.ReadAllText(prototypeFile), opts);
+        CommentHandling = CommentHandling.Ignore,
+    });
 
-    string name = doc.RootElement.GetProperty("name").GetString()!;
-    string prototype = doc.RootElement.GetProperty("prototype").GetString()!;
+    string prototype = (string?)doc.GetValue("prototype") ?? throw new("prototype has no type");
+    string name = (string?)doc.GetValue("name") ?? throw new("prototype has no name");
 
     Type prototypeClass = Prototypes.PrototypeClasses.Single(pc => pc.Name == prototype);
 
@@ -71,71 +65,18 @@ if (userFile.DocumentElement?.ChildNodes.Cast<XmlNode>().FirstOrDefault(n => n.N
 // ==== ==== ==== ==== PART 3 ==== ==== ==== ====
 // generate actual schemas
 
-Dictionary<string, JsonNode> prototypeDefs = []; 
-Dictionary<string, JsonNode> valueDefs = []; 
+Dictionary<string, JObject> prototypeDefs = []; 
+Dictionary<string, JObject> valueDefs = [];
 
-JsonSerializerOptions options = new()
-{
-    ReadCommentHandling = JsonCommentHandling.Skip,
-    PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-    TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-    WriteIndented = true,
-};
+SchemaGenerator schemaGenerator = new(prototypesByClass);
 
 foreach (var prototypeClass in Prototypes.PrototypeClasses)
 {
-    JsonSchemaExporterOptions exporterOptions = new()
-    {
-        TransformSchemaNode = TransformNode,
-    };
-
-    // prototypeDefs.Add(prototypeClass.Name, (Prototype)Activator.CreateInstance(prototypeClass)!);
-    prototypesByClass.TryGetValue(prototypeClass, out List<string>? values);
-
-    JsonNode schema = JsonSchemaExporter.GetJsonSchemaAsNode(options, prototypeClass, exporterOptions);
-
-    string schemaString = JsonSerializer.Serialize(schema, options);
+    JObject schema = schemaGenerator.GenerateSchema(prototypeClass);
+    string schemaText = schema.ToString();
     string file = $"{outputDirectory}{prototypeClass.Name}.json";
-    File.WriteAllText(file, schemaString);
+    File.WriteAllText(file, schemaText);
 
-    static JsonNode TransformNode(JsonSchemaExporterContext context, JsonNode schema)
-    {
-        if (schema is JsonObject refObj && refObj.TryGetPropertyValue("$ref", out var r))
-        {
-            refObj["$ref"] = $"#/$defs/{context.TypeInfo.Type.Name}{((string)refObj["$ref"]!).TrimStart('#')}";
-            Console.WriteLine(schema.ToJsonString());
-        }
-
-        if (context.TypeInfo.Type.IsSubclassOf(typeof(Prototype)))
-        {
-            if (!context.Path.IsEmpty)
-            {
-                return new JsonObject([
-                    new ("oneOf", new JsonArray([
-                                new JsonObject([new("$ref", $"{context.TypeInfo.Type.Name}.json")]),
-                                // new JsonObject([new("$ref", $"#/$defs/{context.TypeInfo.Type.Name}_values")])
-                            ]))
-                    ]);
-            }
-            else
-            {
-                var obj = schema.AsObject();
-                obj.Add("prototype", new JsonObject([new("const", context.TypeInfo.Type.Name)]));
-                return obj;
-            }
-        }
-
-        return schema;
-    }
 }
 
-JsonObject finalSchema = new([
-    new("$defs", new JsonObject(prototypeDefs!))
-    ]);
-
-// string schemaString = JsonSerializer.Serialize(finalSchema, options);
-// string file = $"{outputDirectory}prototypes.schema.json";
-// File.WriteAllText(file, schemaString);
-
 Console.WriteLine("done!");
-

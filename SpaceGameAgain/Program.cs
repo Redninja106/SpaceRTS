@@ -6,6 +6,7 @@ using SpaceGame.GUI;
 using SpaceGame.Interaction;
 using SpaceGame.Networking;
 using SpaceGame.Planets;
+using SpaceGame.Planets.Generation;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 //using SpaceGame.Stations;
@@ -231,7 +232,7 @@ partial class Program : Simulation
 
     public override void OnRender(ICanvas canvas)
     {
-        Window.Title = "SpaceGame - " + Performance.Framerate;
+        Window.Title = "SpaceGame - " + Performance.Framerate.ToString("f0") + "FPS";
 
         if (Keyboard.IsKeyPressed(Key.F11))
         {

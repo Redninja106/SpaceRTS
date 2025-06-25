@@ -1,24 +1,26 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
-    "name": {
-      "type": [
-        "string",
-        "null"
+    "title": {
+      "type": "string"
+    },
+    "icon": {
+      "enum": [
+        "construction_icon",
+        "default_icon",
+        "defensive_icon",
+        "economic_icon",
+        "industrial_icon",
+        "research_icon",
+        "ship_icon",
+        "structure_icon"
       ]
     },
-    "is_anonymous": {
-      "type": "boolean"
+    "name": {
+      "type": "string"
     },
-    "actor_type": {
-      "$comment": "Unsupported .NET type",
-      "not": true
+    "prototype": {
+      "const": "ModulePrototype"
     }
-  },
-  "prototype": {
-    "const": "ModulePrototype"
   }
 }

@@ -13,6 +13,6 @@
   "max_health": 10,
   "required_power_level": "Low",
   "cost": 25,
-  "category": "Shipbuilding"
+  "category": "shipbuilding_category"
 
 }

@@ -17,6 +17,7 @@ internal class MoveOrder : Order
 
     [field: Serialize]
     public required DoubleVector TargetPosition { get; set; }
+
     [field: Serialize]
     public DoubleVector ForecastedTargetPosition { get; set; }
     [field: Serialize]

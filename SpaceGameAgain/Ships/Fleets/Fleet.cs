@@ -1,4 +1,5 @@
 ﻿using SpaceGame.Extensions;
+using SpaceGame.GUI;
 using SpaceGame.Interaction;
 using SpaceGame.Serialization;
 using SpaceGame.Teams;
@@ -11,13 +12,25 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships.Fleets;
 
 [Serializable]
-internal class Fleet(FleetPrototype prototype, GameWorld world, ulong id) : Actor(prototype, world, id)
+internal class Fleet(FleetPrototype prototype, GameWorld world, ulong id) : Actor(prototype, world, id), IGUIProvider
 {
     [Serialize]
     public required Team team;
     
     [Serialize]
     public required Ship[] ships;
+
+    public void Layout(GUIWindow window)
+    {
+        window.Text("Fleet " + ID.ToString(), size: 20);
+
+        if (team == World.PlayerTeam)
+        {
+            window.Text("hello");
+        }
+    }
+
+
 
 
     // public ITexture Icon { get; } => Icons.Ship;

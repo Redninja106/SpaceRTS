@@ -23,22 +23,12 @@ internal class ResourceBar
 
         using (window.Row())
         {
-            window.Image(Icons.Economic, new(16, 16));
+            window.Image(Icon.Get("economic_icon").Texture16x16);
             window.Text("42");
-            window.Image(Icons.Industrial, new(16, 16));
+            window.Image(Icon.Get("industrial_icon").Texture16x16);
             window.Text("69");
-            window.Image(Icons.Research, new(16, 16));
+            window.Image(Icon.Get("research_icon").Texture16x16);
             window.Text("1 million");
-        }
-
-        using (window.Row())
-        {
-            window.Text("hello!");
-            window.ProgressBar(.5f, 100);
-            if (window.TextButton("DONT CLICK ME OR EVERYONE WILL DIE"))
-            {
-                Console.WriteLine("hey!");
-            }
         }
     }
 }

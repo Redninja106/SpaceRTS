@@ -52,7 +52,7 @@ public class ActorList<TActor> : List<TActor>
     {
         foreach (var actor in this)
         {
-            if (actor is Unit u && u.ClientVisible)
+            if (actor is Unit u && !World.Collision.IsClientVisible(actor.Transform.Position))
             {
                 continue;
             }

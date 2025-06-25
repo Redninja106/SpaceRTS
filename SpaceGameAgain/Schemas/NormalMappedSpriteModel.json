@@ -1,12 +1,6 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
-    "sprites_folder": {
-      "type": "string"
-    },
     "sprite_count": {
       "type": "integer"
     },
@@ -22,21 +16,11 @@
     "offset_y": {
       "type": "number"
     },
-    "actor_type": {
-      "$comment": "Unsupported .NET type",
-      "not": true
-    },
     "name": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
-    "is_anonymous": {
-      "type": "boolean"
+    "prototype": {
+      "const": "NormalMappedSpriteModel"
     }
-  },
-  "prototype": {
-    "const": "NormalMappedSpriteModel"
   }
 }

@@ -1,6 +1,8 @@
 {
   "prototype": "ConstructionModulePrototype",
   "name": "construction_module",
+  "title": "Construction Module",
+  "icon": "construction_icon",
   "commands": [
     "build_command"
   ],
@@ -13,6 +15,10 @@
     "chaingun_turret",
     "missile_module_factory",
     "chaingun_module_factory",
-    "power_plant"
+    "power_plant",
+    "radar"
+  ],
+  "buildable_stations": [
+    "wormhole_station"
   ]
 }

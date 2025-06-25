@@ -1,24 +1,11 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
-    "actor_type": {
-      "$comment": "Unsupported .NET type",
-      "not": true
-    },
     "name": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
-    "is_anonymous": {
-      "type": "boolean"
+    "prototype": {
+      "const": "GridPrototype"
     }
-  },
-  "prototype": {
-    "const": "GridPrototype"
   }
 }

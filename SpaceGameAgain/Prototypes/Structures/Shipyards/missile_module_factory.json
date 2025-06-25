@@ -17,6 +17,6 @@
   "can_be_rotated": true,
   "power_consumed": 1,
   "cost": 20,
-  "category": "Shipbuilding"
+  "category": "shipbuilding_category"
 
 }

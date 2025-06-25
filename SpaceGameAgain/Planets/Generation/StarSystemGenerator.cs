@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpaceGame.Planets;
+namespace SpaceGame.Planets.Generation;
 internal class StarSystemGenerator
 {
     private PlanetPrototype[] planetPrototypes;
@@ -15,8 +15,8 @@ internal class StarSystemGenerator
 
     public StarSystemGenerator(GameWorld world, PlanetPrototype planetPrototype, Random random)
     {
-        this.World = world;
-        this.planetPrototypes = [
+        World = world;
+        planetPrototypes = [
                 Prototypes.Get<PlanetPrototype>("mars"),
                 Prototypes.Get<PlanetPrototype>("sandy_planet"),
                 Prototypes.Get<PlanetPrototype>("mud_planet"),
@@ -39,7 +39,7 @@ internal class StarSystemGenerator
         int planetCount = random.Next(12, 12);
         for (int i = 0; i < planetCount; i++)
         {
-            float planetRadius = (2 * MathF.Sqrt(3)) * (int)random.NextSingle(2, 10);
+            float planetRadius = 2 * MathF.Sqrt(3) * (int)random.NextSingle(2, 10);
 
             orbitDistance += planetRadius * 10;
 
@@ -48,7 +48,7 @@ internal class StarSystemGenerator
                 World,
                 World.NewID()
             )
-            { 
+            {
                 orbit = new Orbit(
                     star,
                     orbitDistance,

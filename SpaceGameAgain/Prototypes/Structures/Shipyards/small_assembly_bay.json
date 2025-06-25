@@ -17,5 +17,5 @@
   "production_cost": 20,
   "cost": 10,
   "reveal_radius": 1,
-  "category": "Shipbuilding",
+  "category": "shipbuilding_category"
 }

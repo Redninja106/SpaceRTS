@@ -1,47 +1,49 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
     "blocks_structures": {
       "type": "boolean"
     },
     "color": {
-      "type": [
-        "object",
-        "null"
-      ]
+      "type": "object",
+      "properties": {
+        "r": {
+          "type": "number"
+        },
+        "g": {
+          "type": "number"
+        },
+        "b": {
+          "type": "number"
+        },
+        "a": {
+          "type": "number"
+        }
+      }
     },
     "resource": {
-      "oneOf": [
-        {
-          "$ref": "ResourcePrototype.json"
-        }
+      "enum": [
+        "aluminum",
+        "lithium",
+        "titanium",
+        "uranium"
       ]
     },
     "material": {
-      "oneOf": [
-        {
-          "$ref": "BackgroundMaterial.json"
-        }
+      "enum": [
+        "grassy_material",
+        "mars_material",
+        "sandy_material",
+        "rocky_material",
+        "mud_material",
+        "star_material"
       ]
-    },
-    "actor_type": {
-      "$comment": "Unsupported .NET type",
-      "not": true
     },
     "name": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
-    "is_anonymous": {
-      "type": "boolean"
+    "prototype": {
+      "const": "TilePrototype"
     }
-  },
-  "prototype": {
-    "const": "TilePrototype"
   }
 }

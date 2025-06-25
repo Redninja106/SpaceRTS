@@ -1,13 +1,6 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
-    "actor_type": {
-      "$comment": "Unsupported .NET type",
-      "not": true
-    },
     "fire_interval": {
       "type": "number"
     },
@@ -24,23 +17,27 @@
       "type": "number"
     },
     "model": {
-      "oneOf": [
-        {
-          "$ref": "SpriteModel.json"
-        }
+      "enum": [
+        "alt_small_ship_model",
+        "chaingun_turret_model",
+        "chaingun_turret_base_model",
+        "default_model",
+        "manufactory_model",
+        "missile_turret_model",
+        "missile_turret_base_model",
+        "new_chaingun_turret_base_model",
+        "normal_orb_model",
+        "particle_accelerator_model",
+        "radar_model",
+        "small_assembly_bay_model",
+        "small_ship_model"
       ]
     },
     "name": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
-    "is_anonymous": {
-      "type": "boolean"
+    "prototype": {
+      "const": "ChaingunSystemPrototype"
     }
-  },
-  "prototype": {
-    "const": "ChaingunSystemPrototype"
   }
 }

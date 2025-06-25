@@ -1,5 +1,7 @@
 {
   "prototype": "PlanetPrototype",
   "name": "mars",
-  "material": "mars_material"
+  "material": "mars_material",
+  "can_build": true
+
 }

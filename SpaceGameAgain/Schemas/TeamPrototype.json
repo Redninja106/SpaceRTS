@@ -1,24 +1,11 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
     "name": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
-    "is_anonymous": {
-      "type": "boolean"
-    },
-    "actor_type": {
-      "$comment": "Unsupported .NET type",
-      "not": true
+    "prototype": {
+      "const": "TeamPrototype"
     }
-  },
-  "prototype": {
-    "const": "TeamPrototype"
   }
 }

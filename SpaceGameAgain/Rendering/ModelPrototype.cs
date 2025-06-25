@@ -53,7 +53,7 @@ namespace SpaceGame.Rendering;
 //    }
 //}
 
-abstract class ModelPrototype : DataPrototype
+abstract class ModelPrototype : AssetPrototype
 {
     public float Width { get; set; } = 1;
     public float Height { get; set; } = 1;

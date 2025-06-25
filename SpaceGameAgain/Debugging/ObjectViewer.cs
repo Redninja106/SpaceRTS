@@ -3,6 +3,7 @@ using System.Collections;
 using System.Reflection;
 using System.Diagnostics;
 using static Program;
+using System.Reflection.Emit;
 
 namespace SpaceGame.Debugging;
 
@@ -66,6 +67,23 @@ class ObjectViewer
         }
     }
 
+    public static void LayoutActorLink(Actor actor, string? label = null)
+    {
+        bool missing = !Program.World.Actors.ContainsKey(actor.ID);
+        if (missing)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, 0xFF0000FF);
+        }
+        if (ImGui.Selectable((label ?? actor.ToString()) + (missing ? " (not registered)" : "")))
+        {
+            DebugMenu.ViewObject(actor);
+        }
+        if (missing)
+        {
+            ImGui.PopStyleColor();
+        }
+    }
+
     public static object? ReflectionLayoutObject(string label, object? obj, bool isReadonly)
     {
         //if ((obj?.GetType()?.IsConstructedGenericType ?? false) && obj.GetType().GetGenericTypeDefinition() == typeof(ActorReference<>))
@@ -88,19 +106,7 @@ class ObjectViewer
                 }
                 return proto;
             case Actor actor:
-                bool missing = !Program.World.Actors.ContainsKey(actor.ID);
-                if (missing)
-                {
-                    ImGui.PushStyleColor(ImGuiCol.Text, 0xFF0000FF);
-                }
-                if (ImGui.Selectable(label + (missing ? " (not registered)" : "")))
-                {
-                    DebugMenu.ViewObject(actor);
-                }
-                if (missing)
-                {
-                    ImGui.PopStyleColor();
-                }
+                LayoutActorLink(actor, label);
                 return actor;
             case IInspectable inspectable:
                 if (ImGui.TreeNode(label))

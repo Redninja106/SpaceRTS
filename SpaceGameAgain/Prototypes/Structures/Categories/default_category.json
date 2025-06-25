@@ -1,0 +1,6 @@
+{
+  "prototype": "ConstructionCategory",
+  "name": "default_category",
+  "title": "Other",
+  "icon": "default_icon"
+}

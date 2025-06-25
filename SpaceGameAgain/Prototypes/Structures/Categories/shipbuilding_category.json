@@ -1,0 +1,6 @@
+{
+  "prototype": "ConstructionCategory",
+  "name": "shipbuilding_category",
+  "title": "Shipbuilding",
+  "icon": "ship_icon"
+}

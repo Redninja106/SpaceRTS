@@ -1,0 +1,9 @@
+{
+  "prototype": "PlanetGenerator",
+  "name": "player_system_generator",
+  "planet_prototype": "star",
+  "minimum_size": 50,
+  "moon_passes": [
+
+  ]
+}

@@ -30,7 +30,7 @@ internal class Structure : Unit
     public HashSet<Structure> neighbors = [];
     public bool Enabled { get; set; }
     public bool Powered { get; set; }
-    public override ITexture Icon => Icons.Structure;
+    // public override ITexture Icon => Icons.Structure;
 
     public Structure(StructurePrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
@@ -84,7 +84,8 @@ internal class Structure : Unit
         if (!Powered)
         {
             Prototype.Model.Render(canvas, this.InterpolatedTransform, new ColorF(.5f, .5f, .5f, 1));
-            canvas.DrawTexture(Icons.Economic, new Rectangle(0, 0, 2, 2, Alignment.Center), ColorF.Red);
+            ITexture icon = Rendering.Icon.Get("economic_icon").Texture64x64;
+            canvas.DrawTexture(icon, new Rectangle(0, 0, 2, 2, Alignment.Center), ColorF.Red);
         }
     }
 
@@ -141,7 +142,6 @@ internal class Structure : Unit
 
     public override void OnDestroyed()
     {
-        var planet = (Planet)Grid.Parent;
         // planet.PowerProduced -= Prototype.PowerProduced;
         // planet.PowerConsumed -= Prototype.PowerConsumed;
 

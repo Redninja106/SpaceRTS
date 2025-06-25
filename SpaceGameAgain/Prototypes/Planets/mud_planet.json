@@ -1,5 +1,7 @@
 {
   "prototype": "PlanetPrototype",
   "name": "mud_planet",
-  "material": "mud_material"
+  "material": "mud_material",
+  "can_build": true
+
 }

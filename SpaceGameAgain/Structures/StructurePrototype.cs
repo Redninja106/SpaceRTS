@@ -19,7 +19,6 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
     public override Type ActorType => typeof(Structure);
 
     public HexCoordinate[] Footprint { get; set; } = [HexCoordinate.Zero];
-    public int Price { get; set; }
     // public string PresetModel { get; set; } = "default";
     public Vector2 Center { get; set; }
     public bool CanBeRotated { get; set; } = true;
@@ -32,12 +31,8 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
     [JsonConverter(typeof(JsonStringEnumConverter<PowerLevel>))]
     public PowerLevel RequiredPowerLevel { get; set; } = PowerLevel.None;
 
-    public string? Description { get; set; }
-    public int Cost { get; set; }
-    public string Category { get; set; } = "Other";
-
-    [JsonIgnore]
-    public ITexture Icon => Icons.Structure;
+    //[JsonIgnore]
+    //public ITexture Icon => Icons.Structure;
 
     public StructurePrototype()
     {
@@ -51,13 +46,14 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
         this.AdjacentCells = CreateAdjacentCells(this.Footprint);
         this.CollisionRadius = MathF.Sqrt(this.Outline.Max(p => (p - Center).LengthSquared()));
 
-        if (RevealRadius < CollisionRadius + .5f)
+        if (RevealRadius < CollisionRadius + 2f)
         {
-            RevealRadius = CollisionRadius + .5f;
+            RevealRadius = CollisionRadius + 2f;
         }
 
         this.CanBeRotated = this.Model.SpriteCount > 1;
 
+        Category ??= Prototypes.Get<ConstructionCategory>("default_category");
         // this.Model ??= PresetModels.presetModels[this.PresetModel!];
     }
 
@@ -130,11 +126,11 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
     //    rotation = reader.ReadInt32();
     //}
 
-    public void Layout(GUIWindow window)
+    public override void Layout(GUIWindow window)
     {
         using (window.Row())
         {
-            window.Image(this.Icon);
+            window.ModelImage(this.Model, new(64, 64));
 
             using (window.Column())
             {
@@ -146,8 +142,15 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
 
                     if (RequiredPowerLevel != PowerLevel.None)
                     {
-                        window.Image(Icons.Economic, new(22, 22));
-                        window.Text(RequiredPowerLevel.ToString());
+                        for (int i = 0; i < (int)RequiredPowerLevel; i++)
+                        {
+                            window.Image(Icon.Get("economic_icon").Texture16x16, inline: true);
+
+                            if (window.LastItemHovered())
+                            {
+                                window.Viewport.SetTooltip(w => w.Text($"required power level: {RequiredPowerLevel.ToString().ToLower()}"));
+                            }
+                        }
                     }
                 }
 
@@ -168,7 +171,8 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
     {
         if (this.RequiredPowerLevel != Economy.PowerLevel.None && otherPrototype.ProvidedPowerLevel >= this.RequiredPowerLevel)
         {
-            canvas.DrawTexture(Icons.Economic, position, new Vector2(1f, 1f), Alignment.Center);
+            ITexture icon = Rendering.Icon.Get("economic_icon").Texture64x64;
+            canvas.DrawTexture(icon, position, new Vector2(.5f, .5f), Alignment.Center);
         }
     }
 }

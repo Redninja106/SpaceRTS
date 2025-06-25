@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpaceGame.Planets;
+namespace SpaceGame.Planets.Generation;
 internal class PlanetGenerator : DataPrototype
 {
     public float MinimumSize { get; set; } = 0;
@@ -35,9 +35,8 @@ internal class PlanetGenerator : DataPrototype
         else
         {
             planet.SphereOfInfluence.Radius = planet.Radius * 3;
+            Grid.FillRadius(planet.Grid, planet.Radius);
         }
-
-        Grid.FillRadius(planet.Grid, planet.Radius);
 
         float distance = planet.Radius * 2;
         foreach (var moonPass in MoonPasses)
@@ -45,11 +44,12 @@ internal class PlanetGenerator : DataPrototype
             moonPass.Generate(world, random, ref distance, planet);
         }
 
+        planet.SphereOfInfluence.Radius = float.Max(planet.SphereOfInfluence.Radius, distance);
+
         return planet;
     }
 }
 
-// [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [DerivedType(typeof(RandomMoonPass), "random")]
 [DerivedType(typeof(ConstantMoonPass), "constant")]
 [DerivedType(typeof(GapMoonPass), "gap")]
@@ -97,10 +97,9 @@ class ConstantMoonPass : MoonPass
         foreach (var generator in Generators)
         {
             Planet moon = generator.Generate(world, random);
-            moon.orbit = new(planet, distance, random.NextSingle() * MathF.Tau * distance);
+            moon.orbit = new(planet, distance + moon.SphereOfInfluence.Radius * 2, random.NextSingle() * MathF.Tau * distance);
             distance += moon.SphereOfInfluence.Radius * 2;
         }
-        planet.SphereOfInfluence.Radius = float.Max(planet.SphereOfInfluence.Radius, distance);
     }
 }
 

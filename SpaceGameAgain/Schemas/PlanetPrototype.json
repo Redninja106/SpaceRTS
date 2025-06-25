@@ -1,27 +1,24 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
     "material": {
-      "oneOf": [
-        {
-          "$ref": "BackgroundMaterial.json"
-        }
+      "enum": [
+        "grassy_material",
+        "mars_material",
+        "sandy_material",
+        "rocky_material",
+        "mud_material",
+        "star_material"
       ]
+    },
+    "can_build": {
+      "type": "boolean"
     },
     "name": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
-    "is_anonymous": {
-      "type": "boolean"
+    "prototype": {
+      "const": "PlanetPrototype"
     }
-  },
-  "prototype": {
-    "const": "PlanetPrototype"
   }
 }

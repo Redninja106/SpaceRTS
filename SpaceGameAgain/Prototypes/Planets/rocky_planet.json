@@ -1,5 +1,7 @@
 {
   "prototype": "PlanetPrototype",
   "name": "rocky_planet",
-  "material": "rocky_material"
+  "material": "rocky_material",
+  "can_build": true
+
 }

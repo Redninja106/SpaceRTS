@@ -1,8 +1,5 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
     "width": {
       "type": "number"
@@ -16,21 +13,11 @@
     "offset_y": {
       "type": "number"
     },
-    "actor_type": {
-      "$comment": "Unsupported .NET type",
-      "not": true
-    },
     "name": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
-    "is_anonymous": {
-      "type": "boolean"
+    "prototype": {
+      "const": "ModelPrototype"
     }
-  },
-  "prototype": {
-    "const": "ModelPrototype"
   }
 }

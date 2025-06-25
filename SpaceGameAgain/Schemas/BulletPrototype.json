@@ -1,13 +1,6 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
-    "actor_type": {
-      "$comment": "Unsupported .NET type",
-      "not": true
-    },
     "speed": {
       "type": "number"
     },
@@ -18,16 +11,10 @@
       "type": "integer"
     },
     "name": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
-    "is_anonymous": {
-      "type": "boolean"
+    "prototype": {
+      "const": "BulletPrototype"
     }
-  },
-  "prototype": {
-    "const": "BulletPrototype"
   }
 }

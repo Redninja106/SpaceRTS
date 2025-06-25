@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using SimulationFramework;
 using SimulationFramework.Drawing;
+using SpaceGame.Planets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,8 @@ public abstract class Camera : IInspectable
 
     public float AspectRatio => DisplayWidth / (float)DisplayHeight;
 
+    internal SphereOfInfluence? FocusedSphereOfInfluence { get; private set; }
+
     public virtual void Update(int width, int height, float tickProgress)
     {
         DisplayWidth = width;
@@ -34,6 +37,17 @@ public abstract class Camera : IInspectable
 
         SmoothTransform.Position = DoubleVector.Lerp(SmoothTransform.Position, target.Position, 1f - MathF.Pow(InterpolationFactor, Time.DeltaTime));
         SmoothVerticalSize = float.Lerp(SmoothVerticalSize, VerticalSize, 1f - MathF.Pow(InterpolationFactor, Time.DeltaTime));
+
+        const float focusFac = .9f;
+
+        var soi = Program.World.GetSphereOfInfluence(this.SmoothTransform.Position);
+
+        while (soi != null && soi.Radius * 2 < SmoothVerticalSize * focusFac)
+        {
+            soi = ((Planet?)soi.planet.orbit?.center)?.SphereOfInfluence;
+        }
+
+        FocusedSphereOfInfluence = soi;
     }
 
     public void RenderSetup(ICanvas canvas)
@@ -136,6 +150,9 @@ public abstract class Camera : IInspectable
         float vs = VerticalSize;
         ImGui.DragFloat("vertical size", ref vs);
         VerticalSize = vs;
-
+        if (FocusedSphereOfInfluence != null)
+        {
+            ObjectViewer.LayoutActorLink(FocusedSphereOfInfluence.planet, "view focused planet");
+        }
     }
 }

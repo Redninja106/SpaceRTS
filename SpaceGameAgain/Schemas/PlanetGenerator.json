@@ -1,8 +1,5 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
     "minimum_size": {
       "type": "number"
@@ -11,39 +8,23 @@
       "type": "number"
     },
     "planet_prototype": {
-      "oneOf": [
-        {
-          "$ref": "PlanetPrototype.json"
-        }
+      "enum": [
+        "grassy_planet",
+        "mars",
+        "mud_planet",
+        "rocky_planet",
+        "sandy_planet",
+        "star"
       ]
     },
     "moon_passes": {
-      "type": "array",
-      "items": {
-        "type": [
-          "object",
-          "null"
-        ]
-      }
-    },
-    "actor_type": {
-      "$comment": "Unsupported .NET type",
-      "not": true
+      "type": "array"
     },
     "name": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
-    "is_anonymous": {
-      "type": "boolean"
+    "prototype": {
+      "const": "PlanetGenerator"
     }
-  },
-  "required": [
-    "planet_prototype"
-  ],
-  "prototype": {
-    "const": "PlanetGenerator"
   }
 }

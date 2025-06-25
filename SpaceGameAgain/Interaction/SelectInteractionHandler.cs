@@ -69,6 +69,12 @@ internal class SelectInteractionHandler : IInteractionContext
             {
                 if (target != null)
                 {
+                    if (target is Ship s && s.Fleet != null && s.Fleet != World.SelectionHandler.SelectedFleet)
+                    {
+                        World.SelectionHandler.SelectedFleet = s.Fleet;
+                        return;
+                    }
+
                     if (Keyboard.IsKeyDown(Key.LeftShift))
                     {
                         World.SelectionHandler.Select(target);
@@ -139,7 +145,7 @@ internal class SelectInteractionHandler : IInteractionContext
 
 
                     ShipNavigator navigator = new(World);
-                    var path = navigator.GetPath(ships[i], World.MousePosition + positions[i]);
+                    var path = navigator.GetPath(ships[i], rightMouse.DragStart + positions[i]);
                     path.Reverse();
 
                     IssueOrdersCommand command = new()
@@ -371,9 +377,4 @@ internal class SelectInteractionHandler : IInteractionContext
         }
     }
 
-}
-
-interface ISelectable
-{
-    ITexture Icon { get; }
 }

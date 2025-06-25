@@ -1,13 +1,6 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
-    "actor_type": {
-      "$comment": "Unsupported .NET type",
-      "not": true
-    },
     "acceleration": {
       "type": "number"
     },
@@ -15,16 +8,10 @@
       "type": "number"
     },
     "name": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
-    "is_anonymous": {
-      "type": "boolean"
+    "prototype": {
+      "const": "MissilePrototype"
     }
-  },
-  "prototype": {
-    "const": "MissilePrototype"
   }
 }

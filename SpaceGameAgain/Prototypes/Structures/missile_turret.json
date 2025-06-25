@@ -18,6 +18,6 @@
   "model": "missile_turret_base_model",
   "turret_model": "missile_turret_model",
   "cost": 25,
-  "category": "Defense",
+  "category": "defense_category",
   "reveal_radius": 12
 }

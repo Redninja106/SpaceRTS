@@ -1,0 +1,6 @@
+{
+  "prototype": "ConstructionCategory",
+  "name": "defense_category",
+  "title": "Defense",
+  "icon": "defensive_icon"
+}

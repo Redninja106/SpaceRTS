@@ -1,6 +1,7 @@
 ﻿using SimulationFramework;
 using SimulationFramework.Drawing;
 using SimulationFramework.Input;
+using SpaceGame.Planets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,11 +23,15 @@ internal class FreeCamera : Camera
     {
         base.Update(width, height, tickProgress);
 
-        zoom -= 1.5f * Mouse.ScrollWheelDelta;
-        if (Keyboard.IsKeyDown(Key.Plus))
-            zoom -= Time.DeltaTime;
-        if (Keyboard.IsKeyDown(Key.Minus))
-            zoom += Time.DeltaTime;
+        if (!Program.World.GUIViewport.IsAnyWindowHovered)
+        {
+            zoom -= 1.5f * Mouse.ScrollWheelDelta;
+
+            if (Keyboard.IsKeyDown(Key.Plus))
+                zoom -= Time.DeltaTime;
+            if (Keyboard.IsKeyDown(Key.Minus))
+                zoom += Time.DeltaTime;
+        }
 
         DoubleVector delta = DoubleVector.Zero;
         DoubleVector zoomTarget = DoubleVector.FromVector2(this.ScreenToWorld(Program.ViewportMousePosition, false));
@@ -52,5 +57,7 @@ internal class FreeCamera : Camera
             delta += DoubleVector.FromVector2(1, 0);
 
         Transform.Position += zoomFac * delta * Time.DeltaTime;
+
+
     }
 }

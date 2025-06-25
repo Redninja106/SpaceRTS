@@ -6,9 +6,10 @@ namespace SpaceGame.Data;
 
 public abstract class Prototype
 {
+    [DebugIgnore]
     public string? Name { get; set; }
 
-    [JsonIgnore]
+    [JsonIgnore, DebugIgnore]
     public bool IsAnonymous { get; set; }
 
     [JsonIgnore, DebugIgnore]

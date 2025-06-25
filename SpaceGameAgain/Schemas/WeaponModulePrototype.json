@@ -1,31 +1,32 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
-    "actor_type": {
-      "$comment": "Unsupported .NET type",
-      "not": true
-    },
     "weapon_system_prototype": {
-      "oneOf": [
-        {
-          "$ref": "WeaponSystemPrototype.json"
-        }
+      "enum": [
+        "chaingun_system",
+        "missile_system"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "icon": {
+      "enum": [
+        "construction_icon",
+        "default_icon",
+        "defensive_icon",
+        "economic_icon",
+        "industrial_icon",
+        "research_icon",
+        "ship_icon",
+        "structure_icon"
       ]
     },
     "name": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
-    "is_anonymous": {
-      "type": "boolean"
+    "prototype": {
+      "const": "WeaponModulePrototype"
     }
-  },
-  "prototype": {
-    "const": "WeaponModulePrototype"
   }
 }

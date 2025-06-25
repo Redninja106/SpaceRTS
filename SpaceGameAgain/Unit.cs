@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SpaceGame;
 
-internal abstract class Unit(UnitPrototype prototype, GameWorld world, ulong id) : Actor(prototype, world, id), IDestructable, IGUIProvider, ISelectable, IDamagable
+internal abstract class Unit(UnitPrototype prototype, GameWorld world, ulong id) : Actor(prototype, world, id), IDestructable, IGUIProvider, IDamagable
 {
     public override UnitPrototype Prototype => (UnitPrototype)base.Prototype;
 
@@ -23,15 +23,12 @@ internal abstract class Unit(UnitPrototype prototype, GameWorld world, ulong id)
     [field: Serialize]
     public int Health { get; set; } = prototype.MaxHealth;
 
-    public bool ClientVisible => World.tick - LastClientVisibleTick < 50;
-    public ulong LastClientVisibleTick { get; set; }
     public virtual bool CanAttack => false;
 
     bool IDestructable.IsDestroyed => Health <= 0;
 
     public virtual bool CanReveal => Team == World.PlayerTeam;
 
-    public abstract ITexture Icon { get; }
     public abstract void Layout(GUIWindow window);
 
     public override void Render(ICanvas canvas)

@@ -50,17 +50,27 @@ public static class Prototypes
         return prototypes.Values.OfType<TPrototype>().ToArray();
     }
 
-    public static void Load(bool testing = false)
+    public static string GetPrototypeDirectory(string prototypeName)
     {
-        string[] fileNames = Directory.GetFiles("Prototypes", "*", SearchOption.AllDirectories);
+        return Path.GetDirectoryName(files[prototypeName].PrototypePath)! + "\\";
+    }
+
+    public static string[] FindPrototypeFiles(bool includeAssets)
+    {
+        string[] prototypeFiles = Directory.GetFiles("Prototypes", "*.json", SearchOption.AllDirectories);
+        string[] assetFiles = includeAssets ? Directory.GetFiles("Assets", "*.json", SearchOption.AllDirectories) : [];
+        return [.. prototypeFiles, .. assetFiles];
+    }
+
+    public static void Load(bool loadAssets = true)
+    {
+        string[] fileNames = FindPrototypeFiles(loadAssets);
 
         foreach (var fileName in fileNames)
         {
             PrototypeFile file = new(fileName);
             files.Add(file.PrototypeName, file);
         }
-
-        // var options = CreateJsonOptions();
 
         foreach (var (_, file) in files)
         {
@@ -74,36 +84,13 @@ public static class Prototypes
 
         foreach (var prototype in prototypes)
         {
-            if (testing && prototype.Value is SpriteModel or BackgroundMaterial)
-            {
-                continue;
-            }
+            DebugLog.Assert(loadAssets || prototype.Value is not AssetPrototype);
 
             prototype.Value.InitializePrototype();
         }
 
         DebugLog.Message($"Loaded {prototypes.Count} prototypes...");
     }
-
-    //public static JsonSerializerOptions CreateJsonOptions()
-    //{
-    //    JsonSerializerOptions options = new()
-    //    {
-    //        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-    //        AllowTrailingCommas = true,
-    //        UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
-    //        ReadCommentHandling = JsonCommentHandling.Skip,
-    //    };
-    //    options.Converters.Add(new HexCoordinateConverter());
-    //    options.Converters.Add(new Vector2Converter());
-    //    options.Converters.Add(new ColorConverter());
-    //    options.Converters.Add(new ColorFConverter());
-    //    options.Converters.Add(new PrototypeReferenceConverter());
-
-    //    options = JsonPopulateWorkaround.GetOptionsWithPopulateResolver(options);
-
-    //    return options;
-    //}
 
     public static void ReloadPrototype(Prototype prototype)
     {
@@ -117,12 +104,14 @@ public static class Prototypes
     public class PrototypeFile
     {
         public string PrototypeName;
+        public string PrototypePath;
         private string prototypeJson;
         public Type PrototypeType;
 
         private Prototype? prototypeInstance;
         public PrototypeFile(string file)
         {
+            PrototypePath = file;
             prototypeJson = File.ReadAllText(file);
             JObject prototypeObject = JObject.Parse(prototypeJson);
             PrototypeType = prototypeTypes[(string?)prototypeObject.GetValue("prototype") ?? throw new("prototype type missing!")];
@@ -217,7 +206,8 @@ public static class Prototypes
                 {
                     throw new();
                 }
-                object prototype = Activator.CreateInstance(prototypeType)!;
+                Prototype prototype = (Prototype)Activator.CreateInstance(prototypeType)!;
+                prototype.IsAnonymous = true;
                 serializer.Populate(obj.CreateReader(), prototype);
                 return prototype;
             }

@@ -25,6 +25,8 @@ internal class TextWidget(Transform transform, string text, float? size = null, 
             float minZoom = float.Log(2 * float.Min(camera.DisplayWidth, camera.DisplayHeight) / (128 * float.Sqrt(3)), 1.1f);
             canvas.Scale(scale / minZoom);
         }
+        canvas.Fill(Color.Black);
+        canvas.DrawAlignedText(Text, Size, new Vector2(.015f, .015f), Alignment.Center, TextStyle.Regular);
         canvas.Fill(Color);
         canvas.DrawAlignedText(Text, Size, Vector2.Zero, Alignment.Center, TextStyle.Regular);
         canvas.PopState();

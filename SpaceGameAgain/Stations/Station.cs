@@ -14,7 +14,7 @@ internal abstract class Station(StationPrototype prototype, GameWorld world, ulo
 {
     public Orbit? orbit;
 
-    public override ITexture Icon => Icons.Defensive;
+    // public override ITexture Icon => Icons.Defensive;
 
     public override bool TestPoint(DoubleVector point)
     {

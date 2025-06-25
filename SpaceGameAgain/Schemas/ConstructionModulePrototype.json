@@ -1,34 +1,35 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
-    "actor_type": {
-      "$comment": "Unsupported .NET type",
-      "not": true
-    },
     "buildable_structures": {
-      "type": "array",
-      "items": {
-        "oneOf": [
-          {
-            "$ref": "StructurePrototype.json"
-          }
-        ]
-      }
+      "type": "array"
     },
-    "name": {
-      "type": [
-        "string",
-        "null"
+    "buildable_stations": {
+      "type": "array"
+    },
+    "buildables_by_category": {
+      "type": "array"
+    },
+    "title": {
+      "type": "string"
+    },
+    "icon": {
+      "enum": [
+        "construction_icon",
+        "default_icon",
+        "defensive_icon",
+        "economic_icon",
+        "industrial_icon",
+        "research_icon",
+        "ship_icon",
+        "structure_icon"
       ]
     },
-    "is_anonymous": {
-      "type": "boolean"
+    "name": {
+      "type": "string"
+    },
+    "prototype": {
+      "const": "ConstructionModulePrototype"
     }
-  },
-  "prototype": {
-    "const": "ConstructionModulePrototype"
   }
 }

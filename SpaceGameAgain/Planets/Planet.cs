@@ -43,6 +43,9 @@ internal class Planet : Actor
     public required Orbit? orbit;
     private PlanetShader shader;
 
+    [DebugOverlay]
+    public static bool ShowOrbits;
+
     public Planet(PlanetPrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
         shader = new PlanetShader();
@@ -104,6 +107,11 @@ internal class Planet : Actor
         }
 
         SphereOfInfluence.Render(canvas);
+
+        if (ShowOrbits && this.orbit != null)
+        {
+            DebugDraw.Circle(Vector2.Zero, this.orbit.radius, this.orbit.center.Transform);
+        }
     }
 
     private void DrawPlanetBreakdown(ICanvas canvas)

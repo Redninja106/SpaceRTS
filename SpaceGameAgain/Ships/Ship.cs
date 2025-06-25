@@ -31,7 +31,7 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
 {
     public override ShipPrototype Prototype => (ShipPrototype)base.Prototype;
 
-    public override ITexture Icon => Icons.Ship;
+    // public override ITexture Icon => Icons.Ship;
 
     public static Vector2[] verts = [
         new(.5f / 2f, 0),
@@ -132,6 +132,7 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
                     }
                 }
             }
+
         }
 
         base.RenderBackgroundOverlay(canvas, camera, selected);
@@ -140,6 +141,22 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
     public override void RenderGroundOverlay(ICanvas canvas, Camera camera, bool selected)
     {
         base.RenderGroundOverlay(canvas, camera, selected);
+    }
+
+    public override void RenderSkyOverlay(ICanvas canvas, Camera camera, bool selected)
+    {
+        base.RenderSkyOverlay(canvas, camera, selected);
+
+        const float IconSize = .30f;
+
+        canvas.Rotate(-this.InterpolatedTransform.Rotation);
+        canvas.Translate((modules.Count - 1) * -(IconSize*.5f), -(float)this.GetCollisionRadius() - (IconSize*.5f));
+        foreach (var module in modules)
+        {
+            canvas.DrawTexture(module.Prototype.Icon.Texture64x64, new(.01f, .01f, IconSize + .01f, IconSize + .01f, Alignment.Center), ColorF.Black);
+            canvas.DrawTexture(module.Prototype.Icon.Texture64x64, new(0, 0, IconSize, IconSize, Alignment.Center), ColorF.White);
+            canvas.Translate(IconSize, 0);
+        }
     }
 
     public override void Tick()
@@ -384,13 +401,6 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
 
     public override void Layout(GUIWindow window)
     {
-        if (this.Team == World.PlayerTeam && this.modules.FirstOrDefault(m => m is ConstructionModule) is Module m)
-        {
-            if (window.TextButton("build"))
-            {
-                World.GUIViewport.SetPopup(m.Layout, window.LastItemBounds.GetAlignedPoint(Alignment.TopCenter), Alignment.BottomCenter);
-            }
-        }
 
         // if (window.TextButton(stance.ToString().ToLower()))
         // {

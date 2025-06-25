@@ -1,0 +1,6 @@
+{
+  "prototype": "ConstructionCategory",
+  "name": "power_category",
+  "title": "Power",
+  "icon": "economic_icon"
+}

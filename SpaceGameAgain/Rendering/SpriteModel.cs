@@ -10,16 +10,12 @@ using System.Threading.Tasks;
 namespace SpaceGame.Rendering;
 internal class SpriteModel : ModelPrototype, IInspectable
 {
-
     protected ITexture[] sprites;
-    public string SpritesFolder { get; set; }
+    // public string SpritesFolder { get; set; }
     public int SpriteCount { get; set; }
 
     public override void InitializePrototype()
     {
-        sprites = new ITexture[SpriteCount];
-        Load();
-
         base.InitializePrototype();
     }
 
@@ -31,20 +27,21 @@ internal class SpriteModel : ModelPrototype, IInspectable
 
     public virtual void DebugLayout()
     {
-        ImGui.Text(SpritesFolder);
+        // ImGui.Text(SpritesFolder);
         if (ImGui.Button("Reload"))
         {
-            Load();
+            LoadAssets(Prototypes.GetPrototypeDirectory(this.Name!));
         }
         LayoutSpriteArray(sprites, "Sprites");
     }
 
-    public virtual void Load()
+    public override void LoadAssets(string prototypePath)
     {
+        sprites = new ITexture[SpriteCount];
         for (int i = 0; i < SpriteCount; i++)
         {
             sprites[i]?.Dispose();
-            sprites[i] = Graphics.LoadTexture($"./Assets/Sprites/{SpritesFolder}/{i}.png", TextureOptions.Constant);
+            sprites[i] = Graphics.LoadTexture(Path.Combine(prototypePath, $"{i}.png"), TextureOptions.Constant);
             sprites[i].Filter = TextureFilter.Point;
             Graphics.GenerateMipmaps(sprites[i]);
         }
@@ -87,17 +84,17 @@ class NormalMappedSpriteModel : SpriteModel
         base.InitializePrototype();
     }
 
-    public override void Load()
+    public override void LoadAssets(string prototypePath)
     {
+        base.LoadAssets(prototypePath);
+
         for (int i = 0; i < SpriteCount; i++)
         {
             spriteNormalMaps[i]?.Dispose();
-            spriteNormalMaps[i] = Graphics.LoadTexture($"./Assets/Sprites/{SpritesFolder}/{i}_normal.png", TextureOptions.Constant);
+            spriteNormalMaps[i] = Graphics.LoadTexture(Path.Combine(prototypePath, $"{i}_normal.png"), TextureOptions.Constant);
             spriteNormalMaps[i].Filter = TextureFilter.Point;
             Graphics.GenerateMipmaps(spriteNormalMaps[i]);
         }
-
-        base.Load();
     }
 
     public override void Render(ICanvas canvas, Transform transform, ColorF tint)

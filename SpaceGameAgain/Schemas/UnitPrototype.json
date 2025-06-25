@@ -1,8 +1,5 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": "object",
   "properties": {
     "max_health": {
       "type": "integer"
@@ -16,30 +13,75 @@
     "reveal_radius": {
       "type": "number"
     },
+    "model": {
+      "enum": [
+        "alt_small_ship_model",
+        "chaingun_turret_model",
+        "chaingun_turret_base_model",
+        "default_model",
+        "manufactory_model",
+        "missile_turret_model",
+        "missile_turret_base_model",
+        "new_chaingun_turret_base_model",
+        "normal_orb_model",
+        "particle_accelerator_model",
+        "radar_model",
+        "small_assembly_bay_model",
+        "small_ship_model"
+      ]
+    },
+    "icon": {
+      "enum": [
+        "construction_icon",
+        "default_icon",
+        "defensive_icon",
+        "economic_icon",
+        "industrial_icon",
+        "research_icon",
+        "ship_icon",
+        "structure_icon"
+      ]
+    },
+    "category": {
+      "enum": [
+        "default_category",
+        "defense_category",
+        "economy_category",
+        "power_category",
+        "shipbuilding_category"
+      ]
+    },
     "armor": {
       "type": "integer"
     },
     "armor_effectiveness": {
       "type": "number"
     },
+    "cost": {
+      "type": "integer"
+    },
+    "description": {
+      "type": "string"
+    },
     "base_defense_info": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "armor": {
+          "type": "integer"
+        },
+        "armor_effectiveness": {
+          "type": "number"
+        },
+        "shield": {
+          "type": "number"
+        }
+      }
     },
     "name": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
-    "is_anonymous": {
-      "type": "boolean"
-    },
-    "actor_type": {
-      "$comment": "Unsupported .NET type",
-      "not": true
+    "prototype": {
+      "const": "UnitPrototype"
     }
-  },
-  "prototype": {
-    "const": "UnitPrototype"
   }
 }

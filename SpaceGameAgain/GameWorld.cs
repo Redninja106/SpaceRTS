@@ -110,6 +110,7 @@ public class GameWorld
     {
         GUIViewport.Register(new GUIWindow(ResourceBar.Layout));
         GUIViewport.Register(new GUIWindow(UnitBar.Layout));
+        GUIViewport.Register(new GUIWindow(Minimap.Layout));
 
         Ships = new(this);
         Planets = new(this);
@@ -231,6 +232,8 @@ public class GameWorld
             planet.SphereOfInfluence.Tick();
         }
 
+        Minimap.Render();
+
         DebugOverlays.Tick();
 
         // MapWindow.Stack.Clear();
@@ -242,6 +245,7 @@ public class GameWorld
         tick++;
 
         DebugMenu.PopMetric();
+
     }
 
     static readonly VisibilityShader visibilityShader = new VisibilityShader();

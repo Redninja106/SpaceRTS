@@ -23,20 +23,33 @@ internal class CreateFleetCommand : Command
 
     public override void Apply()
     {
+        var freeShips = ships.Where(s => s.Fleet == null).ToArray();
+
+        if (freeShips.Length == 0)
+        {
+            return;
+        }
+
         var fleet = new Fleet(Prototypes.Get<FleetPrototype>(fleetPrototype), team.World, team.World.NewID())
         { 
             team = team, 
-            ships = ships
+            ships = freeShips
         };
 
-        fleet.Transform = ships[0].Transform;
+        fleet.Transform = freeShips[0].Transform;
 
-        foreach (var ship in ships)
+        foreach (var ship in freeShips)
         {
             ship.Fleet = fleet;
         }
 
         team.World.Add(fleet);
+
+        if (team == Program.World.PlayerTeam)
+        {
+            Program.World.SelectionHandler.ClearSelection();
+            Program.World.SelectionHandler.SelectedFleet = fleet;
+        }
     }
 
     //public override void Serialize(BinaryWriter writer)

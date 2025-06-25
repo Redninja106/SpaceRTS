@@ -1,8 +1,9 @@
-﻿namespace SpaceGame.GUI;
+﻿using SpaceGame.Rendering;
+
+namespace SpaceGame.GUI;
 
 abstract class DrawCommand
 {
-    //asdasd
     public abstract void Render(ICanvas canvas);
 
     public class Text(string text, float size, Vector2 position, Color? color = null, TextStyle style = TextStyle.Regular) : DrawCommand
@@ -37,6 +38,35 @@ abstract class DrawCommand
                 canvas.StrokeWidth(1);
             }
             canvas.DrawRect(rectangle);
+        }
+    }
+
+    public class RoundedRectangle(SimulationFramework.Rectangle rectangle, float radius, Color color, bool fill) : DrawCommand
+    {
+        public override void Render(ICanvas canvas)
+        {
+            if (fill)
+            {
+                canvas.Fill(color);
+            }
+            else
+            {
+                canvas.Stroke(color);
+                canvas.StrokeWidth(1);
+            }
+            canvas.DrawRoundedRect(rectangle, radius);
+        }
+    }
+
+    public class Model(SpriteModel model, Vector2 position, Vector2 size) : DrawCommand
+    {
+        public override void Render(ICanvas canvas)
+        {
+            canvas.PushState();
+            canvas.Translate(position);
+            canvas.Scale(size.X / model.Width, size.Y / model.Height);
+            model.Render(canvas, Transform.Default, ColorF.White);
+            canvas.PopState();
         }
     }
 }

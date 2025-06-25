@@ -174,12 +174,13 @@ class AssemblyBayPrototype : StructurePrototype
     {
         if (otherPrototype is ManufactoryPrototype)
         {
-            canvas.DrawTexture(Icons.Industrial, position, new Vector2(.25f, .25f), Alignment.Center);
+            ITexture icon = Rendering.Icon.Get("industrial_icon").Texture64x64;
+            canvas.DrawTexture(icon, position, new Vector2(.25f, .25f), Alignment.Center);
         }
 
         if (otherPrototype is ModuleFactoryPrototype)
         {
-            ITexture icon = Icons.Construction;
+            ITexture icon = Rendering.Icon.Get("construction_icon").Texture64x64;
             canvas.DrawTexture(icon, position, new Vector2(.25f, .25f), Alignment.Center);
         }
 

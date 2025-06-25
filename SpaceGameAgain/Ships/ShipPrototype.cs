@@ -20,6 +20,11 @@ internal class ShipPrototype : UnitPrototype
     public float TurnSpeed { get; set; } = 1f;
     public float FlyHeight { get; set; } = .4f;
 
+    public override void InitializePrototype()
+    {
+        base.InitializePrototype();
+    }
+
 
     //public override Actor Deserialize(BinaryReader reader)
     //{

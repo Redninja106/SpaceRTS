@@ -23,6 +23,6 @@
   "required_power_level": "medium",
   "production_time": 15000,
   "cost": 50,
-  "category": "Shipbuilding"
+  "category": "shipbuilding_category"
 
 }
