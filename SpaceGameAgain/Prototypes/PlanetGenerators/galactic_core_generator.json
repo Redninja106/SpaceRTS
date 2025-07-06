@@ -1,0 +1,6 @@
+{
+  "prototype": "PlanetGenerator",
+  "name": "galactic_core_generator",
+  "minimum_size": 100,
+  "planet_prototypes": [ "black_hole" ]
+}

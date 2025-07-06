@@ -10,12 +10,12 @@ class DictionarySerializer : Serializer
 
     private Serializer valueSerializer;
 
-    public DictionarySerializer(Type dictionaryType, Type keyType, Type valueType)
+    public DictionarySerializer(SerializationContext context, Type dictionaryType, Type keyType, Type valueType)
     {
         this.dictionaryType = dictionaryType;
 
-        keySerializer = GetSerializer(keyType);
-        valueSerializer = GetSerializer(valueType);
+        keySerializer = context.GetSerializer(keyType);
+        valueSerializer = context.GetSerializer(valueType);
     }
 
     public override object Deserialize(BinaryReader reader)

@@ -13,6 +13,12 @@ public class MouseState(GameWorld World, MouseButton button)
 
     public void Update()
     {
+        var soi = World.GetSphereOfInfluence(DragStart);
+        if (Holding && soi != null)
+        {
+            DragStart = soi.ApplyUpdateTo(DragStart);
+        }
+
         Dragged = false;
         Pressed = !World.GUIViewport.IsAnyWindowHovered && Mouse.IsButtonPressed(button);
         Released = Holding && Mouse.IsButtonReleased(button);
@@ -35,14 +41,10 @@ public class MouseState(GameWorld World, MouseButton button)
         {
             Dragging = true;
         }
+        
     }
 
     public void Tick()
     {
-        var soi = World.GetSphereOfInfluence(DragStart);
-        if (Holding && soi != null)
-        {
-            DragStart = soi.ApplyTickTo(DragStart);
-        }
     }
 }

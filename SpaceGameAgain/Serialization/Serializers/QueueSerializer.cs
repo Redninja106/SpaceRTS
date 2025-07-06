@@ -3,9 +3,9 @@ using System.Reflection;
 
 namespace SpaceGame.Serialization.Serializers;
 
-class QueueSerializer(Type queueType, Type elementType) : Serializer
+class QueueSerializer(SerializationContext context, Type queueType, Type elementType) : Serializer
 {
-    private Serializer elementSerializer = GetSerializer(elementType);
+    private Serializer elementSerializer = context.GetSerializer(elementType);
 
     public override void Serialize(BinaryWriter writer, object value)
     {

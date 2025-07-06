@@ -3,7 +3,7 @@
 /// <summary>
 /// Helper class that calls window.EndScope(mode) when disposed.
 /// </summary>
-struct GUIScope(GUIWindow window, LayoutMode mode) : IDisposable
+public struct GUIScope(GUIWindow window, LayoutMode mode) : IDisposable
 {
     //
     public void Dispose()

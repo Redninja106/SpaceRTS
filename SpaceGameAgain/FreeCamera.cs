@@ -25,39 +25,60 @@ internal class FreeCamera : Camera
 
         if (!Program.World.GUIViewport.IsAnyWindowHovered)
         {
-            zoom -= 1.5f * Mouse.ScrollWheelDelta;
+            zoom -= Program.UserOptions.ScrollSpeed * Mouse.ScrollWheelDelta;
 
             if (Keyboard.IsKeyDown(Key.Plus))
-                zoom -= Time.DeltaTime;
+            {
+                zoom -= Time.DeltaTime * 20;
+            }
             if (Keyboard.IsKeyDown(Key.Minus))
-                zoom += Time.DeltaTime;
+            {
+                zoom += Time.DeltaTime * 20;
+            }
         }
 
         DoubleVector delta = DoubleVector.Zero;
         DoubleVector zoomTarget = DoubleVector.FromVector2(this.ScreenToWorld(Program.ViewportMousePosition, false));
 
-        float minZoom = float.Log(2 * float.Min(this.DisplayWidth, this.DisplayHeight) / (128 * float.Sqrt(3)), 1.1f);
+        float viewSize = 2 * float.Min(this.DisplayWidth, this.DisplayHeight);
+        float minZoom = float.Log(viewSize / (128 * float.Sqrt(3)), 1.1f);
+        float maxZoom = float.Log(50000, 1.1f);
 
-        if (zoom < minZoom)
-            zoom = minZoom;
+        zoom = float.Clamp(zoom, minZoom, maxZoom);
+        
 
         float zoomFac = float.Pow(1.1f, zoom);
         VerticalSize = zoomFac;
-            
-        DoubleVector newZoomTarget = DoubleVector.FromVector2(this.ScreenToWorld(Program.ViewportMousePosition, false));
-        this.Transform.Position -= newZoomTarget - zoomTarget;
+
+        if (Mouse.ScrollWheelDelta != 0)
+        {
+            DoubleVector newZoomTarget = DoubleVector.FromVector2(this.ScreenToWorld(Program.ViewportMousePosition, false));
+            this.Transform.Position -= newZoomTarget - zoomTarget;
+        }
 
         if (Keyboard.IsKeyDown(Key.W))
+        {
             delta -= DoubleVector.FromVector2(0, 1);
+        }
         if (Keyboard.IsKeyDown(Key.A))
+        {
             delta -= DoubleVector.FromVector2(1, 0);
+        }
         if (Keyboard.IsKeyDown(Key.S))
+        {
             delta += DoubleVector.FromVector2(0, 1);
+        }
         if (Keyboard.IsKeyDown(Key.D))
+        {
             delta += DoubleVector.FromVector2(1, 0);
+        }
 
         Transform.Position += zoomFac * delta * Time.DeltaTime;
-
+        
+        if (DoubleVector.Distance(this.Transform.Position, DoubleVector.Zero) > 25000)
+        {
+            this.Transform.Position = this.Transform.Position.Normalized() * 25000;
+        }
 
     }
 }

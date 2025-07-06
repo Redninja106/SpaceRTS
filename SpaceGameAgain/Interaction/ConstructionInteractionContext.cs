@@ -2,6 +2,7 @@
 using SpaceGame.Debugging;
 using SpaceGame.Orders;
 using SpaceGame.Ships;
+using SpaceGame.Ships.Modules;
 using SpaceGame.Structures;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ internal class ConstructionInteractionContext(GameWorld World) : IInteractionCon
     private HexCoordinate hoveredLocation;
     private int rotation;
     private Ship constructionShip;
+    private ConstructionMenu? constructionMenu;
 
     public void Update(MouseState leftMouse, MouseState rightMouse)
     {
@@ -101,6 +103,10 @@ internal class ConstructionInteractionContext(GameWorld World) : IInteractionCon
     private void Reset()
     {
         rotation = 0;
+        if (constructionMenu != null)
+        {
+            Program.World.GUIViewport.OpenPopup(constructionMenu.Layout, new(10, 10), Alignment.TopLeft);
+        }
     }
 
     public void RenderBackgroundOverlay(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)
@@ -201,9 +207,10 @@ internal class ConstructionInteractionContext(GameWorld World) : IInteractionCon
         }
     }
 
-    public void BeginPlacing(StructurePrototype prototype, Ship constructionShip)
+    public void BeginPlacing(ConstructionMenu constructionMenu, StructurePrototype prototype, Ship constructionShip)
     {
         Reset();
+        this.constructionMenu = constructionMenu;
         this.prototype = prototype;
         this.constructionShip = constructionShip;
         World.CurrentInteractionContext = this;

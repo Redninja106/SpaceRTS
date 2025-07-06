@@ -1,0 +1,20 @@
+{
+  "prototype": "PlanetGenerator",
+  "name": "outer_ring_system_generator",
+  "minimum_size": 50,
+  "planet_prototypes": [ "star" ],
+  "moon_passes": [
+    {
+      "type": "random",
+      "minimum_count": 5,
+      "maximum_count": 7,
+      "generators": [
+        {
+          "minimum_size": 10,
+          "maximum_size": 20,
+          "planet_prototypes": [ "mars" ]
+        }
+      ]
+    }
+  ]
+}

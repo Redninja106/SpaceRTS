@@ -24,12 +24,24 @@ internal class Team : Actor
     private Dictionary<Team, TeamRelation> relationships = [];
     internal Dictionary<ResourcePrototype, ResourceValues> resources = [];
 
+    private HashSet<UnitPrototype> unlockedUnits = [];
+
     [field: Serialize]
     public string Name { get; set; }
     [field: Serialize]
     public int Money { get; set; }
 
     private ICommandProcessor CommandProcessor;
+
+    public void Unlock(UnitPrototype unit)
+    {
+        unlockedUnits.Add(unit);
+    }
+
+    public bool IsUnlocked(UnitPrototype unit)
+    {
+        return unlockedUnits.Contains(unit);
+    }
 
     public Team(TeamPrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {

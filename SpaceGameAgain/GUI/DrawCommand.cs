@@ -2,7 +2,7 @@
 
 namespace SpaceGame.GUI;
 
-abstract class DrawCommand
+public abstract class DrawCommand
 {
     public abstract void Render(ICanvas canvas);
 
@@ -17,11 +17,11 @@ abstract class DrawCommand
             canvas.DrawText(text, size, position, style);
         }
     }
-    public class Image(ITexture image, SimulationFramework.Rectangle destination) : DrawCommand
+    public class Image(ITexture image, SimulationFramework.Rectangle destination, ColorF tint) : DrawCommand
     {
         public override void Render(ICanvas canvas)
         {
-            canvas.DrawTexture(image, destination);
+            canvas.DrawTexture(image, destination, tint);
         }
     }
     public class Rectangle(SimulationFramework.Rectangle rectangle, Color color, bool fill) : DrawCommand
@@ -58,7 +58,7 @@ abstract class DrawCommand
         }
     }
 
-    public class Model(SpriteModel model, Vector2 position, Vector2 size) : DrawCommand
+    internal class Model(SpriteModel model, Vector2 position, Vector2 size) : DrawCommand
     {
         public override void Render(ICanvas canvas)
         {

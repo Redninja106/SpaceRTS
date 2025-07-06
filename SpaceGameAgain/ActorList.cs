@@ -1,4 +1,7 @@
 ﻿
+using SpaceGame.Planets;
+using SpaceGame.Structures;
+
 namespace SpaceGame;
 
 public class ActorList<TActor> : List<TActor>
@@ -24,15 +27,18 @@ public class ActorList<TActor> : List<TActor>
 
     public void Update(float tickProgress)
     {
+        DebugMenu.PushMetric($"ActorList<{typeof(TActor)?.Name}>.Update");
         for (int i = 0; i < Count; i++)
         {
             var actor = this[i];
             actor.Update(tickProgress);
         }
+        DebugMenu.PopMetric();
     }
 
     public void Tick()
     {
+        DebugMenu.PushMetric($"ActorList<{typeof(TActor)?.Name}>.Tick");
         for (int i = 0; i < Count; i++)
         {
             var actor = this[i];
@@ -46,12 +52,28 @@ public class ActorList<TActor> : List<TActor>
                 i--;
             }
         }
+        DebugMenu.PopMetric();
     }
 
     public void Render(ICanvas canvas, Camera camera)
     {
+        DebugMenu.PushMetric($"ActorList<{typeof(TActor)?.Name}>.Render");
+        
         foreach (var actor in this)
         {
+            float radius = actor switch
+            {
+                Unit unit => (float)unit.GetCollisionRadius(),
+                Planet p => p.Radius,
+                Grid g => ((Planet)g.parent).Radius,
+                _ => 0,
+            };
+
+            if (camera.QuickDiscard(actor.InterpolatedTransform.Position, radius))
+            {
+                continue;
+            }
+
             if (actor is Unit u && !World.Collision.IsClientVisible(actor.Transform.Position))
             {
                 continue;
@@ -62,5 +84,6 @@ public class ActorList<TActor> : List<TActor>
             actor.Render(canvas);
             canvas.PopState();
         }
+        DebugMenu.PopMetric();
     }
 }

@@ -33,7 +33,7 @@ internal class SocketClient
         DebugLog.Message("connected to " + connection.RemoteEndPoint?.ToString());
 
         packetReceiver = new(connection);
-        packetSerializer = Serializer.GetSerializer(typeof(Packet));
+        packetSerializer = Program.SerializationContext.GetSerializer(typeof(Packet));
     }
 
     public string GetEndPoint() 

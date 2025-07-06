@@ -1,9 +1,16 @@
 {
   "prototype": "PlanetGenerator",
   "name": "player_system_generator",
-  "planet_prototype": "star",
+  "planet_prototypes": [ "star_class_g" ],
   "minimum_size": 50,
   "moon_passes": [
-
+    {
+      "type": "random",
+      "minimum_count": 2,
+      "maximum_count": 6,
+      "generators": [
+        "terrestrial_planet_generator"
+      ]
+    }
   ]
 }

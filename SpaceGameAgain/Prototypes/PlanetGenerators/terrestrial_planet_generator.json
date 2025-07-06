@@ -1,0 +1,21 @@
+{
+  "prototype": "PlanetGenerator",
+  "name": "terrestrial_planet_generator",
+  "planet_prototypes": [ "grassy_planet" ],
+  "minimum_size": 10,
+  "maximum_size": 25,
+  "moon_passes": [
+    {
+      "type": "random",
+      "minimum_count": 0,
+      "maximum_count": 2,
+      "generators": [
+        {
+          "planet_prototypes": [ "rocky_planet" ],
+          "minimum_size": 3,
+          "maximum_size": 5
+        }
+      ]
+    }
+  ]
+}

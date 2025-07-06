@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using SpaceGame.GUI;
+using SpaceGame.Planets;
 using SpaceGame.Ships;
 using System;
 using System.Collections.Generic;
@@ -11,9 +12,10 @@ namespace SpaceGame;
 internal static class Minimap
 {
     private static ITexture? minimapTexture;
-    public const int TextureSize = 250;
-    public const float WorldSize = 2000;
+    public const int BaseTextureSize = 250;
+    public static float TextureSize => BaseTextureSize * Program.UserOptions.GUIScale;
     public const float DisplayScale = 1;
+    private static SphereOfInfluence focus;
 
     public static void Layout(GUIWindow window)
     {
@@ -21,11 +23,11 @@ internal static class Minimap
 
         if (minimapTexture != null)
         {
-            window.Image(minimapTexture, new Vector2(minimapTexture.Width * DisplayScale, minimapTexture.Height * DisplayScale));
-            if (window.LastItemHeld(MouseButton.Middle))
+            window.Image(minimapTexture, new Vector2(minimapTexture.Width / Program.UserOptions.GUIScale, minimapTexture.Height / Program.UserOptions.GUIScale));
+            if (window.LastItemHeld(MouseButton.Middle) || window.LastItemHeld(MouseButton.Left))
             {
-                Vector2 mousePosition = window.GetLastItemMousePosition();
-                Vector2 worldPosition = (mousePosition / TextureSize - new Vector2(.5f)) * WorldSize;
+                Vector2 mousePosition = window.GetLastItemMousePosition() - new Vector2(window.Margin);
+                Vector2 worldPosition = ((mousePosition / BaseTextureSize - new Vector2(.5f)) * focus.Radius * 2) + focus.planet.Transform.Position.ToVector2();
                 Program.World.Camera.Transform.Position = DoubleVector.FromVector2(worldPosition);
             }
         }
@@ -33,20 +35,32 @@ internal static class Minimap
 
     public static void Render()
     {
-        minimapTexture ??= Graphics.CreateTexture(TextureSize, TextureSize);
+        focus = Program.World.Camera.FocusedSphereOfInfluence ?? Program.World.Planets[0].SphereOfInfluence;
+        if (focus.planet.orbit != null)
+        {
+            //focus = ((Planet)focus.planet.orbit.center).SphereOfInfluence;
+        }
+
+        if ((int)(BaseTextureSize * Program.UserOptions.GUIScale) != minimapTexture?.Width)
+        {
+            minimapTexture?.Dispose();
+            minimapTexture = Graphics.CreateTexture((int)TextureSize, (int)TextureSize);
+            minimapTexture.WrapModeX = WrapMode.Clamp;
+            minimapTexture.WrapModeY = WrapMode.Clamp;
+        }
         var canvas = minimapTexture.GetCanvas();
         canvas.ResetState();
         canvas.Clear(ColorF.Black);
 
         foreach (var planet in Program.World.Planets)
         {
-            if (planet.orbit != null)
+            if (planet.orbit != null && planet.Prototype.Name != "star")
             {
-                canvas.Stroke(Color.White with { A = 50 });
+                canvas.Stroke(Color.White with { A = 10 });
                 canvas.DrawCircle(WorldPointToMinimapPoint(planet.orbit.center.Transform.Position.ToVector2()), WorldSizeToMinimapSize(planet.orbit.radius));
             }
             canvas.Fill(Color.Gray);
-            canvas.DrawCircle(WorldPointToMinimapPoint(planet.Transform.Position.ToVector2()), float.Max(1f, (planet.Radius / WorldSize) * TextureSize));
+            canvas.DrawCircle(WorldPointToMinimapPoint(planet.Transform.Position.ToVector2()), float.Max(WorldSizeToMinimapSize(planet.Radius), 1f));
         }
 
         foreach (var ship in Program.World.Ships)
@@ -76,20 +90,20 @@ internal static class Minimap
     {
         if (Program.World.Collision.IsClientVisible(unit.Transform.Position))
         {
-            canvas.Fill(unit.Team.GetRelationColor(Program.World.PlayerTeam));
-            canvas.DrawCircle(WorldPointToMinimapPoint(unit.Transform.Position.ToVector2()), float.Max(1f, ((float)unit.GetCollisionRadius() / WorldSize) * TextureSize));
+            canvas.Stroke(unit.Team.GetRelationColor(Program.World.PlayerTeam));
+            canvas.DrawCircle(WorldPointToMinimapPoint(unit.Transform.Position.ToVector2()), float.Clamp(((float)unit.GetCollisionRadius() / (2 * focus.Radius)) * TextureSize, 3f, 5f));
         }
     }
 
     private static Vector2 WorldPointToMinimapPoint(Vector2 point)
     {
-        float x = TextureSize * (point.X / WorldSize + .5f);
-        float y = TextureSize * (point.Y / WorldSize + .5f);
+        float x = TextureSize * ((point.X - (float)focus.planet.Transform.Position.X) / (2 * focus.Radius) + .5f);
+        float y = TextureSize * ((point.Y - (float)focus.planet.Transform.Position.Y) / (2 * focus.Radius) + .5f);
         return new(x, y);
     }
 
     private static float WorldSizeToMinimapSize(float value)
     {
-        return TextureSize * ((float)value / WorldSize);
+        return TextureSize * ((float)value / (2 * focus.Radius));
     }
 }

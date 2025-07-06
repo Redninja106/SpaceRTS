@@ -1,6 +1,6 @@
 ﻿namespace SpaceGame.GUI;
 
-enum LayoutMode
+public enum LayoutMode
 {
     //
     Column,

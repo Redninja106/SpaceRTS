@@ -128,40 +128,54 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
 
     public override void Layout(GUIWindow window)
     {
+        bool unlocked = Program.World.PlayerTeam.IsUnlocked(this); 
+
         using (window.Row())
         {
-            window.ModelImage(this.Model, new(64, 64));
+            if (unlocked)
+            {
+                window.ModelImage(this.Model, new(64, 64));
+            }
+            else
+            {
+                window.Image(Icon.Default.Texture64x64, tint: ColorF.Gray);
+            }
 
             using (window.Column())
             {
-                window.Text(this.Title, 24);
+                Color color = unlocked ? GUIWindow.DefaultTextColor : Color.Gray;
+                
+                window.Text(unlocked ? this.Title : "undiscovered", 24, color: color);
 
-                using (window.Row())
+                if (unlocked) 
                 {
-                    window.Text("$" + this.Cost + "k");
-
-                    if (RequiredPowerLevel != PowerLevel.None)
+                    using (window.Row())
                     {
-                        for (int i = 0; i < (int)RequiredPowerLevel; i++)
-                        {
-                            window.Image(Icon.Get("economic_icon").Texture16x16, inline: true);
+                        window.Text("$" + this.Cost + "k");
 
-                            if (window.LastItemHovered())
+                        if (RequiredPowerLevel != PowerLevel.None)
+                        {
+                            for (int i = 0; i < (int)RequiredPowerLevel; i++)
                             {
-                                window.Viewport.SetTooltip(w => w.Text($"required power level: {RequiredPowerLevel.ToString().ToLower()}"));
+                                window.Image(Icon.Get("economic_icon").Texture16x16, inline: true);
+
+                                if (window.LastItemHovered())
+                                {
+                                    window.Viewport.SetTooltip(w => w.Text($"required power level: {RequiredPowerLevel.ToString().ToLower()}"));
+                                }
                             }
                         }
                     }
-                }
 
-                if (!string.IsNullOrWhiteSpace(this.Description))
-                {
-                    window.Text(this.Description);
-                }
+                    if (!string.IsNullOrWhiteSpace(this.Description))
+                    {
+                        window.Text(this.Description);
+                    }
 
-                if (ProvidedPowerLevel != PowerLevel.None)
-                {
-                    window.Text("provides '" + ProvidedPowerLevel.ToString() + "' power");
+                    if (ProvidedPowerLevel != PowerLevel.None)
+                    {
+                        window.Text("provides '" + ProvidedPowerLevel.ToString() + "' power");
+                    }
                 }
             }
         }

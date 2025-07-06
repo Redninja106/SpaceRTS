@@ -1,0 +1,20 @@
+{
+  "prototype": "PlanetGenerator",
+  "name": "inner_ring_system_generator",
+  "minimum_size": 50,
+  "planet_prototypes": [ "star_class_a" ],
+  "moon_passes": [
+    {
+      "type": "random",
+      "minimum_count": 10,
+      "maximum_count": 20,
+      "generators": [
+        {
+          "minimum_size": 2,
+          "maximum_size": 5,
+          "planet_prototypes": [ "sandy_planet" ]
+        }
+      ]
+    }
+  ]
+}

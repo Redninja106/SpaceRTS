@@ -84,6 +84,15 @@ internal static class UnitBar
         using (window.Row())
         {
             window.Image(unit.Prototype.Icon.Texture64x64);
+            if (window.LastItemHeld(MouseButton.Left))
+            {
+                Program.World.Camera.SmoothTransform.Position = Program.World.Camera.Transform.Position = unit.InterpolatedTransform.Position;
+                ((FreeCamera)Program.World.Camera).zoom = float.Log((float)unit.GetCollisionRadius() * 40, 1.1f);
+            }
+            if (window.LastItemHovered())
+            {
+                window.Viewport.SetTooltip(w => w.Text("click to focus", color:Color.Gray));
+            }
 
             using (window.Column())
             {

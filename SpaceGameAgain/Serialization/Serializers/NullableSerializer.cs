@@ -9,9 +9,9 @@ internal class NullableSerializer : Serializer
 {
     private Serializer objectSerializer;
 
-    public NullableSerializer(Type objectType)
+    public NullableSerializer(SerializationContext context, Type objectType)
     {
-        this.objectSerializer = Serializer.GetSerializer(objectType);
+        this.objectSerializer = context.GetSerializer(objectType);
     }
 
     public override object? Deserialize(BinaryReader reader)

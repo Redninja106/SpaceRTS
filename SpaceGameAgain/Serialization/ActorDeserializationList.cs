@@ -9,7 +9,7 @@ class ActorDeserializationList
     public Actor[] actors;
     private FieldSerializer fieldSerializer;
 
-    public ActorDeserializationList(BinaryReader reader, GameWorld world)
+    public ActorDeserializationList(SerializationContext context, BinaryReader reader, GameWorld world)
     {
         this.Prototype = Prototypes.Get(reader.ReadString());
         this.ActorCount = reader.ReadInt32();
@@ -24,7 +24,7 @@ class ActorDeserializationList
             actors[i] = actor;
         }
 
-        fieldSerializer = new(Prototype.ActorType);
+        fieldSerializer = new(context, Prototype.ActorType);
     }
 
     public void Deserialize(BinaryReader reader)

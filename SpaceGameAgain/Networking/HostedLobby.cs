@@ -118,7 +118,7 @@ class HostedLobby : Lobby
         WorldSerializer serializer = new();
         using MemoryStream ms = new();
         using BinaryWriter writer = new(ms);
-        serializer.Serialize(World, writer);
+        serializer.Serialize(Program.World, Program.SerializationContext, writer);
 
         byte[] data = ms.GetBuffer();
         int position = 0, index = 0;

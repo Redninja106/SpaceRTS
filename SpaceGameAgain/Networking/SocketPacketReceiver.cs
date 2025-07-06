@@ -17,7 +17,7 @@ class SocketPacketReceiver
         this.socket = socket;
         ringBuffer = new RingBuffer(NetworkSettings.MaxPacketSize);
         reader = new(ringBuffer);
-        packetSerializer = Serializer.GetSerializer(typeof(Packet));
+        packetSerializer = Program.SerializationContext.GetSerializer(typeof(Packet));
     }
 
     // reads all packets we've fully received

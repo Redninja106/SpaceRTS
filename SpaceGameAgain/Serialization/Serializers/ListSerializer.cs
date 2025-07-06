@@ -2,9 +2,9 @@
 
 namespace SpaceGame.Serialization.Serializers;
 
-class ListSerializer(Type listType, Type elementType) : Serializer
+class ListSerializer(SerializationContext context, Type listType, Type elementType) : Serializer
 {
-    private Serializer elementSerializer = GetSerializer(elementType);
+    private Serializer elementSerializer = context.GetSerializer(elementType);
 
     public override void Serialize(BinaryWriter writer, object value)
     {

@@ -168,6 +168,8 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
 
         if (height < Prototype.FlyHeight)
         {
+            SphereOfInfluence? soi = World.GetSphereOfInfluence(this.Transform.Position);
+            soi?.ApplyTickTo(this);
             height = MathHelper.Step(height, Prototype.FlyHeight, Program.Timestep * Prototype.RiseSpeed);
             return;
         }

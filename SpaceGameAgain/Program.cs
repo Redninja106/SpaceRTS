@@ -68,8 +68,6 @@ partial class Program : Simulation
     public static float uiscale = 2f;
     public static float uiscaleResolutionFactor = 1 / 1920f;
 
-    public static float actualGUIScale = 0;
-
     public const float TickRate = 50f;
     public const float Timestep = 1 / TickRate;
     public static float GameSpeed = 1f;
@@ -87,165 +85,41 @@ partial class Program : Simulation
     private ITexture visibilityTexture;
     private CompositingShader compositingShader = new CompositingShader();
 
+    public static UserOptions UserOptions;
+
     public static GameWorld World;
+    public static MainMenu MainMenu;
+    public static IScene CurrentScene;
+    public static SerializationContext SerializationContext;
 
     public override void OnInitialize()
     {
         Time.MaxDeltaTime = 1 / 30f;
-        // view = Graphics.CreateTexture(640, 480);
         font ??= Graphics.LoadFont("Assets/Fonts/VictorMono-Regular.ttf");
-
+        
         DebugOverlays.Register();
         Prototypes.Load();
 
-        World = new();
+        UserOptions = UserOptions.LoadOrCreate();
         
-        var playerTeam = new Team(Prototypes.Get<PlayerTeamPrototype>("player_team"), World, World.NewID());
-        playerTeam.Money += 1000;
-        // playerTeam.CommandProcessor = new PlayerCommandProcessor();
-        World.PlayerTeam = playerTeam;
-        World.Add(playerTeam);
+        MainMenu = new();
+        CurrentScene = MainMenu;
 
-        var starterShip = new Ship(Prototypes.Get<ShipPrototype>("small_ship"), World, World.NewID()) { Team = playerTeam };
-        var module = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World, World.NewID()) { Ship = starterShip };
-        starterShip.modules.Add(module);
-        World.Add(starterShip);
-        World.Add(module);
-
-        var spacePirates = new Team(Prototypes.Get<TeamPrototype>("null_team"), World, World.NewID()) { Name = "Space Pirates" };
-        // spacePirates.CommandProcessor = new NullCommandProcessor();
-        World.Add(spacePirates);
-
-        // var enemies = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default);
-        // enemies.CommandProcessor = new PlayerCommandProcessor();
-
-        // playerTeam.MakeEnemies(enemies);
-        // World.Add(playerTeam);
-        // World.Add(enemies);
-
-        // World.Add(new Ship((ShipPrototype)Prototypes.Get("small_ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(playerTeam)));
-        // var constMod = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), World.Ships[0].AsReference());
-        // World.Ships[0].modules.Add(((Module)constMod).AsReference());
-        // World.Add(constMod);
-
-        // World.Add(new Ship((ShipPrototype)Prototypes.Get("small_ship"), World.NewID(), Transform.Default, ActorReference<Team>.Create(enemies)));
-        // var constMod2 = new ConstructionModule(Prototypes.Get<ConstructionModulePrototype>("construction_module"), World.NewID(), World.Ships[1].AsReference());
-        // World.Ships[1].modules.Add(((Module)constMod2).AsReference());
-        // World.Add(constMod2);
-
-        //PlanetPrototype planetProto = Prototypes.Get<PlanetPrototype>("star");
-        //StarSystemGenerator generator = new(planetProto, Random.Shared);
-        //generator.GenerateSystem();
-
-        //Planet starterPlanet = World.Planets[Random.Shared.Next(1, World.Planets.Count)];
-        //DebugLog.Message($"starting planet id: {starterPlanet.ID}");
-        //starterShip.Teleport(starterPlanet.Transform);
-        //World.Camera.Transform = World.Camera.SmoothTransform = starterPlanet.Transform;
-
-        PlanetGenerator solGenerator = Prototypes.Get<PlanetGenerator>("sol_generator");
-        Planet planet = solGenerator.Generate(World, Random.Shared);
-
-        // Planet tradeUnionPlanet = World.Planets[Random.Shared.Next(1, World.Planets.Count)];
-        // Team tradeUnion = new Team(Prototypes.Get<TeamPrototype>("team"), World.NewID(), Transform.Default, money: 1000);
-        // tradeUnionPlanet.Grid.PlaceStructure(Prototypes.Get<AssemblyBayPrototype>("small_assembly_bay"), HexCoordinate.Zero, 0, tradeUnion);
-        // tradeUnionPlanet.Grid.PlaceStructure(Prototypes.Get<ManufactoryPrototype>("manufactory"), HexCoordinate.UnitQ, 0, tradeUnion);
-        // tradeUnionPlanet.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("generator"), new HexCoordinate(0, 2), 0, tradeUnion);
-
-        // var sun = new Planet(planetProto, World.NewID(), Transform.Default, null)
-        // {
-        //     Color = Color.Yellow,
-        //     Radius = 50,
-        // };
-        // sun.SphereOfInfluence.Radius = 1000;
-        // 
-        // World.Add(sun);
-        // 
-        // var planet1 = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)sun).AsReference(), 500, 0))
-        // {
-        //     Color = Color.DarkGreen,
-        //     Radius = 26,
-        // };
-        // planet1.SphereOfInfluence.Radius = 80;
-        // Grid.FillRadius(planet1.Grid, planet1.Radius);
-        // World.Add(planet1);
-        // 
-        // var moon = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)planet1).AsReference(), 100, MathF.PI * 1.25f))
-        // {
-        //     Color = Color.DarkGray,
-        //     Radius = 9,
-        // };
-        // Grid.FillRadius(moon.Grid, moon.Radius);
-        // World.Add(moon);
-        // 
-        // var planet2 = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)sun).AsReference(), 400, MathF.PI * .75f))
-        // {
-        //     Color = Color.DarkOliveGreen,
-        //     Radius = 17,
-        // };
-        // Grid.FillRadius(planet2.Grid, planet2.Radius);
-        // World.Add(planet2);
-        // 
-        // var planet3 = new Planet(planetProto, World.NewID(), Transform.Default, new(((WorldActor)sun).AsReference(), 800, MathF.PI * 1.75f))
-        // {
-        //     Color = Color.Lerp(Color.OrangeRed, Color.Black, 0.25f),
-        //     Radius = 13,
-        // };
-        // Grid.FillRadius(planet3.Grid, planet3.Radius);
-        // World.Add(planet3);
-
-        //World.Camera.Transform.Position = planet1.Transform.Position;
-        //World.Camera.SmoothTransform.Position = planet1.Transform.Position;
-
-        //planet1.Grid.GetCell(HexCoordinate.Zero)!.Tile = new ResourceDepositTile(Prototypes.Get<TilePrototype>("rare_metals_deposit"), World.NewID(), Transform.Default, 100);
-
-        //// planet1.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("particle_accelerator"), new(0, 0), 0, playerTeam);
-
-        ////planet1.Grid.PlaceStructure(World.Structures.ResourceNode, new(0, 0), 0, World.NeutralTeam);
-
-        ////planet1.Grid.PlaceStructure(World.Structures.SmallShipyard, new(5, -5), 0, enemies);
-        ////planet1.Grid.PlaceStructure(World.Structures.ChaingunTurret, new(3, -3), 0, enemies);
-
-        //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("headquarters"), new(0, 0), 1, enemies);
-
-        //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(2, 0), 0, enemies);
-        //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(2, 4), 0, enemies);
-        //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("missile_turret"), new(-2, 4), 0, enemies);
-
-        //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(3, 1), 0, enemies);
-        //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(0, 5), 0, enemies);
-        //planet3.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("chaingun_turret"), new(-1, 2), 0, enemies);
-
-        //// planet1.Grid.PlaceStructure(Prototypes.Get<StructurePrototype>("rare_metals_deposit"), new(0, 0), 0, null);
-
-        //World.Ships.First().Transform.Position = planet1.Transform.Position;
-
-        // World.LeftSidebar = new Sidebar(Alignment.TopLeft, 300, 400);
-        // World.RightSidebar = new Sidebar(Alignment.TopRight, 300, 400);
-        // World.RightSidebar.Stack.AddRange([new Label("Hello!", 32) { Alignment = Alignment.CenterRight }, new Label("World!", 16)]);
-
-        // World.LeftSidebar.Stack = new([d
-        //     new DynamicLabel(() => $"Materials: {playerTeam.Materials}"),
-        // ]);
+        Graphics.SwapInterval = UserOptions.VSync ? 1 : 0;
     }
 
-    bool shouldBeFullscreen;
 
     public override void OnRender(ICanvas canvas)
     {
         Window.Title = "SpaceGame - " + Performance.Framerate.ToString("f0") + "FPS";
-
         if (Keyboard.IsKeyPressed(Key.F11))
         {
-            if (shouldBeFullscreen)
-            {
-                Window.ExitFullscreen();
-            }
-            else
-            {
-                Window.EnterFullscreen();
-            }
+            UserOptions.Fullscreen = !UserOptions.Fullscreen;
+        }
 
-            shouldBeFullscreen = !shouldBeFullscreen;
+        if (!Window.IsMinimized && Window.IsFullscreen != UserOptions.Fullscreen) 
+        {
+            Window.ToggleFullscreen();
         }
 
         float aspectRatio = canvas.Width / (float)canvas.Height;
@@ -266,22 +140,8 @@ partial class Program : Simulation
             skyTexture = Graphics.CreateTexture(targetViewWidth, ViewportPixels);
         }
 
-        // if (vpScaleY < vpScaleX)
-        // {
-        //     float leftGap = canvas.Width / 2f - (view.Width * vpScaleY) / 2f - World.LeftSidebar.MinWidth;
-        //     World.LeftSidebar.Width = MathF.Min(World.LeftSidebar.MinWidth + leftGap, World.LeftSidebar.MaxWidth);
-        //     
-        //     float rightGap = canvas.Width / 2f - (view.Width * vpScaleY) / 2f - World.RightSidebar.MinWidth;
-        //     World.RightSidebar.Width = MathF.Min(World.RightSidebar.MinWidth + rightGap, World.RightSidebar.MaxWidth);
-        // }
-        // else
-        // {
-        //     World.LeftSidebar.Width = World.LeftSidebar.MinWidth;
-        //     World.RightSidebar.Width = World.RightSidebar.MinWidth;
-        // }
-
         DebugMenu.Layout();
-
+        
         float vpScaleY = canvas.Height / (float)viewTexture.Height;
         float vpScaleX = canvas.Width / (float)viewTexture.Width;
         ViewportScale = MathF.Min(vpScaleX, vpScaleY);
@@ -297,27 +157,15 @@ partial class Program : Simulation
             return;
 
         RenderViewTexture();
-
+        
         canvas.Clear(Color.FromHSV(0, 0, .1f));
 
         canvas.PushState();
         canvas.Transform(viewMatrix.Matrix);
-        //canvas.DrawTexture(background);
-        //canvas.DrawTexture(foreground);
         canvas.DrawTexture(this.viewTexture);
         canvas.PopState();
 
-        World.GUIViewport.Render(canvas);
-
-        // canvas.Font(font);
-        // canvas.PushState();
-        // World.LeftSidebar.Render(canvas);
-        // canvas.PopState();
-        // 
-        // canvas.PushState();
-        // World.RightSidebar.Render(canvas);
-        // canvas.PopState();
-
+        CurrentScene.GUIViewport.Render(canvas);
     }
 
     private void Update(ICanvas canvas, MatrixBuilder viewMatrix)
@@ -331,38 +179,32 @@ partial class Program : Simulation
             tickProgress = 1;
         }
 
-        World.Camera.Update(viewTexture.Width, viewTexture.Height, tickProgress);
+        CurrentScene.Camera.Update(viewTexture.Width, viewTexture.Height, tickProgress);
         Rectangle vp = new(0, 0, viewTexture.Width, viewTexture.Height);
 
-        actualGUIScale = uiscale * Math.Clamp(canvas.Width * uiscaleResolutionFactor, 1 / uiscale, 1);
-
         ViewportMousePosition = Vector2.Transform(Mouse.Position, viewMatrix.InverseMatrix);
-        // World.InfoWindow.CalculateBounds(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale, out var infoBounds, out _);
-        // World.MapWindow.CalculateBounds(canvas.Width / actualGUIScale, canvas.Height / actualGUIScale, out var mapBounds, out _);
-
-        // bool worldFocused = vp.ContainsPoint(ViewportMousePosition) &&
-        //     !infoBounds.ContainsPoint(Mouse.Position / actualGUIScale) &&
-        //     !mapBounds.ContainsPoint(Mouse.Position / actualGUIScale);
-
+        
         if (forceTickThisFrame || GameSpeed >= 0 && timeAccumulated >= Timestep / GameSpeed)
         {
             forceTickThisFrame = false;
             DebugDraw.Clear();
 
             DebugMenu.ClearMetrics();
-            World.Tick(ViewportMousePosition);
+            CurrentScene.Tick(ViewportMousePosition);
 
             timeAccumulated = 0;
             tickProgress = 0;
         }
 
-        World.GUIViewport.UpdateWindowOcculusion(canvas.Width, canvas.Height);
-        World.Update(ViewportMousePosition, tickProgress);
-        World.GUIViewport.Update();
+        CurrentScene.GUIViewport.UpdateWindowOcculusion(canvas.Width, canvas.Height);
+        CurrentScene.Update(ViewportMousePosition, tickProgress);
+        CurrentScene.GUIViewport.Update();
     }
 
     private void RenderViewTexture()
     {
+        DebugMenu.PushMetric();
+
         var canvas = viewTexture.GetCanvas();
         canvas.ResetState();
         canvas.Clear(Color.Black);
@@ -381,65 +223,39 @@ partial class Program : Simulation
 
         canvas.PushState();
         canvas.Antialias(true);
-        World.Camera.RenderSetup(canvas);
+        CurrentScene.Camera.RenderSetup(canvas);
 
         // prep visibility texture for compositing the layers
-        World.RenderVisibility(visibilityCanvas);
+        CurrentScene.RenderVisibility(visibilityCanvas);
         visibilityCanvas.Flush();
 
         // BACKGROUND LAYER
-        World.RenderBackgroundLayer(canvas);
-        World.RenderBackgroundOverlayLayer(canvas);
+        CurrentScene.RenderBackgroundLayer(canvas);
+        CurrentScene.RenderBackgroundOverlayLayer(canvas);
 
         // GROUND LAYER
-        World.RenderGroundLayer(groundCanvas);
+        CurrentScene.RenderGroundLayer(groundCanvas);
         groundCanvas.Flush();
         compositingShader.Composite(canvas, groundTexture, visibilityTexture, false);
-        World.RenderGroundOverlayLayer(canvas);
+        CurrentScene.RenderGroundOverlayLayer(canvas);
 
         // SKY LAYER
-        World.RenderSkyLayer(skyCanvas);
+        CurrentScene.RenderSkyLayer(skyCanvas);
         skyCanvas.Flush();
         compositingShader.Composite(canvas, skyTexture, visibilityTexture, true);
-        World.RenderSkyOverlayLayer(canvas);
+        CurrentScene.RenderSkyOverlayLayer(canvas);
 
-        //canvas.PushState();
-        //canvas.ResetState();
-        //groundCanvas.Flush();
-        //visibilityCanvas.Flush();
-        //compositingShader.foregroundTexture = this.groundTexture;
-        //compositingShader.visibiltyTexture = this.visibilityTexture;
-        //compositingShader.Time = Time.TotalTime;
-        //canvas.Fill(compositingShader);
-        //canvas.DrawRect(0, 0, canvas.Width, canvas.Height);
-        //canvas.PopState();
+        DebugMenu.PushMetric("DebugDraw.Draw");
+        DebugDraw.Draw(canvas, CurrentScene.Camera);
+        DebugMenu.PopMetric();
 
+        DebugMenu.PopMetric();
+    }
 
-        // var backgroundCanvas = background.GetCanvas();
-        // backgroundCanvas.ResetState();
-        // backgroundCanvas.Clear(Color.Black);
-        // World.RenderBackgroundLayer(backgroundCanvas);
-        // 
-        // var foregroundCanvas = foreground.GetCanvas();
-        // foregroundCanvas.ResetState();
-        // foregroundCanvas.Clear(Color.Transparent);
-        // World.RenderForegroundLayer(foregroundCanvas);
-
-        // World.RenderOverlayLayer(foregroundCanvas);
-
-        DebugDraw.Draw(canvas, World.Camera);
-
-        // canvas.ResetState();
-        // canvas.Font(font);
-        // 
-        // canvas.PushState();
-        // World.InfoWindow.Render(canvas);
-        // canvas.PopState();
-        // 
-        // canvas.PushState();
-        // World.MapWindow.Render(canvas);
-        // canvas.PopState();
-        
-        // canvas.PopState();
+    public static void NavigateToMainMenu()
+    {
+        MainMenu.Reset();
+        World = null;
+        CurrentScene = MainMenu;
     }
 }

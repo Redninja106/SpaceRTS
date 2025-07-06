@@ -75,7 +75,7 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, GameWor
         base.Activate();
         ConstructionMenu menu = new(this);
 
-        Program.World.GUIViewport.SetPopup(menu.Layout, new(40, 10), Alignment.TopLeft);
+        Program.World.GUIViewport.OpenPopup(menu.Layout, new(10, 10), Alignment.TopLeft);
     }
 }
 
@@ -94,12 +94,23 @@ class ConstructionMenu(ConstructionModule module)
         {
             using (window.Column())
             {
+                window.Text("x");
+                if (window.LastItemHovered())
+                {
+                    window.AddCommand(new DrawCommand.RoundedRectangle(window.LastItemBounds, 8, Color.White with { A = 100 }, true));
+                }
+                if (window.LastItemClicked(MouseButton.Left))
+                {
+                    window.Viewport.ClosePopup();
+                }
+
                 foreach (var category in module.Prototype.BuildablesByCategory)
                 {
                     window.Image(category.Key.Icon.Texture32x32);
                     if (window.LastItemHovered())
                     {
                         window.Viewport.SetTooltip(w => w.Text(category.Key.Title));
+                        window.AddCommand(new DrawCommand.RoundedRectangle(window.LastItemBounds, 8, Color.White with { A = 100 }, true));
                     }
                     if (window.LastItemClicked(MouseButton.Left))
                     {
@@ -116,16 +127,20 @@ class ConstructionMenu(ConstructionModule module)
                     prototype.Layout(window);
                     if (window.LastItemHovered())
                     {
-                        window.AddCommand(new DrawCommand.Rectangle(window.LastItemBounds, Color.White with { A = 25 }, true));
+                        window.AddCommand(new DrawCommand.RoundedRectangle(window.LastItemBounds, 8, Color.White with { A = 25 }, true));
                     }
                     if (window.LastItemClicked(MouseButton.Left))
                     {
                         if (prototype is StructurePrototype structurePrototype)
                         {
-                            Program.World.ConstructionInteractionContext.BeginPlacing(structurePrototype, module.Ship);
+                            Program.World.ConstructionInteractionContext.BeginPlacing(this, structurePrototype, module.Ship);
+                            window.Viewport.ClosePopup();
                         }
                     }
-                    window.Separator();
+                    if (prototype != currentCategory.Last())
+                    {
+                        window.Separator();
+                    }
                 }
             }
         }
@@ -134,7 +149,7 @@ class ConstructionMenu(ConstructionModule module)
 
 struct GUIScrollBar
 {
-    public const float Speed = 25;
+    public const float BaseSpeed = 25;
     public const float Width = 10;
 
     private float margin;
@@ -192,7 +207,7 @@ struct GUIScrollBar
         }
         if (window.Hovered)
         {
-            scrollAmount -= Mouse.ScrollWheelDelta * Speed;
+            scrollAmount -= Mouse.ScrollWheelDelta * Program.UserOptions.ScrollSpeed * BaseSpeed;
         }
 
         if (scrollAmount < 0)

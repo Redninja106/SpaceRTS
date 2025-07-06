@@ -11,11 +11,11 @@ internal class ArraySerializer : Serializer
     Type elementType;
     Serializer elementSerializer;
 
-    public ArraySerializer(Type arrayType, Type elementType)
+    public ArraySerializer(SerializationContext context, Type arrayType, Type elementType)
     {
         this.arrayType = arrayType;
         this.elementType = elementType;
-        this.elementSerializer = Serializer.GetSerializer(elementType);
+        this.elementSerializer = context.GetSerializer(elementType);
     }
 
     public override object Deserialize(BinaryReader reader)

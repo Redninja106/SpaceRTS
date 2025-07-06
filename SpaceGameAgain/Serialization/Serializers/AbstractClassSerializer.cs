@@ -7,7 +7,7 @@ class AbstractClassSerializer : Serializer
     private Dictionary<string, Serializer> subclasses;
     private Type abstractClass;
 
-    public AbstractClassSerializer(Type abstractClass)
+    public AbstractClassSerializer(SerializationContext context, Type abstractClass)
     {
         this.abstractClass = abstractClass;
 
@@ -16,7 +16,7 @@ class AbstractClassSerializer : Serializer
         {
             if (subclass.IsSubclassOf(this.abstractClass) && subclass.GetCustomAttribute<SerializableAttribute>() != null)
             {
-                subclasses.Add(subclass.Name, GetSerializer(subclass));
+                subclasses.Add(subclass.Name, context.GetSerializer(subclass));
             }
         }
     }

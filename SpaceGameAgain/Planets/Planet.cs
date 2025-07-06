@@ -88,7 +88,8 @@ internal class Planet : Actor
         shader.lightDir = new Vector3(v.X, -v.Y, -1).Normalized();
         shader.time = Time.TotalTime;
         shader.texture = Prototype.Material.Texture;
-        shader.texScale =  (128 * float.Sqrt(3));
+        shader.texScale = (128 * float.Sqrt(3));
+        shader.color = Prototype.Color;
         if (Prototype.Material.NormalMap != null)
         {
             shader.normalMap = Prototype.Material.NormalMap;

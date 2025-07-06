@@ -12,13 +12,14 @@ internal class PlanetGenerator : DataPrototype
 {
     public float MinimumSize { get; set; } = 0;
     public float MaximumSize { get; set; } = 0;
-    public required PlanetPrototype PlanetPrototype { get; set; }
+    public required PlanetPrototype[] PlanetPrototypes { get; set; }
 
     public MoonPass[] MoonPasses { get; set; } = [];
 
-    public Planet Generate(GameWorld world, Random random)
+    public virtual Planet Generate(GameWorld world, Random random)
     {
-        var planet = PlanetPrototype.CreateActor(world, world.NewID());
+        var prototype = random.GetItems(PlanetPrototypes, 1)[0];
+        var planet = prototype.CreateActor(world, world.NewID());
         world.Add(planet);
         if (MaximumSize == 0)
         {
@@ -28,9 +29,10 @@ internal class PlanetGenerator : DataPrototype
         {
             planet.Radius = random.NextSingle(MinimumSize, MaximumSize);
         }
-        if (PlanetPrototype?.Name == "star")
+        if (!prototype.CanBuild)
         {
-            planet.SphereOfInfluence.Radius = 1500;
+            //planet.SphereOfInfluence.Radius = 1500;
+            planet.SphereOfInfluence.Radius = planet.Radius * 3;
         }
         else
         {
@@ -82,8 +84,9 @@ class RandomMoonPass : MoonPass
         {
             PlanetGenerator moonGenerator = random.GetItems(Generators, 1)[0];
             Planet moon = moonGenerator.Generate(world, random);
+            distance += moon.SphereOfInfluence.Radius;
             moon.orbit = new(planet, distance, random.NextSingle() * MathF.Tau * distance);
-            distance += moon.SphereOfInfluence.Radius * 2;
+            distance += moon.SphereOfInfluence.Radius;
         }
     }
 }

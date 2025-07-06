@@ -30,7 +30,7 @@ internal class SocketServer
         listeningSocket.Listen();
         listeningSocket.NoDelay = true;
         DebugLog.Message("listening on port " + port.ToString());
-        packetSerializer = Serializer.GetSerializer(typeof(Packet));
+        packetSerializer = Program.SerializationContext.GetSerializer(typeof(Packet));
     }
 
     public void Update()

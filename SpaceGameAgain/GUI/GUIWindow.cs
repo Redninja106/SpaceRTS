@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace SpaceGame.GUI;
 
-delegate void GUILayout(GUIWindow window);
+public delegate void GUILayout(GUIWindow window);
 
-internal sealed class GUIWindow
+public sealed class GUIWindow
 {
     public static Color DefaultTextColor = Color.FromHSV(0, 0, .65f);
     public static float CornerRadius = 10f;
@@ -21,6 +21,7 @@ internal sealed class GUIWindow
 
     public bool Visible = true;
     public bool Hovered = false;
+    public bool DummyLayout = false;
 
     public Rectangle LastItemBounds;
 
@@ -36,8 +37,8 @@ internal sealed class GUIWindow
     public float Margin = 3;
 
     private GUILayout? layout;
+    
     public bool HasNewLayout;
-
     public GUILayout? Layout => layout;
     public GUIViewport Viewport { get; set; }
 
@@ -77,12 +78,12 @@ internal sealed class GUIWindow
 
         // finalWindowBounds = currentWindowBounds;
 
-        if (Visible && layout != null)
+        if (layout != null)
         {
             // do an invisible layout to determine approximate window size
-            Visible = false;
+            DummyLayout = true;
             DoLayout(Viewport, Vector2.Zero);
-            Visible = true;
+            DummyLayout = false;
             predictedWindowBounds = currentWindowBounds;
         }
 
@@ -194,7 +195,7 @@ internal sealed class GUIWindow
         }
     }
 
-    public bool TextButton(string text, float size = 16, bool disabled = false)
+    public bool TextButton(string text, float size = 16, bool disabled = false, bool fitArea = false, bool centerText = false)
     {
         Rectangle textBounds = Program.font.MeasureText(text, size);
         Rectangle itemBounds = new()
@@ -209,7 +210,21 @@ internal sealed class GUIWindow
             Size = textBounds.Size + new Vector2(Margin * 2),
         };
 
+        if (fitArea)
+        {
+            float localX = buttonBounds.X - predictedWindowBounds.Position.X;
+            buttonBounds.Width = predictedWindowBounds.Width - Margin * 4;
+            itemBounds.Width = predictedWindowBounds.Width - Margin * 2;
+        }
+
         Vector2 baseline = currentScope.Cursor + new Vector2(Margin * 2) - textBounds.Position;
+        
+        if (centerText)
+        {
+            Rectangle bounds = Program.font.MeasureText(text, size);
+            baseline.X += (buttonBounds.Width - bounds.Width) / 2f;
+        }
+
 
         InsertItem(itemBounds);
         
@@ -231,12 +246,12 @@ internal sealed class GUIWindow
         return AreaClicked(buttonBounds, MouseButton.Left);
     }
 
-    public void Image(ITexture image, bool inline = false)
+    public void Image(ITexture image, bool inline = false, ColorF? tint = null)
     {
-        Image(image, new(image.Width, image.Height), inline);
+        Image(image, new(image.Width, image.Height), inline, tint);
     }
 
-    public void Image(ITexture image, Vector2 size, bool inline = false)
+    public void Image(ITexture image, Vector2 size, bool inline = false, ColorF? tint = null)
     {
         Vector2 margin = inline ? Vector2.Zero : new Vector2(Margin);
         Rectangle itemBounds = new(currentScope.Cursor, size + margin * 2);
@@ -244,12 +259,12 @@ internal sealed class GUIWindow
 
         //Rectangle bounds = new(currentScope.Cursor.X, currentScope.Cursor.Y, size.X, size.Y);
         InsertItem(itemBounds);
-        AddCommand(new DrawCommand.Image(image, imageBounds));
+        AddCommand(new DrawCommand.Image(image, imageBounds, tint ?? ColorF.White));
     }
 
     public bool AreaHovered(Rectangle area)
     {
-        return Visible && area.ContainsPoint(mousePosition);
+        return !DummyLayout && Visible && area.ContainsPoint(mousePosition);
     }
 
     public bool AreaClicked(Rectangle area, MouseButton button)
@@ -345,7 +360,7 @@ internal sealed class GUIWindow
 
     public void AddCommand(DrawCommand command)
     {
-        if (Visible)
+        if (!DummyLayout && Visible)
         {
             commands.Add(command);
         }
@@ -361,7 +376,7 @@ internal sealed class GUIWindow
         return predictedWindowBounds;
     }
 
-    public void ModelImage(SpriteModel model, Vector2 size)
+    internal void ModelImage(SpriteModel model, Vector2 size)
     {
         Rectangle itemBounds = new(currentScope.Cursor, size + new Vector2(Margin * 2));
         Rectangle imageBounds = new(itemBounds.Position + new Vector2(Margin), size);
@@ -369,6 +384,18 @@ internal sealed class GUIWindow
         //Rectangle bounds = new(currentScope.Cursor.X, currentScope.Cursor.Y, size.X, size.Y);
         InsertItem(itemBounds);
         AddCommand(new DrawCommand.Model(model, imageBounds.GetAlignedPoint(Alignment.Center), size));
+    }
+
+    public void MinSize(Vector2 size)
+    {
+        if (this.currentWindowBounds.Width < size.X)
+        {
+            this.currentWindowBounds.Width = size.X;
+        }
+        if (this.currentWindowBounds.Height < size.Y)
+        {
+            this.currentWindowBounds.Height = size.Y;
+        }
     }
 
     private struct LayoutScope

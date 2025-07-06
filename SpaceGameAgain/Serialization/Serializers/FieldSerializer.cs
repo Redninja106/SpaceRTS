@@ -7,14 +7,14 @@ struct FieldSerializer
     public Type ObjectType { get; }
     private List<(FieldInfo, Serializer)> fieldSerializers = [];
 
-    public FieldSerializer(Type objectType)
+    public FieldSerializer(SerializationContext context, Type objectType)
     {
         ObjectType = objectType;
 
         foreach (var field in GetFields(objectType))
         {
             bool isNullable = field.GetCustomAttribute<System.Runtime.CompilerServices.NullableAttribute>() != null;
-            fieldSerializers.Add((field, Serializer.GetSerializer(field.FieldType, isNullable)));
+            fieldSerializers.Add((field, context.GetSerializer(field.FieldType, isNullable)));
         }
     }
 

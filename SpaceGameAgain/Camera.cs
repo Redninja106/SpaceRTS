@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Transactions;
 
 namespace SpaceGame;
-public abstract class Camera : IInspectable
+public class Camera : IInspectable
 {
     public Transform SmoothTransform = Transform.Default;
     public Transform Transform = Transform.Default;
@@ -38,16 +38,28 @@ public abstract class Camera : IInspectable
         SmoothTransform.Position = DoubleVector.Lerp(SmoothTransform.Position, target.Position, 1f - MathF.Pow(InterpolationFactor, Time.DeltaTime));
         SmoothVerticalSize = float.Lerp(SmoothVerticalSize, VerticalSize, 1f - MathF.Pow(InterpolationFactor, Time.DeltaTime));
 
-        const float focusFac = .9f;
+        const float focusFac = .75f;
 
-        var soi = Program.World.GetSphereOfInfluence(this.SmoothTransform.Position);
-
-        while (soi != null && soi.Radius * 2 < SmoothVerticalSize * focusFac)
+        if (Program.World != null)
         {
-            soi = ((Planet?)soi.planet.orbit?.center)?.SphereOfInfluence;
-        }
+            var soi = Program.World.GetSphereOfInfluence(this.SmoothTransform.Position);
 
-        FocusedSphereOfInfluence = soi;
+            while (soi != null && soi.Radius * 2 < SmoothVerticalSize * focusFac)
+            {
+                soi = ((Planet?)soi.planet.orbit?.center)?.SphereOfInfluence;
+            }
+            
+            FocusedSphereOfInfluence = soi;
+        }
+    }
+
+    public bool QuickDiscard(DoubleVector position, float radius)
+    {
+        float horizontalSize = VerticalSize * AspectRatio;
+
+        float viewRadius = MathF.Sqrt(horizontalSize * horizontalSize + VerticalSize * VerticalSize);
+        float closestVisibleDistance = viewRadius + (radius * radius);
+        return DoubleVector.DistanceSquared(SmoothTransform.Position, position) > closestVisibleDistance * closestVisibleDistance;
     }
 
     public void RenderSetup(ICanvas canvas)

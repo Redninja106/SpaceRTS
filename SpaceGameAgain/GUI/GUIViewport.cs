@@ -6,10 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceGame.GUI;
-internal class GUIViewport
+public class GUIViewport
 {
     public Vector2 MousePosition;
-    public float Scale = 1.5f;
+    public float Scale => Program.UserOptions.GUIScale;
     public bool IsAnyWindowHovered;
 
     public float EffectiveWidth;
@@ -59,7 +59,7 @@ internal class GUIViewport
         tooltipWindow.SetLayout(layout);
     }
 
-    public void SetPopup(GUILayout layout, Vector2 viewportPosition, Alignment alignment)
+    public void OpenPopup(GUILayout layout, Vector2 viewportPosition, Alignment alignment)
     {
         popupWindow.SetLayout(layout);
         popupWindow.Offset = viewportPosition - Bounds.GetAlignedPoint(alignment);
@@ -110,7 +110,15 @@ internal class GUIViewport
 
         if (tooltipWindow.Layout != null)
         {
-            tooltipWindow.Offset = MousePosition;
+            tooltipWindow.Offset = MousePosition; 
+            if (tooltipWindow.GetPosition().X - tooltipWindow.GetPredictedBounds().Width < 0)
+            {
+                tooltipWindow.Alignment = Alignment.BottomLeft;
+            }
+            else
+            {
+                tooltipWindow.Alignment = Alignment.BottomRight;
+            }
             tooltipWindow.Update();
             tooltipWindow.SetLayout(null);
         }

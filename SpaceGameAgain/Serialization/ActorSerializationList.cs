@@ -8,11 +8,11 @@ class ActorSerializationList
     private Prototype prototype;
     private FieldSerializer fieldSerializer;
 
-    public ActorSerializationList(Prototype prototype, IReadOnlyList<Actor> actors)
+    public ActorSerializationList(SerializationContext context, Prototype prototype, IReadOnlyList<Actor> actors)
     {
         this.prototype = prototype;
         this.actors = actors;
-        this.fieldSerializer = new(prototype.ActorType);
+        this.fieldSerializer = new(context, prototype.ActorType);
     }
 
     public void SerializeIDs(BinaryWriter writer)

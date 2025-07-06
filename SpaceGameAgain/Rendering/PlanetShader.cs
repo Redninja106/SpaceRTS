@@ -37,7 +37,7 @@ class PlanetShader : CanvasShader
 
         // float brightness = float.Clamp(Vector3.Dot(normalMapNormal.Normalized(), -lightDir), 0, 1);
 
-        ColorF color = texture.Sample(texPos);
+        ColorF color = this.color * texture.Sample(texPos);
 
 
         // color.R += jitter * 0.02f;

@@ -4,9 +4,9 @@ class ObjectSerializer : Serializer
 {
     FieldSerializer fieldSerializer;
 
-    public ObjectSerializer(Type objectType)
+    public ObjectSerializer(SerializationContext context, Type objectType)
     {
-        fieldSerializer = new(objectType);
+        fieldSerializer = new(context, objectType);
     }
 
     public override void Serialize(BinaryWriter writer, object value)

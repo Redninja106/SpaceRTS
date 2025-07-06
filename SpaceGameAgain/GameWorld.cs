@@ -17,7 +17,7 @@ using System;
 
 namespace SpaceGame;
 
-public class GameWorld
+public class GameWorld : IScene
 {
     // public static GameWorld World { get; set; }
 
@@ -73,44 +73,17 @@ public class GameWorld
 
     private StarShader backgroundShader = new();
 
-    // GUI
-    // public ContextMenuWindow ContextMenu = new();
-
-    // public ResourceBar ResourceBar = new();
-    // public PopupWindow structureSelectWindow = new();
-
-    // public TooltipManager Tooltip = new();
-
-
-    // public WindowManager WindowManager = new WindowManager();
-
-    internal GUIViewport GUIViewport = new GUIViewport();
-
-    // public StructureList Structures { get; } = new();
+    public GUIViewport GUIViewport { get; } = new GUIViewport();
 
     public IMask WorldShadowMask { get; private set; }
     public IMask FogOfWarMask { get; private set; }
-
-    // public ElementWindow InfoWindow { get; set; } = new()
-    // {
-    //     Anchor = Alignment.BottomRight,
-    //     Width = 240,
-    //     Height = 240,
-    // }; 
-    // public ElementWindow MapWindow { get; set; } = new()
-    // {
-    //     Anchor = Alignment.BottomLeft,
-    //     Width = 240,
-    //     Height = 120,
-    // };
-
-    // public FogOfWarHandler FogOfWar { get; set; } = new();
 
     public GameWorld()
     {
         GUIViewport.Register(new GUIWindow(ResourceBar.Layout));
         GUIViewport.Register(new GUIWindow(UnitBar.Layout));
         GUIViewport.Register(new GUIWindow(Minimap.Layout));
+        GUIViewport.Register(new GUIWindow(new EscapeMenu().Layout) { Visible = false } );
 
         Ships = new(this);
         Planets = new(this);
@@ -138,6 +111,8 @@ public class GameWorld
 
     public void Update(Vector2 viewportMousePosition, float tickProgress)
     {
+        DebugMenu.PushMetric();
+
         MousePosition = Camera.SmoothTransform.Position + DoubleVector.FromVector2(Camera.ScreenToLocal(viewportMousePosition));
 
         Planets.Update(tickProgress);
@@ -168,6 +143,8 @@ public class GameWorld
         {
             planet.SphereOfInfluence.Update();
         }
+
+        DebugMenu.PopMetric();
     }
 
     public void Tick(Vector2 viewportMousePosition)
@@ -252,10 +229,14 @@ public class GameWorld
 
     public void RenderVisibility(ICanvas canvas)
     {
+        DebugMenu.PushMetric();
+
         canvas.Clear(Color.Transparent);
         RenderVisibility(Ships, canvas, Camera);
         RenderVisibility(Stations, canvas, Camera);
         RenderVisibility(Structures, canvas, Camera);
+
+        DebugMenu.PopMetric();
 
         void RenderVisibility<TUnit>(IList<TUnit> units, ICanvas canvas, Camera camera)
             where TUnit : Unit
@@ -293,6 +274,7 @@ public class GameWorld
 
     public void RenderGroundLayer(ICanvas canvas)
     {
+        DebugMenu.PushMetric();
         canvas.PushState();
         
         Structures.Sort((a, b) => a.GetCenter().Y.CompareTo(b.GetCenter().Y));
@@ -300,10 +282,12 @@ public class GameWorld
         WeaponSystems.Render(canvas, Camera);
 
         canvas.PopState();
+        DebugMenu.PopMetric();
     }
 
     public void RenderSkyLayer(ICanvas canvas)
     {
+        DebugMenu.PushMetric();
         canvas.PushState();
 
         Stations.Render(canvas, Camera);
@@ -316,11 +300,14 @@ public class GameWorld
 
         TextWidgets.RenderEventWidgets(canvas, Camera);
 
-        canvas.PopState();
+        canvas.PopState(); 
+        DebugMenu.PopMetric();
+
     }
 
     public void RenderBackgroundLayer(ICanvas canvas)
     {
+        DebugMenu.PushMetric();
         canvas.PushState();
         
         backgroundShader.Render(canvas, Camera);
@@ -330,10 +317,12 @@ public class GameWorld
         SelectionHandler.RenderBackgroundOverlay(canvas, Camera);
 
         canvas.PopState();
+        DebugMenu.PopMetric();
     }
 
     public void RenderGroundOverlayLayer(ICanvas canvas)
     {
+        DebugMenu.PushMetric();
         canvas.PushState();
 
         SelectionHandler.RenderGroundOverlay(canvas, Camera);
@@ -342,10 +331,12 @@ public class GameWorld
         CurrentInteractionContext.RenderGroundOverlay(canvas, leftMouse, rightMouse);
 
         canvas.PopState();
+        DebugMenu.PopMetric();
     }
 
     public void RenderSkyOverlayLayer(ICanvas canvas)
     {
+        DebugMenu.PushMetric();
         canvas.PushState();
 
         SelectionHandler.RenderSkyOverlay(canvas, Camera);
@@ -356,10 +347,12 @@ public class GameWorld
         TextWidgets.RenderNotificationWidgets(canvas, Camera);
 
         canvas.PopState();
+        DebugMenu.PopMetric();
     }
 
     public void RenderBackgroundOverlayLayer(ICanvas canvas)
     {
+        DebugMenu.PushMetric();
         canvas.PushState();
         
         SelectionHandler.RenderBackgroundOverlay(canvas, Camera);
@@ -368,6 +361,7 @@ public class GameWorld
         CurrentInteractionContext.RenderBackgroundOverlay(canvas, leftMouse, rightMouse);
        
         canvas.PopState();
+        DebugMenu.PopMetric();
     }
 
     internal SphereOfInfluence? GetSphereOfInfluence(DoubleVector point)
@@ -431,4 +425,22 @@ public class GameWorld
         return NextID++;
     }
 
+}
+
+
+interface IScene
+{
+    GUIViewport GUIViewport { get; }
+    Camera Camera { get; }
+
+    void Update(Vector2 viewportMousePosition, float tickProgress);
+    void Tick(Vector2 viewportMousePosition);
+
+    void RenderVisibility(ICanvas canvas);
+    void RenderGroundLayer(ICanvas canvas);
+    void RenderSkyLayer(ICanvas canvas);
+    void RenderBackgroundLayer(ICanvas canvas);
+    void RenderGroundOverlayLayer(ICanvas canvas);
+    void RenderSkyOverlayLayer(ICanvas canvas);
+    void RenderBackgroundOverlayLayer(ICanvas canvas);
 }

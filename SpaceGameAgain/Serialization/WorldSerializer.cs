@@ -12,20 +12,21 @@ internal class WorldSerializer
 {
     public GameWorld Deserialize(BinaryReader reader)
     {
-        var World = new GameWorld();
+        GameWorld world = new();
+        SerializationContext serializationContext = new(world);
         // fieldSerializer.Deserialize(reader, world);
 
-        World.NextID = reader.ReadUInt64();
+        world.NextID = reader.ReadUInt64();
         ulong playerTeamId = reader.ReadUInt64();
-        World.TurnProcessor.startingTurn = World.TurnProcessor.turn = reader.ReadUInt64();
-        World.TurnProcessor.RemainingTicks = reader.ReadInt32();
-        World.tick = reader.ReadUInt64();
+        world.TurnProcessor.startingTurn = world.TurnProcessor.turn = reader.ReadUInt64();
+        world.TurnProcessor.RemainingTicks = reader.ReadInt32();
+        world.tick = reader.ReadUInt64();
 
         int prototypeCount = reader.ReadInt32();
         ActorDeserializationList[] actorLists = new ActorDeserializationList[prototypeCount];
         for (int i = 0; i < prototypeCount; i++)
         {
-            actorLists[i] = new ActorDeserializationList(reader, World);
+            actorLists[i] = new ActorDeserializationList(serializationContext, reader, world);
         }
 
         for (int i = 0; i < prototypeCount; i++)
@@ -33,18 +34,17 @@ internal class WorldSerializer
             actorLists[i].Deserialize(reader);
         }
 
-
         for (int i = 0; i < prototypeCount; i++)
         {
             actorLists[i].FinishDeserialization();
         }
 
-        World.PlayerTeam = (Team)World.Actors[playerTeamId];
+        world.PlayerTeam = (Team)world.Actors[playerTeamId];
 
-        return World;
+        return world;
     }
 
-    public void Serialize(GameWorld world, BinaryWriter writer)
+    public void Serialize(GameWorld world, SerializationContext context, BinaryWriter writer)
     {
         // fieldSerializer.Serialize(writer, world);
 
@@ -60,7 +60,7 @@ internal class WorldSerializer
         ActorSerializationList[] serializationLists = new ActorSerializationList[prototypes.Length];
         for (int i = 0; i < prototypes.Length; i++)
         {
-            serializationLists[i] = new(prototypes[i], world.GetActorsByPrototype(prototypes[i]).ToArray());
+            serializationLists[i] = new(context, prototypes[i], world.GetActorsByPrototype(prototypes[i]).ToArray());
         }
 
         for (int i = 0; i < serializationLists.Length; i++)

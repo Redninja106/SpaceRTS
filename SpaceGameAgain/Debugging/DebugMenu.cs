@@ -2,6 +2,7 @@
 using Silk.NET.Core.Native;
 using Silk.NET.OpenGL;
 using SpaceGame.Commands;
+using SpaceGame.GUI;
 using SpaceGame.Networking;
 using SpaceGame.Serialization;
 using SpaceGame.Ships;
@@ -27,21 +28,46 @@ internal static class DebugMenu
     public static bool Open = false;
     internal static ObjectViewer objectViewer = new();
     private static bool showImGuiDemo;
+    private static bool pinned = true;
+
+    static DebugMenu()
+    {
+        ImGui.GetStyle().WindowRounding = GUIWindow.CornerRadius;
+    }
 
     public static void Layout()
     {
         if (Keyboard.IsKeyPressed(Key.F1))
+        {
             Open = !Open;
+        }
 
-        if (Open && ImGui.Begin("debug menu", ref Open, ImGuiWindowFlags.MenuBar))
+        if (World == null)
+        {
+            return;
+        }
+
+        if (Open && pinned)
+        {
+            ImGui.SetNextWindowPos(new(ImGui.GetIO().DisplaySize.X, 0), ImGuiCond.Always, new(1, 0));
+            float minimapSize = Minimap.TextureSize + World.GUIViewport.Scale * 12;
+            ImGui.SetNextWindowSize(new(minimapSize, ImGui.GetIO().DisplaySize.Y - minimapSize));
+        }
+
+        if (Open && ImGui.Begin("debug menu", ref Open, ImGuiWindowFlags.MenuBar | (pinned ? ImGuiWindowFlags.NoResize : 0)))
         {
             if (ImGui.BeginMenuBar())
             {
                 LayoutFileMenuBar();
 
-                if (ImGui.BeginMenu("imgui"))
+                if (ImGui.BeginMenu("menu"))
                 {
-                    ImGui.MenuItem("demo window", "", ref showImGuiDemo);
+                    ImGui.MenuItem("demo window", null, ref showImGuiDemo);
+                    ImGui.MenuItem("pinned", null, ref pinned);
+                    if (ImGui.MenuItem("go to main menu", null))
+                    {
+                        Program.NavigateToMainMenu();
+                    }
 
                     ImGui.EndMenu();
                 }
@@ -49,7 +75,7 @@ internal static class DebugMenu
                 ImGui.EndMenuBar();
             }
 
-            if (ImGui.BeginTabBar("tabbar"))
+            if (ImGui.BeginTabBar("tabbar", 0))
             {
                 if (ImGui.BeginTabItem("world"))
                 {
@@ -66,12 +92,6 @@ internal static class DebugMenu
                 if (ImGui.BeginTabItem("editor"))
                 {
                     LayoutEditorTab();
-                    ImGui.EndTabItem();
-                }
-
-                if (ImGui.BeginTabItem("settings"))
-                {
-                    LayoutSettingsTab();
                     ImGui.EndTabItem();
                 }
 
@@ -378,23 +398,6 @@ internal static class DebugMenu
         }
     }
 
-    private static void LayoutSettingsTab()
-    {
-        ImGui.SliderFloat("game speed", ref Program.GameSpeed, 0.0f, 2);
-        ImGui.SameLine();
-        if (ImGui.Button("reset"))
-        {
-            Program.GameSpeed = 1;
-        }
-        ImGui.SameLine();
-        if (ImGui.Button("force tick"))
-        {
-            Program.forceTickThisFrame = true;
-        }
-
-        ImGui.DragFloat("GUI Scale", ref World.GUIViewport.Scale, .25f, .5f, 2f);
-    }
-
     private static DebugSearch<Prototype>? prototypeSearch = null;
     private static void LayoutPrototypesTab()
     {
@@ -421,7 +424,7 @@ internal static class DebugMenu
                 WorldSerializer serializer = new();
                 using var fs = new FileStream("./level", FileMode.Create);
                 BinaryWriter writer = new(fs, Encoding.UTF8);
-                serializer.Serialize(World, writer);
+                serializer.Serialize(World, Program.SerializationContext, writer);
             }
             if (ImGui.MenuItem("load"))
             {
@@ -450,6 +453,21 @@ internal static class DebugMenu
             tickProgress = 1;
         }
         ImGui.Text($"tick progress: {tickProgress}");
+
+        if (ImGui.TreeNode("speed controls"))
+        {
+            if (ImGui.SmallButton("reset"))
+            {
+                Program.GameSpeed = 1;
+            }
+            ImGui.SameLine();
+            if (ImGui.SmallButton("force tick"))
+            {
+                Program.forceTickThisFrame = true;
+            }
+            ImGui.SliderFloat("game speed", ref Program.GameSpeed, 0.0f, 5);
+            ImGui.TreePop();
+        }
 
         ImGui.Separator();
 
@@ -511,6 +529,11 @@ internal static class DebugMenu
         }
         else
         {
+            var prevMetric = rootMetrics.FirstOrDefault(m => m.name == name);
+            if (prevMetric != null)
+            {
+                rootMetrics.Remove(prevMetric);
+            }
             rootMetrics.Add(newMetric);
         }
 
@@ -525,8 +548,9 @@ internal static class DebugMenu
 
     public static void ClearMetrics()
     {
-        rootMetrics.Clear();
         currentMetrics.Clear();
+        //frameMetrics.Clear();
+        //currentMetrics.Clear();
     }
 
     public static void LayoutPerformanceTab()
