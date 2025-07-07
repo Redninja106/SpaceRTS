@@ -1,10 +1,12 @@
 ﻿using Silk.NET.OpenGL;
 using SpaceGame.GUI;
+using SpaceGame.Planets;
 using SpaceGame.Planets.Generation;
 using SpaceGame.Rendering;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 using SpaceGame.Teams;
+using System.Reflection;
 
 namespace SpaceGame;
 
@@ -16,12 +18,15 @@ class MainMenu : IScene
     private GUIWindow mainWindow;
     private StarShader starShader;
 
+    private BlackHoleShader blackHole;
+
     public MainMenu()
     {
         GUIViewport = new();
         
         Camera = new Camera();
         Camera.VerticalSize = 30000;
+        Camera.InterpolationFactor = .001f;
 
         mainWindow = new(MainMenuLayout);
         GUIViewport.Register(mainWindow);
@@ -30,6 +35,9 @@ class MainMenu : IScene
         starShader.Brightness = 1.0f;
         starShader.TurnSpeed = .025f;
         starShader.Galaxy.starDensity = 15;
+
+        blackHole = new();
+        blackHole.Radius = 100;
     }
 
     public void Reset()
@@ -39,6 +47,14 @@ class MainMenu : IScene
 
     public void Update(Vector2 viewportMousePosition, float tickProgress)
     {
+        if (mainWindow.Layout == CreateGameLayout)
+        {
+            Camera.VerticalSize = 500;
+        }
+        else
+        {
+            Camera.VerticalSize = 30000;
+        }
     }
     
     public void Tick(Vector2 viewportMousePosition)
@@ -62,6 +78,9 @@ class MainMenu : IScene
     {
         starShader.Render(canvas, Camera);
         canvas.Fill(Color.Red);
+
+        Transform.Default.ApplyTo(canvas, Camera);
+        blackHole.Render(canvas);
     }
 
     public void RenderGroundOverlayLayer(ICanvas canvas)

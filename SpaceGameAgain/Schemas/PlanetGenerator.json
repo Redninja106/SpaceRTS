@@ -7,15 +7,8 @@
     "maximum_size": {
       "type": "number"
     },
-    "planet_prototype": {
-      "enum": [
-        "grassy_planet",
-        "mars",
-        "mud_planet",
-        "rocky_planet",
-        "sandy_planet",
-        "star"
-      ]
+    "planet_prototypes": {
+      "type": "array"
     },
     "moon_passes": {
       "type": "array"

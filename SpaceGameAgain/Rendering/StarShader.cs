@@ -1,4 +1,5 @@
-﻿using SimulationFramework.Drawing.Shaders;
+﻿using NAudio.Codecs;
+using SimulationFramework.Drawing.Shaders;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -60,9 +61,16 @@ internal class StarShader : CanvasShader
         float chance = Math.Min(density * Galaxy.starDensity, 1);
         for (int i = 0; i < density * Galaxy.starDensity; i++)
         {
-            result += GetStarColor(cellLoc, Hash(cellX, cellY, i, (int)zoomLevel), chance);
+            int rand = Hash(cellX, cellY, i, (int)zoomLevel);
+            float offsetX = noise[rand % noise.Length];
+            float offsetY = noise[(rand * rand % noise.Length)];
+            float n = noise[(rand * rand * rand % noise.Length)];
+            float b = noise[(rand * rand * rand * rand % noise.Length)];
+            if (n < chance)
+            {
+                result += SampleStar(cellLoc, offsetX, offsetY, b, n, .075f) * Brightness;
+            }
         }
-
         return result;
     }
 
@@ -72,7 +80,7 @@ internal class StarShader : CanvasShader
         return Abs(armIdx - Round(armIdx));
     }
 
-    int Hash(int x, int y, int z, int w)
+    public static int Hash(int x, int y, int z, int w)
     {
         int h = 17;
 
@@ -91,7 +99,7 @@ internal class StarShader : CanvasShader
     }
 
 
-    private float RandomTemperature(float b, float r)
+    public static float RandomTemperature(float b, float r)
     {
         float classO = 0.00003f * Pow(1400000, .3f);
         float classB = 0.0013f * Pow(20000, .3f);
@@ -134,29 +142,17 @@ internal class StarShader : CanvasShader
         //}
     }
 
-    private ColorF GetStarColor(Vector2 cellLoc, int rand, float chance)
+    public static ColorF SampleStar(Vector2 cellLoc, float offsetX, float offsetY, float b, float n, float radius)
     {
-        int randomOffset = (rand % noise.Length);
-        float offsetX = noise[randomOffset];
-        float offsetY = noise[(randomOffset * rand % noise.Length)];
-        float n = noise[(randomOffset * rand * rand % noise.Length)];
-        float b = noise[(randomOffset * rand * rand * rand % noise.Length)];
-        
-        if (n > chance)
-        {
-            return ColorF.Black;
-        }
-
-        float brightness = 0.075f;
         float dist = Distance(Vec2(offsetX, offsetY), cellLoc);
-        float rgb = Sqrt(Sqrt(brightness - dist));
+        float rgb = Sqrt(Sqrt(radius - dist));
         rgb = Clamp(rgb, 0, 1);
         float temp = RandomTemperature(b, n);
         Vector3 color = StarColor(temp);// * Log(1 + Pow(temp / 6500.0f, 4));
-        return new ColorF(rgb * color.X, rgb * color.Y, rgb * color.Z) * Brightness;
+        return new ColorF(rgb * color.X, rgb * color.Y, rgb * color.Z);
     }
 
-    private Vector3 StarColor(float temperature)
+    public static Vector3 StarColor(float temperature)
     {
         float t = temperature / 100.0f;
         Vector3 color = Vec3(0, 0, 0);

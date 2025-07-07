@@ -162,7 +162,7 @@ partial class Program : Simulation
 
         canvas.PushState();
         canvas.Transform(viewMatrix.Matrix);
-        canvas.DrawTexture(this.viewTexture);
+        canvas.DrawTexture(viewTexture);
         canvas.PopState();
 
         CurrentScene.GUIViewport.Render(canvas);
