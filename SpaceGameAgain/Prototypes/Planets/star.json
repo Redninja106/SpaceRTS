@@ -1,7 +1,8 @@
 ﻿{
-  "prototype": "PlanetPrototype",
+  "prototype": "StarPrototype",
   "name": "star",
   "material": "star_material",
-  "can_build": false
+  "can_build": false,
+  "color": "bbbbbb"
 
 }

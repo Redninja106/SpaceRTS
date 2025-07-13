@@ -31,8 +31,6 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
 {
     public override ShipPrototype Prototype => (ShipPrototype)base.Prototype;
 
-    // public override ITexture Icon => Icons.Ship;
-
     public static Vector2[] verts = [
         new(.5f / 2f, 0),
         new(-.5f / 2f, .2f / 2f),
@@ -40,13 +38,7 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
     ];
 
     [Serialize]
-    public DoubleVector velocity;
-    [Serialize]
-    public float angularVelocity;
-    
-    [Serialize]
     public float height = 0;
-    public Stance stance;
 
     [Serialize]
     private Queue<Order> orders = [];
@@ -62,10 +54,17 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
     [Serialize]
     public bool wasNavigating;
 
+    public Stance stance;
+
     public WormholeStation? WormholeStation;
 
     public override bool CanAttack => modules.Any(m => m is WeaponModule);
     public override bool CanReveal => base.CanReveal && WormholeStation == null;
+
+    [Serialize]
+    public DoubleVector velocity;
+    [Serialize]
+    public float angularVelocity;
 
     public DoubleVector Velocity => velocity;
     public DoubleVector CurrentAcceleration { get; set; }

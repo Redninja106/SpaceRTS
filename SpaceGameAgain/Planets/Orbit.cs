@@ -7,17 +7,19 @@ using System.Threading.Tasks;
 
 namespace SpaceGame.Planets;
 
+// TODO: ORBITS: star or larger SOIs should automagically orbit objects inside of them
+
 [Serializable]
 internal class Orbit
 {
     [Serialize]
     public required Actor center;
     [Serialize]
-    public required float radius;
+    public required double radius;
     [Serialize]
-    public required float phase;
+    public required double phase;
     [Serialize]
-    public required float speed = 1;
+    public required double speed = 1;
 
     public Orbit()
     {
@@ -33,18 +35,18 @@ internal class Orbit
 
     public void Tick()
     {
-        phase += Program.Timestep * speed / radius;
+        phase -= Program.Timestep * speed / radius;
     }
 
     public Transform GetLocation()
     {
-        return center.Transform.Translated(DoubleVector.FromVector2(Angle.ToVector(phase) * radius));
+        return center.Transform.Translated(new(double.Cos(phase) * radius, double.Sin(phase) * radius));
     }
 
     public DoubleVector Forecast(float time)
     {
         DoubleVector newCenter = (center as Planet)!.orbit?.Forecast(time) ?? center.Transform.Position;
-        float newPhase = phase + time * speed / radius;
+        double newPhase = phase + time * speed / radius;
 
         return newCenter + new DoubleVector(double.Cos(newPhase) * radius, double.Sin(newPhase) * radius);
     }

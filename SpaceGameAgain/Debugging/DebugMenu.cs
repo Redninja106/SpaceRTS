@@ -29,6 +29,7 @@ internal static class DebugMenu
     internal static ObjectViewer objectViewer = new();
     private static bool showImGuiDemo;
     private static bool pinned = true;
+    public static bool renderNoise = true;
 
     static DebugMenu()
     {
@@ -71,6 +72,8 @@ internal static class DebugMenu
 
                     ImGui.EndMenu();
                 }
+
+                ImGui.Checkbox("render noise", ref renderNoise);
 
                 ImGui.EndMenuBar();
             }

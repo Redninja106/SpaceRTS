@@ -57,7 +57,7 @@ internal static class Minimap
             if (planet.orbit != null && planet.Prototype.Name != "star")
             {
                 canvas.Stroke(Color.White with { A = 10 });
-                canvas.DrawCircle(WorldPointToMinimapPoint(planet.orbit.center.Transform.Position.ToVector2()), WorldSizeToMinimapSize(planet.orbit.radius));
+                canvas.DrawCircle(WorldPointToMinimapPoint(planet.orbit.center.Transform.Position.ToVector2()), WorldSizeToMinimapSize((float)planet.orbit.radius));
             }
             canvas.Fill(Color.Gray);
             canvas.DrawCircle(WorldPointToMinimapPoint(planet.Transform.Position.ToVector2()), float.Max(WorldSizeToMinimapSize(planet.Radius), 1f));

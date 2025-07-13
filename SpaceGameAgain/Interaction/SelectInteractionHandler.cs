@@ -63,6 +63,11 @@ internal class SelectInteractionHandler : IInteractionContext
                     {
                         World.SelectionHandler.Select(ship);
                     }
+                    else
+                    {
+                        World.SelectionHandler.SelectedFleet = ship.Fleet;
+                        break;
+                    }
                 }
             }
             else

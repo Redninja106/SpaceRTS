@@ -2,7 +2,7 @@
   "prototype": "PlanetGenerator",
   "name": "inner_ring_system_generator",
   "minimum_size": 50,
-  "planet_prototypes": [ "star_class_a" ],
+  "planet_prototypes": [ "star_class_m" ],
   "moon_passes": [
     {
       "type": "random",

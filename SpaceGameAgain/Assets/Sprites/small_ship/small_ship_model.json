@@ -1,8 +1,10 @@
 {
-    "prototype": "NormalMappedSpriteModel",
-    "name": "small_ship_model",
-    "width": 1.7320508075688772,
-    "height": 1.7320508075688772,
-    "sprites_folder": "small_ship",
-    "sprite_count": 32
-}
+        "prototype": "SpriteModel",
+        "name": "small_ship_model",
+        "width": 1.7320508075688772,
+        "height": 1.7320508075688772,
+        "sprite_count": 32,
+        "shadow_count": 32,
+        "has_normal_maps": true,
+        "has_shadow_maps": true
+    }

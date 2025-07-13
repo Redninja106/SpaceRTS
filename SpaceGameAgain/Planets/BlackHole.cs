@@ -1,15 +1,14 @@
 ﻿using Silk.NET.OpenGL;
 using SimulationFramework.Drawing.Shaders;
+using SimulationFramework.Drawing.Shaders.Compiler;
 using SpaceGame.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using static Silk.NET.Core.Native.WinString;
 using static SimulationFramework.Drawing.Shaders.ShaderIntrinsics;
 
 namespace SpaceGame.Planets;
@@ -19,6 +18,15 @@ internal class BlackHole : Planet
 
     public BlackHole(PlanetPrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
+        int count = 100_000;
+        Vector3 color = Vector3.Zero;
+        for (int i = 0; i < count; i++)
+        {
+            float t = GalaxyShader.RandomTemperature(Random.Shared.NextSingle(), Random.Shared.NextSingle());
+            color += GalaxyShader.StarColor(t);
+        }
+        color /= count;
+        Console.WriteLine(color);
     }
 
     public override void Render(ICanvas canvas)
@@ -33,14 +41,55 @@ class BlackHolePrototype : PlanetPrototype
     public override Type ActorType => typeof(BlackHole);
 }
 
+static class NoiseTexture
+{
+    private static readonly Dictionary<int, ITexture> textures = [];
+
+    public static ITexture Get(int size = 1024)
+    {
+        if (!textures.TryGetValue(size, out ITexture? texture))
+        {
+            textures[size] = texture = Create(size);
+        }
+
+        return texture;
+    }
+
+    private static ITexture Create(int size)
+    {
+        var texture = Graphics.CreateTexture(size, size);
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                texture[x, y] = new Color(
+                    (byte)Random.Shared.Next(0, 256),
+                    (byte)Random.Shared.Next(0, 256),
+                    (byte)Random.Shared.Next(0, 256),
+                    (byte)Random.Shared.Next(0, 256)
+                    );
+            }
+        }
+        texture.ApplyChanges();
+        Graphics.GenerateMipmaps(texture);
+        texture.Filter = TextureFilter.MipmapLinear;
+        texture.WrapModeX = WrapMode.Repeat;
+        texture.WrapModeY = WrapMode.Repeat;
+        return texture;
+    }
+}
+
 class BlackHoleShader : CanvasShader
 {
+    // TODO add lensing
+
     public Vector2 effectPos;
-    public Vector3 diskRotation = new(Random.Shared.NextSingle(), Random.Shared.NextSingle(), Random.Shared.NextSingle());
-    public Vector3 diskDrift = new(Random.Shared.NextSingle(-.005f, .005f), Random.Shared.NextSingle(-.005f, .005f), Random.Shared.NextSingle(-.005f, .005f));
+    public Vector3 diskRotation = new(Random.Shared.NextSingle() * float.Tau, Random.Shared.NextSingle() * float.Tau, Random.Shared.NextSingle() * float.Tau);
+    public Vector3 diskDrift = new (Random.Shared.NextSingle(-.005f, .005f), Random.Shared.NextSingle(-.005f, .005f), Random.Shared.NextSingle(-.005f, .005f));
     public Matrix4x4 diskInverseTransform;
     public float Radius;
-    readonly ImmutableArray<float> noise = Enumerable.Range(0, 1024 * 8).Select(r => Random.Shared.NextSingle()).ToImmutableArray();
+    private ITexture noiseTexture = NoiseTexture.Get();
+
     public void Render(ICanvas canvas)
     {
         var diskRot = diskRotation * Time.TotalTime * diskDrift;
@@ -49,15 +98,17 @@ class BlackHoleShader : CanvasShader
         canvas.Fill(this);
         canvas.DrawCircle(0, 0, Radius * 10);
     }
+
     public override ColorF GetPixelColor(Vector2 position)
     {
         const float blackHoleRadius = 100;
         const float diskRadius = blackHoleRadius * 3;
 
         Vector3 rayDirection = new(0, 0, 1);
-        Vector3 rayPosition = new(position.X, position.Y, -blackHoleRadius * 5);
+        Vector3 rayPosition = new(position.X, position.Y, -blackHoleRadius * 50);
 
-        const float mass = .25f;
+        const float minStep = .1f;
+        const float diskThickness = 3;
 
         // Vector2 uv = (position) / blackHoleRadius;
         // float theta = Atan(Length(uv));
@@ -66,46 +117,84 @@ class BlackHoleShader : CanvasShader
         // float into = Length(uv) / Tan(beta);
         // Vector3 newDir = Vec3(uv, Abs(into));
 
-        ColorF color = new(0, 0, 0, 0);
-        float holeDist = rayPosition.Length();
-        for (int i = 0; i < 250; i++)
+        ColorF diskColor = new(0, 0, 0, 0);
+
+        float holeCenterDist = rayPosition.Length();
+        for (int i = 0; i < 500; i++)
         {
-            if (holeDist < blackHoleRadius)
+            if (holeCenterDist < blackHoleRadius)
             {
-                color += new ColorF(0, 0, 0, holeDist > 0 ? 1 : 0);
+                // overwriting the alpha makes the black hole edge more defined
+                diskColor *= diskColor.A;
+                diskColor.A = 1;
+                break;
+            }
+
+            if (rayPosition.Z > blackHoleRadius * 100)
+            {
+                // float squareSize = 25;
+                // Vector3 projectedPosition = (rayDirection * (1f / rayDirection.Z) * (blackHoleRadius * 100 - rayPosition.Z));
+                // float b = Mod(Round(rayPosition.X / squareSize) + Round(rayPosition.Y / squareSize), 2) == 0 ? 1 : 0;
+                // diskColor += new ColorF(b, b, b, 1f);
                 break;
             }
 
             Vector4 p = Vector4.Transform(new Vector4(rayPosition, 1), diskInverseTransform);
-            float step = SdfCappedCylinder(p.GetXYZ(), 1f, diskRadius);
-            if (step < 0.1f)
+            float diskDistance = SdfCappedCylinder(p.GetXYZ(), diskThickness, diskRadius);
+            float blackHoleDistance = holeCenterDist - blackHoleRadius;
+            float step = float.Min(blackHoleDistance, diskDistance);
+            if (diskDistance < minStep)
             {
-                // float a = (Atan2(p.Z, p.X) + float.Pi) / float.Tau;// Length(Vec2(p.Z, p.X)) / (blackHoleRadius * 10);
-                // float b = noise[(int)(a * 1234567) % 1024];
-                // float r = noise[(int)(a * 1234567) % 1024];
+                // average star colored noise for disk color
+                const float brightness = 2f;
+                ColorF n = noiseTexture.Sample(new(p.X, p.Z));
+                ColorF noise = noiseTexture.Sample(new(p.Length(), p.Y));
 
-                float b = 0;
-                float w = 1;
-                for (int j = 0; j < 4; j++)
+                Vector3 pointColor = new Vector3(233f / 255f, 155f / 255f, 85f / 255f);
+
+                Vector3 randomColor = GalaxyShader.StarColor(GalaxyShader.RandomTemperature(noise.R, noise.G));
+                pointColor = Vector3.Lerp(pointColor, randomColor, n.B * .125f);
+
+                pointColor *= brightness * Clamp((1f - (blackHoleDistance / (diskRadius - blackHoleRadius))), .30f, 1f);
+
+                float density = (1.001f - (blackHoleDistance / (diskRadius - blackHoleRadius))) * Clamp(1 - (1 / (diskThickness * 2)) * Abs(p.Y), 0, 1);
+                float absorption = density * minStep * 1;
+
+                ColorF color = new ColorF(pointColor) with { A = absorption };
+
+                diskColor.R += (1 - diskColor.A) * color.R * color.A;
+                diskColor.G += (1 - diskColor.A) * color.G * color.A;
+                diskColor.B += (1 - diskColor.A) * color.B * color.A;
+                diskColor.A += (1 - diskColor.A) * color.A;
+
+                if (diskColor.A > .999f)
                 {
-                    b += .25f * (1f/w) * noise[Hash((int)(p.X * w), (int)(p.Y * w), (int)(p.Z * w)) % 1024];
-                    w *= .666f;
+                    break;
                 }
-                //b *= b;
-                float alpha = (1f - (holeDist / diskRadius));
-                float scale = b * alpha * alpha;
-                color += new ColorF(1.2f * scale, 1.1f * scale, 1f * scale, alpha);
-                step = .1f;
             }
 
-            float bend = step * (1 / (holeDist * holeDist * holeDist)) * blackHoleRadius *1;
+            if (step < minStep)
+            {
+                step = minStep;
+            }
+
+            holeCenterDist = Max(holeCenterDist, minStep);
+            float bend = step * (1 / (holeCenterDist * holeCenterDist * holeCenterDist)) * 50f;
             rayDirection = Normalize(rayDirection - rayPosition * bend);
             rayPosition += rayDirection * step;
-            holeDist = rayPosition.Length();
+            holeCenterDist = rayPosition.Length();
         }
 
-        color /= color.A;
-        return color;
+        return diskColor;
+    }
+
+    float Noise(Vector3 p)
+    {
+        return noiseTexture.Sample(new(p.X, p.Z)).R;
+
+        p = Fract(p * 0.3183099f + new Vector3(0.1f, 0.2f, 0.3f));
+        p *= 17.0f;
+        return Mod((p.X * p.Y * p.Z * (p.X + p.Y + p.Z)), 1.0f);
     }
 
     public static int Hash(int x, int y, int z)

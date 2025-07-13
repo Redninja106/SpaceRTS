@@ -48,6 +48,7 @@ public class GameWorld : IScene
     // public Sidebar RightSidebar;
 
     internal Team PlayerTeam;
+    internal Planet CenterPlanet;
     
     public ulong NextID { get; set; } = 1;
 
@@ -71,7 +72,10 @@ public class GameWorld : IScene
     public MouseState rightMouse;
     public MouseState middleMouse;
 
-    private StarShader backgroundShader = new();
+    internal GalaxyShader backgroundShader = new()
+    {
+        Galaxy = GalaxyInfo.Random(Random.Shared),
+    };
 
     public GUIViewport GUIViewport { get; } = new GUIViewport();
 
@@ -366,6 +370,8 @@ public class GameWorld : IScene
 
     internal SphereOfInfluence? GetSphereOfInfluence(DoubleVector point)
     {
+        // TODO OPTIMIZE HERE
+
         SphereOfInfluence? smallest = null;
         foreach (var planet in Planets)
         {
@@ -379,6 +385,29 @@ public class GameWorld : IScene
         }
         return smallest;
     }
+
+    internal Star? GetStar(DoubleVector point)
+    {
+        // TODO OPTIMIZE HERE AS WELL
+        var soi = GetSphereOfInfluence(point);
+        if (soi == null)
+        {
+            return null;
+        }
+        Planet p = soi.planet;
+        while (p.orbit != null)
+        {
+            if (p is Star s)
+            {
+                return s;
+            }
+
+            p = (Planet)p.orbit.center;
+        }
+
+        return null;
+    }
+
 
     public IEnumerable<Actor> GetActorsByPrototype(Prototype prototype)
     {

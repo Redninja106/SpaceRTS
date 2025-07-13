@@ -16,7 +16,7 @@ class MainMenu : IScene
     public Camera Camera { get; }
 
     private GUIWindow mainWindow;
-    private StarShader starShader;
+    private GalaxyShader starShader;
 
     private BlackHoleShader blackHole;
 
@@ -33,16 +33,22 @@ class MainMenu : IScene
 
         starShader = new();
         starShader.Brightness = 1.0f;
-        starShader.TurnSpeed = .025f;
-        starShader.Galaxy.starDensity = 15;
-
-        blackHole = new();
-        blackHole.Radius = 100;
+       
+        Reset();
     }
 
     public void Reset()
     {
-        mainWindow.SetLayout(MainMenuLayout);
+        mainWindow.SetLayout(MainMenuLayout); 
+        
+        starShader.Galaxy = GalaxyInfo.Random(Random.Shared);
+        starShader.Galaxy.turnSpeed = .025f * -float.Sign(starShader.Galaxy.ArmCurve);
+        starShader.Galaxy.starDensity = 15;
+
+        blackHole = new();
+        blackHole.Radius = 100;
+
+        Camera.VerticalSize = Camera.SmoothVerticalSize = 30000;
     }
 
     public void Update(Vector2 viewportMousePosition, float tickProgress)
@@ -196,11 +202,15 @@ class EscapeMenu
 class OptionsMenu
 {
     UserOptions options;
+    UserOptions previousOptions;
     GUILayout returnLayout;
 
     public OptionsMenu(GUILayout returnLayout)
     {
-        this.options = Program.UserOptions.CreateCopy();
+        this.previousOptions = Program.UserOptions;   
+        this.options = previousOptions.CreateCopy();
+        Program.UserOptions = options;
+
         this.returnLayout = returnLayout;
     }
 
@@ -213,32 +223,32 @@ class OptionsMenu
 
         using (window.Row())
         {
-            window.Text("gui scale: " + Program.UserOptions.GUIScale.ToString("F1"));
+            window.Text("gui scale: " + this.options.GUIScale.ToString("F1"));
             if (window.TextButton("+"))
             {
-                Program.UserOptions.GUIScale += .1f;
+                this.options.GUIScale += .1f;
                 window.HasNewLayout = true;
             }
             if (window.TextButton("- "))
             {
-                Program.UserOptions.GUIScale -= .1f;
-                Program.UserOptions.GUIScale = float.Round(Program.UserOptions.GUIScale, 1);
+                this.options.GUIScale -= .1f;
+                this.options.GUIScale = float.Round(this.options.GUIScale, 1);
                 window.HasNewLayout = true;
             }
         }
 
         using (window.Row())
         {
-            window.Text("scroll speed: " + Program.UserOptions.ScrollSpeed.ToString("F1"));
+            window.Text("scroll speed: " + this.options.ScrollSpeed.ToString("F1"));
             if (window.TextButton("+"))
             {
-                Program.UserOptions.ScrollSpeed += .1f;
+                this.options.ScrollSpeed += .1f;
                 window.HasNewLayout = true;
             }
             if (window.TextButton("-"))
             {
-                Program.UserOptions.ScrollSpeed -= .1f;
-                Program.UserOptions.ScrollSpeed = float.Round(Program.UserOptions.ScrollSpeed, 1);
+                this.options.ScrollSpeed -= .1f;
+                this.options.ScrollSpeed = float.Round(this.options.ScrollSpeed, 1);
                 window.HasNewLayout = true;
             }
         }
@@ -265,8 +275,8 @@ class OptionsMenu
             }
             if (window.LastItemClicked(MouseButton.Left))
             {
-                Program.UserOptions.VSync = !Program.UserOptions.VSync;
-                Graphics.SwapInterval = Program.UserOptions.VSync ? 1 : 0;
+                this.options.VSync = !this.options.VSync;
+                Graphics.SwapInterval = this.options.VSync ? 1 : 0;
             }
         }
 
@@ -275,6 +285,7 @@ class OptionsMenu
             if (window.TextButton("cancel"))
             {
                 window.SetLayout(returnLayout);
+                Program.UserOptions = previousOptions;
             }
 
             if (window.TextButton("done"))

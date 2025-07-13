@@ -1,8 +1,10 @@
 {
-    "prototype": "NormalMappedSpriteModel",
-    "name": "default_model",
-    "width": 3.4641016151377544,
-    "height": 3.4641016151377544,
-    "sprites_folder": "default",
-    "sprite_count": 6
-}
+        "prototype": "SpriteModel",
+        "name": "default_model",
+        "width": 3.4641016151377544,
+        "height": 3.4641016151377544,
+        "sprite_count": 6,
+        "shadow_count": 32,
+        "has_normal_maps": true,
+        "has_shadow_maps": true
+    }

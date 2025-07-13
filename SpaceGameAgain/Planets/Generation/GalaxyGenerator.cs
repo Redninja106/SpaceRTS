@@ -35,6 +35,7 @@ internal class GalaxyGenerator
         {
             var system = generator.Generate(world, random);
             system.orbit = new(center, distance, (i / (float)count + phaseOffset) * float.Tau);
+            system.orbit.speed = world.backgroundShader.Galaxy.turnSpeed * distance;
         }
     }
 }

@@ -9,18 +9,19 @@ using System.Threading.Tasks;
 using static SimulationFramework.Drawing.Shaders.ShaderIntrinsics;
 
 namespace SpaceGame.Rendering;
-internal class StarShader : CanvasShader
+internal class GalaxyShader : CanvasShader
 {
     private float size;
     private float rotation;
 
     public float Brightness = .333f;
-    public float TurnSpeed = 0.0025f;
     public GalaxyInfo Galaxy = new();
     readonly ImmutableArray<float> noise = Enumerable.Range(0, 1024*8).Select(r => Random.Shared.NextSingle()).ToImmutableArray();
 
     public override ColorF GetPixelColor(Vector2 position)
     {
+        const float BlackHoleRadius = 100f;
+
         float logSize = Log2(size);
         int minZoomLevel = (int)Floor(logSize);
         int maxZoomLevel = (int)Ceiling(logSize);
@@ -38,7 +39,7 @@ internal class StarShader : CanvasShader
         float dist = position.Length();
         float angle = Atan2(position.Y, position.X);
         position = dist * Vec2(Cos(angle + rotation), Sin(angle + rotation));
-        angle += dist / Galaxy.Radius * MathF.Tau * Galaxy.ArmCurveAmount;
+        angle += dist / Galaxy.Radius * MathF.Tau * Galaxy.ArmCurve;
 
         float edgeFactor = Clamp((Galaxy.Radius - dist) / Galaxy.armSize, 0, 1);
         float armFactor = (Galaxy.armSize - dist * Pow(ArmDistance(angle, Galaxy.armCount), Galaxy.armShapeFac)) / Galaxy.armSize;
@@ -205,7 +206,7 @@ internal class StarShader : CanvasShader
         canvas.PushState();
         canvas.ResetState();
         size = camera.SmoothVerticalSize;
-        rotation = Time.TotalTime * TurnSpeed;
+        rotation = Time.TotalTime * Galaxy.turnSpeed;
         TransformMatrix = camera.CreateRelativeMatrix(Transform.Default);
         canvas.Fill(this);
         canvas.DrawRect(0, 0, canvas.Width, canvas.Height);
@@ -218,11 +219,29 @@ struct GalaxyInfo
     public float starDensity = 5;
     public float armSize = 15000;
     public float Radius = 35000;
-    public float ArmCurveAmount = -.9f;
+    public float ArmCurve = -.9f;
     public float armShapeFac = .8f;
+    public float turnSpeed = 0.0025f;
     public int armCount = 2;
 
     public GalaxyInfo()
     {
+    }
+
+    public static GalaxyInfo Random(Random random)
+    {
+        GalaxyInfo result = new();
+        result.armCount = random.Next(1, 7);
+        result.armShapeFac = random.NextSingle(.6f, 1f);
+        result.ArmCurve = result.armCount * .25f + random.NextSingle(.2f, .5f);
+        if (random.Next() % 2 == 0)
+        {
+            result.ArmCurve = -result.ArmCurve;
+        }
+        else
+        {
+            result.turnSpeed = -result.turnSpeed;
+        }
+        return result;
     }
 }

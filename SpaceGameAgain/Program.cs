@@ -1,4 +1,5 @@
 ﻿using SimulationFramework.Desktop;
+using SimulationFramework.Drawing.Shaders;
 using SpaceGame.Bots;
 using SpaceGame.Commands;
 using SpaceGame.Debugging;
@@ -83,7 +84,8 @@ partial class Program : Simulation
     private ITexture groundTexture;
     private ITexture skyTexture;
     private ITexture visibilityTexture;
-    private CompositingShader compositingShader = new CompositingShader();
+    private VisibilityCompositingShader layerShader = new VisibilityCompositingShader();
+    private FinalCompositingShader finalShader = new FinalCompositingShader();
 
     public static UserOptions UserOptions;
 
@@ -129,7 +131,7 @@ partial class Program : Simulation
         {
             viewTexture?.Dispose();
             viewTexture = Graphics.CreateTexture(targetViewWidth, ViewportPixels);
-
+            
             visibilityTexture?.Dispose();
             visibilityTexture = Graphics.CreateTexture(targetViewWidth, ViewportPixels);
 
@@ -160,10 +162,7 @@ partial class Program : Simulation
         
         canvas.Clear(Color.FromHSV(0, 0, .1f));
 
-        canvas.PushState();
-        canvas.Transform(viewMatrix.Matrix);
-        canvas.DrawTexture(viewTexture);
-        canvas.PopState();
+        finalShader.RenderFinalImage(canvas, viewMatrix.Matrix, viewTexture, visibilityTexture, 1f);
 
         CurrentScene.GUIViewport.Render(canvas);
     }
@@ -236,18 +235,21 @@ partial class Program : Simulation
         // GROUND LAYER
         CurrentScene.RenderGroundLayer(groundCanvas);
         groundCanvas.Flush();
-        compositingShader.Composite(canvas, groundTexture, visibilityTexture, false);
+        layerShader.Composite(canvas, groundTexture, visibilityTexture, false);
         CurrentScene.RenderGroundOverlayLayer(canvas);
 
         // SKY LAYER
         CurrentScene.RenderSkyLayer(skyCanvas);
         skyCanvas.Flush();
-        compositingShader.Composite(canvas, skyTexture, visibilityTexture, true);
+        layerShader.Composite(canvas, skyTexture, visibilityTexture, false);
         CurrentScene.RenderSkyOverlayLayer(canvas);
+
 
         DebugMenu.PushMetric("DebugDraw.Draw");
         DebugDraw.Draw(canvas, CurrentScene.Camera);
         DebugMenu.PopMetric();
+
+        canvas.Flush();
 
         DebugMenu.PopMetric();
     }
@@ -257,5 +259,62 @@ partial class Program : Simulation
         MainMenu.Reset();
         World = null;
         CurrentScene = MainMenu;
+    }
+}
+
+class FinalCompositingShader : CanvasShader
+{
+    public ITexture visibilityTexture;
+    public ITexture viewTexture;
+    public float noiseMultiplier = 1.0f;
+
+    public float time = 0;
+    public float Brightness = .25f;
+    public float Noisiness = .15f;
+
+    public FinalCompositingShader()
+    {
+        noise = new int[1024];
+        for (int i = 0; i < noise.Length; i++)
+        {
+            noise[i] = Random.Shared.Next();
+        }
+    }
+
+    private int[] noise;
+
+    private float CalcNoise(Vector2 position)
+    {
+        int seed = (int)((int)position.X * 17) ^ (int)((int)position.Y * 14);
+        int offset = noise[(int)(seed + time * 25) % noise.Length];
+        float b = noise[offset % noise.Length] / (float)int.MaxValue;
+        return 1 - (Brightness + (b * Noisiness));
+    }
+
+    public override ColorF GetPixelColor(Vector2 position)
+    {
+        ColorF color = viewTexture.Sample(position);
+
+        float visibility = visibilityTexture.Sample(position).A;
+        if (visibility == 0 && noiseMultiplier > 0)
+        {
+            float noise = noiseMultiplier * (1 - visibility) * CalcNoise(position);
+            color *= noise;
+        }
+
+        return color;
+    }
+
+    public void RenderFinalImage(ICanvas canvas, Matrix3x2 viewMatrix, ITexture viewTexture, ITexture visibilityTexture, float noiseMultiplier)
+    {
+        canvas.PushState();
+        this.TransformMatrix = viewMatrix;
+        this.visibilityTexture = visibilityTexture;
+        this.viewTexture = viewTexture;
+        this.time = Time.TotalTime;
+        this.noiseMultiplier = DebugMenu.renderNoise ? 1 : 0;
+        canvas.Fill(this);
+        canvas.DrawRect(0, 0, canvas.Width, canvas.Height);
+        canvas.PopState();
     }
 }

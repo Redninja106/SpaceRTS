@@ -21,14 +21,14 @@ internal class ResourceBar
         //    window.Text(proto.Name + ": " + values.Remaining);
         //}
 
-        using (window.Row())
-        {
-            window.Image(Icon.Get("economic_icon").Texture16x16);
-            window.Text("42");
-            window.Image(Icon.Get("industrial_icon").Texture16x16);
-            window.Text("69");
-            window.Image(Icon.Get("research_icon").Texture16x16);
-            window.Text("1 million");
-        }
+        //using (window.Row())
+        //{
+        //    window.Image(Icon.Get("economic_icon").Texture16x16);
+        //    window.Text("42");
+        //    window.Image(Icon.Get("industrial_icon").Texture16x16);
+        //    window.Text("69");
+        //    window.Image(Icon.Get("research_icon").Texture16x16);
+        //    window.Text("1 million");
+        //}
     }
 }

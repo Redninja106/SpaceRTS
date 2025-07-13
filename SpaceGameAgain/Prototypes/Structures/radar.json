@@ -5,7 +5,8 @@
   "max_health": 10,
   "price": 100,
   "powered_reveal_radius": 100,
-  "required_power_level": "low",
+  "required_power_level": "Low",
+  "model": "radar_model",
   "footprint": [
     [ 0, 0 ],
     [ 0, 1 ],

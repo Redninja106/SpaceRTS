@@ -45,6 +45,8 @@ internal class Planet : Actor
 
     [DebugOverlay]
     public static bool ShowOrbits;
+    [DebugOverlay]
+    public static bool ShowPlanetRadii;
 
     public Planet(PlanetPrototype prototype, GameWorld world, ulong id) : base(prototype, world, id)
     {
@@ -84,12 +86,16 @@ internal class Planet : Actor
     public override void Render(ICanvas canvas)
     {
         shader.rad = this.Radius; 
-        Vector2 v = (this.Transform.Position).ToVector2().Normalized();
-        shader.lightDir = new Vector3(v.X, -v.Y, -1).Normalized();
+        Star? star = World.GetStar(this.InterpolatedTransform.Position);
+        if (star != null)
+        {
+            Vector2 v = (this.Transform.Position - star.Transform.Position).ToVector2().Normalized();
+            shader.lightDir = new Vector3(v.X, -v.Y, -1).Normalized();
+            shader.tint = ColorF.Lerp(ColorF.White, star.Prototype.Color, .2f);
+        }
         shader.time = Time.TotalTime;
         shader.texture = Prototype.Material.Texture;
         shader.texScale = (128 * float.Sqrt(3));
-        shader.color = Prototype.Color;
         if (Prototype.Material.NormalMap != null)
         {
             shader.normalMap = Prototype.Material.NormalMap;
@@ -111,7 +117,12 @@ internal class Planet : Actor
 
         if (ShowOrbits && this.orbit != null)
         {
-            DebugDraw.Circle(Vector2.Zero, this.orbit.radius, this.orbit.center.Transform);
+            DebugDraw.Circle(Vector2.Zero, (float)this.orbit.radius, this.orbit.center.Transform);
+        }
+
+        if (ShowPlanetRadii)
+        {
+            DebugDraw.Circle(Vector2.Zero, this.Radius, this.InterpolatedTransform, Color.Red);
         }
     }
 

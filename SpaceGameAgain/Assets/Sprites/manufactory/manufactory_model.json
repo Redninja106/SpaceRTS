@@ -1,8 +1,10 @@
 {
-    "prototype": "NormalMappedSpriteModel",
-    "name": "manufactory_model",
-    "width": 6.928203230275509,
-    "height": 6.928203230275509,
-    "sprites_folder": "manufactory",
-    "sprite_count": 6
-}
+        "prototype": "SpriteModel",
+        "name": "manufactory_model",
+        "width": 6.928203230275509,
+        "height": 6.928203230275509,
+        "sprite_count": 6,
+        "shadow_count": 32,
+        "has_normal_maps": true,
+        "has_shadow_maps": true
+    }

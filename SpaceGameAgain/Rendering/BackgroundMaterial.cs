@@ -21,13 +21,13 @@ internal class BackgroundMaterial : AssetPrototype
     {
         Texture = Graphics.LoadTexture(Path.Combine(prototypeDirectory, TextureFile));
         Graphics.GenerateMipmaps(Texture);
-        Texture.Filter = TextureFilter.MipmapPoint;
+        Texture.Filter = TextureFilter.MipmapLinear;
 
         if (NormalMapFile != null)
         {
             NormalMap = Graphics.LoadTexture(prototypeDirectory + NormalMapFile, TextureOptions.Constant);
             Graphics.GenerateMipmaps(NormalMap);
-            NormalMap.Filter = TextureFilter.MipmapPoint;
+            NormalMap.Filter = TextureFilter.MipmapLinear;
         }
     }
 }
