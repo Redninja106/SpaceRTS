@@ -221,6 +221,7 @@ internal static class DebugMenu
             {
                 var ship = new Ship(editorShipPrototype, World, World.NewID()) { Team = editorTeam };
                 ship.Teleport(new Transform() { Position = World.MousePosition });
+
                 foreach (var modulePrototype in editorModules)
                 {
                     var module = modulePrototype.CreateActor(World, World.NewID());
@@ -229,6 +230,13 @@ internal static class DebugMenu
                     World.Add(module);
                 }
                 World.Add(ship);
+
+                // give ship initial velocity
+                var soi = World.GetSphereOfInfluence(ship.Transform.Position);
+                if (soi != null)
+                {
+                    ship.PreviousTransform.Position -= soi.lastTickVelocity;
+                }
             }
         }
 
@@ -434,7 +442,9 @@ internal static class DebugMenu
                 WorldSerializer serializer = new();
                 using var fs = new FileStream("./level", FileMode.Open);
                 BinaryReader reader = new(fs, Encoding.UTF8);
+
                 Program.World = serializer.Deserialize(reader);
+                Program.CurrentScene = World;
             }
 
             ImGui.EndMenu();

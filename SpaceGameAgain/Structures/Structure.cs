@@ -40,6 +40,12 @@ internal class Structure : Unit
     public override void InitializeActor()
     {
         this.Teleport(Grid.Transform.Translated(DoubleVector.FromVector2(this.Location.ToCartesian())).Rotated(Rotation * (MathF.Tau / 6f)));
+
+        foreach (var unlock in Prototype.Unlocks)
+        {
+            this.Team.Unlock(unlock);
+        }
+
         base.InitializeActor();
     }
 
@@ -68,9 +74,11 @@ internal class Structure : Unit
         }
     }
 
-    public override bool TestPoint(DoubleVector point)
+    public override bool TestPoint(DoubleVector point, bool interpolated = false)
     {
-        Vector2 localPoint = Grid.Transform.WorldToLocal(point.ToVector2());
+        Transform transform = interpolated ? Grid.InterpolatedTransform : Grid.Transform;
+
+        Vector2 localPoint = transform.WorldToLocal(point.ToVector2());
         HexCoordinate coord = HexCoordinate.FromCartesian(localPoint);
         return Grid.GetCell(coord) is GridCell cell && cell.Structure == this;
     }

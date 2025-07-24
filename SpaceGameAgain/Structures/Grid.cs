@@ -167,9 +167,9 @@ internal class Grid : Actor
         // UpdatePowerLevel();
     }
 
-    public GridCell? GetCellFromPoint(DoubleVector point)
+    public GridCell? GetCellFromPoint(DoubleVector point, bool interpolated = false)
     {
-        var localPos = this.Transform.WorldToLocal(point.ToVector2());
+        var localPos = (interpolated ? InterpolatedTransform : Transform).WorldToLocal(point.ToVector2());
         var coord = HexCoordinate.FromCartesian(localPos);
         return GetCell(coord);
     }

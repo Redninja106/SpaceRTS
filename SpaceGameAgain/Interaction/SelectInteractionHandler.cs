@@ -1,5 +1,6 @@
 ﻿using ImGuiNET;
 using SpaceGame.Commands;
+using SpaceGame.Debugging;
 using SpaceGame.Interaction;
 using SpaceGame.Orders;
 using SpaceGame.Ships;
@@ -41,11 +42,11 @@ internal class SelectInteractionHandler : IInteractionContext
 
         if (target is WormholeStation wormhole && wormhole.Link != null)
         {
-            DoubleVector linkLocation = wormhole.Link.Transform.Position + (World.MousePosition - wormhole.Transform.Position);
+            DoubleVector linkLocation = wormhole.Link.InterpolatedTransform.Position + (World.MousePosition - wormhole.InterpolatedTransform.Position);
 
             foreach (var ship in wormhole.Link.ships)
             {
-                if (ship.TestPoint(linkLocation))
+                if (ship.TestPoint(linkLocation, true))
                 {
                     target = ship;
                 }
@@ -101,6 +102,11 @@ internal class SelectInteractionHandler : IInteractionContext
             }
         }
 
+        //if (rightMouse.Holding || leftMouse.Pressed)
+        //{
+        //    ps.Add(World.GetPlanetRelativePosition(World.MousePosition, true));
+        //}
+
         if (rightMouse.Released)
         {
             if (target?.Team.GetRelation(World.PlayerTeam!) == TeamRelation.Enemies)
@@ -150,8 +156,9 @@ internal class SelectInteractionHandler : IInteractionContext
 
 
                     ShipNavigator navigator = new(World);
-                    var path = navigator.GetPath(ships[i], rightMouse.DragStart + positions[i]);
+                    var path = navigator.GetPath(ships[i], World.GetPlanetRelativePosition(World.MousePosition + positions[i], true));
                     path.Reverse();
+                    Console.WriteLine(path[0].Target.Offset);
 
                     IssueOrdersCommand command = new()
                     {
@@ -302,17 +309,27 @@ internal class SelectInteractionHandler : IInteractionContext
     //            target.AsReference()
     //            ));
     //    }
-        
+
     //    cmdProc.AddCommand(new MoveCommand(prototype, World.NewID(), target.AsReference(), orders));
     //}
 
     public void RenderBackgroundOverlay(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)
     {
+        canvas.PushState();
         if (target is Structure structure && !World.SelectionHandler.IsSelected(target))
         {
             target.InterpolatedTransform.ApplyTo(canvas, World.Camera);
             SelectionHandler.RenderUnitOutline(canvas, target, target.Team.GetRelationColor(World.PlayerTeam) with { A = 100 });
         }
+        canvas.PopState();
+
+        //foreach (var p in ps)
+        //{
+        //    canvas.PushState();
+        //    Transform.Create(p.GetInterpolatedAbsolutePosition(), 0).ApplyTo(canvas, World.Camera);
+        //    canvas.DrawCircle(Vector2.Zero, .1f);
+        //    canvas.PopState();
+        //}
     }
 
     public void RenderGroundOverlay(ICanvas canvas, MouseState leftMouse, MouseState rightMouse)

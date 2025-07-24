@@ -53,7 +53,7 @@ internal class ChaingunSystem(ChaingunSystemPrototype prototype, GameWorld world
                 float dist = (float)DoubleVector.Distance(ship.Transform.Position, this.Transform.Position);
                 if (dist < minDistance)
                 {
-                    target = ship;
+                    //target = ship;
                     minDistance = dist;
                 }
             }

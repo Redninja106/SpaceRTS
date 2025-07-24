@@ -113,6 +113,7 @@ partial class Program : Simulation
 
     public override void OnRender(ICanvas canvas)
     {
+        Performance.FramerateAverageDuration = 1;
         Window.Title = "SpaceGame - " + Performance.Framerate.ToString("f0") + "FPS";
         if (Keyboard.IsKeyPressed(Key.F11))
         {
@@ -269,8 +270,8 @@ class FinalCompositingShader : CanvasShader
     public float noiseMultiplier = 1.0f;
 
     public float time = 0;
-    public float Brightness = .25f;
-    public float Noisiness = .15f;
+    public float Brightness = .2f;
+    public float Noisiness = .05f;
 
     public FinalCompositingShader()
     {

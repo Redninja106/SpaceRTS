@@ -15,7 +15,6 @@ void Run(string[] args)
     string outputFile = args[1];
     int shadowCount = int.Parse(args[2]);
 
-
     Console.WriteLine($"packing {shadowCount} textures from {inputDirectory} into {outputFile} ");
     List<ITexture> textures = [];
     for (int i = 0; i < shadowCount; i++)

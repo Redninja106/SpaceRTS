@@ -16,9 +16,10 @@ internal abstract class Station(StationPrototype prototype, GameWorld world, ulo
 
     // public override ITexture Icon => Icons.Defensive;
 
-    public override bool TestPoint(DoubleVector point)
+    public override bool TestPoint(DoubleVector point, bool interpolated)
     {
-        return DoubleVector.DistanceSquared(this.Transform.Position, point) <= this.GetCollisionRadius() * this.GetCollisionRadius();
+        Transform transform = interpolated ? this.InterpolatedTransform : this.Transform;
+        return DoubleVector.DistanceSquared(transform.Position, point) <= this.GetCollisionRadius() * this.GetCollisionRadius();
     }
 
     public override void Tick()

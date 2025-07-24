@@ -31,6 +31,8 @@ internal class StructurePrototype : UnitPrototype, IGUIProvider
     [JsonConverter(typeof(JsonStringEnumConverter<PowerLevel>))]
     public PowerLevel RequiredPowerLevel { get; set; } = PowerLevel.None;
 
+    public UnitPrototype[] Unlocks { get; set; } = [];
+
     //[JsonIgnore]
     //public ITexture Icon => Icons.Structure;
 

@@ -50,6 +50,9 @@
         "Absurd"
       ]
     },
+    "unlocks": {
+      "type": "array"
+    },
     "max_health": {
       "type": "integer"
     },

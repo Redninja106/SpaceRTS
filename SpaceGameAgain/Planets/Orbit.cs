@@ -46,7 +46,7 @@ internal class Orbit
     public DoubleVector Forecast(float time)
     {
         DoubleVector newCenter = (center as Planet)!.orbit?.Forecast(time) ?? center.Transform.Position;
-        double newPhase = phase + time * speed / radius;
+        double newPhase = phase - time * speed / radius;
 
         return newCenter + new DoubleVector(double.Cos(newPhase) * radius, double.Sin(newPhase) * radius);
     }

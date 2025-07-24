@@ -7,6 +7,7 @@
     "build_command"
   ],
   "buildable_structures": [
+    "headquarters",
     "small_assembly_bay",
     "urban_district",
     "construction_module_factory",

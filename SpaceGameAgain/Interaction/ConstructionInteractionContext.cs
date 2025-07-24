@@ -49,7 +49,7 @@ internal class ConstructionInteractionContext(GameWorld World) : IInteractionCon
         UpdateHoveredGrid();
         if (hoveredGrid != null)
         {
-            Vector2 hoveredPosition = hoveredGrid.Transform.WorldToLocal(World.MousePosition.ToVector2()) - prototype.Center.Rotated(rotation * MathF.Tau / 6f);
+            Vector2 hoveredPosition = hoveredGrid.InterpolatedTransform.WorldToLocal(World.MousePosition.ToVector2()) - prototype.Center.Rotated(rotation * MathF.Tau / 6f);
             hoveredLocation = HexCoordinate.FromCartesian(hoveredPosition);
 
             if (leftMouse.Released)
@@ -87,7 +87,7 @@ internal class ConstructionInteractionContext(GameWorld World) : IInteractionCon
         hoveredGrid = null;
         foreach (var planet in World.Planets)
         {
-            if (planet.Grid.GetCellFromPoint(World.MousePosition) != null)
+            if (planet.Grid.GetCellFromPoint(World.MousePosition, true) != null)
             {
                 if (planet.Grid != hoveredGrid)
                 {

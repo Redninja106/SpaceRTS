@@ -16,6 +16,8 @@ internal class UserOptions
     public bool Fullscreen { get; set; }
     public bool VSync { get; set; }
 
+    public int ChatFadeDelay { get; set; }
+
     public static UserOptions CreateDefaultForCurrentMachine()
     {
         UserOptions settings = new();
@@ -23,6 +25,7 @@ internal class UserOptions
         settings.GUIScale = float.Round(float.Max(1, Application.PrimaryDisplay.Bounds.Width / 1920f), 1);
         settings.Fullscreen = false;
         settings.VSync = false;
+        settings.ChatFadeDelay = 200;
         return settings;
     }
 

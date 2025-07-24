@@ -4,6 +4,15 @@
     "sprite_count": {
       "type": "integer"
     },
+    "shadow_count": {
+      "type": "integer"
+    },
+    "has_normal_maps": {
+      "type": "boolean"
+    },
+    "has_shadow_maps": {
+      "type": "boolean"
+    },
     "width": {
       "type": "number"
     },

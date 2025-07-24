@@ -56,10 +56,20 @@ public class Camera : IInspectable
     public bool QuickDiscard(DoubleVector position, float radius)
     {
         float horizontalSize = VerticalSize * AspectRatio;
+        
+        if (2 * 2 * radius * int.Max(this.DisplayWidth, this.DisplayHeight) < float.Max(VerticalSize, horizontalSize))
+        {
+            return true;
+        }
 
         float viewRadius = MathF.Sqrt(horizontalSize * horizontalSize + VerticalSize * VerticalSize);
         float closestVisibleDistance = viewRadius + (radius * radius);
-        return DoubleVector.DistanceSquared(SmoothTransform.Position, position) > closestVisibleDistance * closestVisibleDistance;
+        if (DoubleVector.DistanceSquared(SmoothTransform.Position, position) > closestVisibleDistance * closestVisibleDistance)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public void RenderSetup(ICanvas canvas)

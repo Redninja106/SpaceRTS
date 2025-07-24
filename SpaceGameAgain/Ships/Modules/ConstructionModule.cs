@@ -81,7 +81,7 @@ internal class ConstructionModule(ConstructionModulePrototype prototype, GameWor
 
 class ConstructionMenu(ConstructionModule module)
 {
-    GUIScrollBar scrollBar = new(10);
+    GUIScrollBar scrollBar = new(10, Vector2.Zero);
     IGrouping<ConstructionCategory, UnitPrototype>? currentCategory;
 
     public void Layout(GUIWindow window)
@@ -125,16 +125,20 @@ class ConstructionMenu(ConstructionModule module)
                 foreach (var prototype in currentCategory)
                 {
                     prototype.Layout(window);
-                    if (window.LastItemHovered())
+
+                    if (Program.World.PlayerTeam.IsUnlocked(prototype))
                     {
-                        window.AddCommand(new DrawCommand.RoundedRectangle(window.LastItemBounds, 8, Color.White with { A = 25 }, true));
-                    }
-                    if (window.LastItemClicked(MouseButton.Left))
-                    {
-                        if (prototype is StructurePrototype structurePrototype)
+                        if (window.LastItemHovered())
                         {
-                            Program.World.ConstructionInteractionContext.BeginPlacing(this, structurePrototype, module.Ship);
-                            window.Viewport.ClosePopup();
+                            window.AddCommand(new DrawCommand.RoundedRectangle(window.LastItemBounds, 8, Color.White with { A = 25 }, true));
+                        }
+                        if (window.LastItemClicked(MouseButton.Left))
+                        {
+                            if (prototype is StructurePrototype structurePrototype)
+                            {
+                                Program.World.ConstructionInteractionContext.BeginPlacing(this, structurePrototype, module.Ship);
+                                window.Viewport.ClosePopup();
+                            }
                         }
                     }
                     if (prototype != currentCategory.Last())
@@ -157,10 +161,12 @@ struct GUIScrollBar
     private float interpolatedScrollAmount;
     private bool isDragging;
     private float dragOffset;
+    private Vector2 baseOffset;
 
-    public GUIScrollBar(float margin)
+    public GUIScrollBar(float margin, Vector2 baseOffset)
     {
         this.margin = margin;
+        this.baseOffset = baseOffset;
     }
 
     public void Update(GUIWindow window)
@@ -220,7 +226,7 @@ struct GUIScrollBar
         }
 
         interpolatedScrollAmount = float.Lerp(interpolatedScrollAmount, scrollAmount, 1 - MathF.Pow(0.001f, Time.DeltaTime));
-        window.Offset.Y = this.margin + -interpolatedScrollAmount;
+        window.Offset.Y = this.baseOffset.Y + this.margin + -interpolatedScrollAmount;
 
         window.AddCommand(new DrawCommand.RoundedRectangle(bounds, Width / 2f, scrollBarColor, true));
     }

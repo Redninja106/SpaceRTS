@@ -15,6 +15,8 @@ public sealed class GUIWindow
     public static Color DefaultTextColor = Color.FromHSV(0, 0, .65f);
     public static float CornerRadius = 10f;
 
+    public bool RenderBackground = true;
+
     public Vector2 Offset = new(0, 0);
     public Alignment Anchor = Alignment.TopLeft;
     public Alignment Alignment = Alignment.TopLeft;
@@ -49,6 +51,11 @@ public sealed class GUIWindow
     public GUIWindow(GUILayout? layout)
     {
         SetLayout(layout);
+    }
+
+    public Vector2 GetViewportMousePosition()
+    {
+        return mousePosition;
     }
 
     public Vector2 GetLocalMousePosition()
@@ -301,14 +308,17 @@ public sealed class GUIWindow
 
         canvas.PushState();
 
-        canvas.Fill(new Color(12, 17, 23));
-        canvas.DrawRoundedRect(this.currentWindowBounds, CornerRadius);
+        if (RenderBackground)
+        {
+            canvas.Fill(new Color(12, 17, 23));
+            canvas.DrawRoundedRect(this.currentWindowBounds, CornerRadius);
 
-        canvas.Stroke(new Color(28, 33, 38));
-        canvas.DrawRoundedRect(this.currentWindowBounds with { X = currentWindowBounds.X + 1, Y = currentWindowBounds.Y + 1 }, CornerRadius);
+            canvas.Stroke(new Color(28, 33, 38));
+            canvas.DrawRoundedRect(this.currentWindowBounds with { X = currentWindowBounds.X + 1, Y = currentWindowBounds.Y + 1 }, CornerRadius);
 
-        canvas.Stroke(new Color(70, 79, 89));
-        canvas.DrawRoundedRect(this.currentWindowBounds, CornerRadius);
+            canvas.Stroke(new Color(70, 79, 89));
+            canvas.DrawRoundedRect(this.currentWindowBounds, CornerRadius);
+        }
 
         foreach (var command in commands)
         {

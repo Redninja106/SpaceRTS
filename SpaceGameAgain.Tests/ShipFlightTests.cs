@@ -43,7 +43,7 @@ public class ShipFlightTests
             ForecastedTargetPosition = targetPosition,
         });
 
-        double time = ShipNavigator.CalculateTravelTime(ship.Prototype, ship.Transform.Position, targetPosition);
+        double time = ShipPathfinder.CalculateTravelTime(ship.Prototype, ship.Transform.Position, targetPosition);
 
         world.TickWhile(() => DoubleVector.Distance(ship.Transform.Position, targetPosition) >= 0.001, 5000);
 
@@ -66,7 +66,7 @@ public class ShipFlightTests
         DoubleVector targetPosition = DoubleVector.FromVector2(Angle.ToVector(radians));
         ship.EnqueueOrder(new MoveOrder() { ForecastedTargetPosition = targetPosition, TargetPosition = targetPosition, });
 
-        double time = ShipNavigator.TurnTime(ship.Prototype, 0, radians);
+        double time = ShipPathfinder.TurnTime(ship.Prototype, 0, radians);
 
         world.TickWhile(() => Angle.Distance(ship.Transform.Rotation, radians) >= 0.0001);
 

@@ -14,6 +14,7 @@ using SpaceGame.Rendering;
 using SpaceGame.Serialization;
 using SpaceGame.Stations;
 using System;
+using SpaceGame.Orders;
 
 namespace SpaceGame;
 
@@ -82,12 +83,17 @@ public class GameWorld : IScene
     public IMask WorldShadowMask { get; private set; }
     public IMask FogOfWarMask { get; private set; }
 
+    internal ChatMenu Chat { get; }
+
     public GameWorld()
     {
         GUIViewport.Register(new GUIWindow(ResourceBar.Layout));
         GUIViewport.Register(new GUIWindow(UnitBar.Layout));
         GUIViewport.Register(new GUIWindow(Minimap.Layout));
         GUIViewport.Register(new GUIWindow(new EscapeMenu().Layout) { Visible = false } );
+        
+        Chat = new ChatMenu(this);
+        GUIViewport.Register(new GUIWindow(Chat.Layout));
 
         Ships = new(this);
         Planets = new(this);
@@ -117,13 +123,13 @@ public class GameWorld : IScene
     {
         DebugMenu.PushMetric();
 
-        MousePosition = Camera.SmoothTransform.Position + DoubleVector.FromVector2(Camera.ScreenToLocal(viewportMousePosition));
-
         Planets.Update(tickProgress);
 
         var soi = GetSphereOfInfluence(Camera.Transform.Position);
         soi?.ApplyUpdateTo(ref Camera.Transform);
         soi?.ApplyUpdateTo(ref Camera.SmoothTransform);
+        
+        MousePosition = Camera.SmoothTransform.Position + DoubleVector.FromVector2(Camera.ScreenToLocal(viewportMousePosition));
 
         leftMouse.Update();
         rightMouse.Update();
@@ -154,6 +160,8 @@ public class GameWorld : IScene
     public void Tick(Vector2 viewportMousePosition)
     {
         DebugMenu.PushMetric();
+        
+        //MousePositionAtLastTick = MousePosition;
 
         if (Program.Lobby?.IsDownloadingWorld ?? false)
         {
@@ -454,6 +462,29 @@ public class GameWorld : IScene
         return NextID++;
     }
 
+    internal PlanetRelativePosition GetPlanetRelativePosition(DoubleVector absolutePosition, bool interpolated = false)
+    {
+        var soi = GetSphereOfInfluence(absolutePosition);
+
+        DoubleVector offset;
+        if (soi == null)
+        {
+            offset = absolutePosition;
+        }
+        else
+        {
+            if (interpolated)
+            {
+                offset = absolutePosition - soi.planet.InterpolatedTransform.Position;
+            }
+            else
+            {
+                offset = absolutePosition - soi.planet.Transform.Position;
+            }
+        }
+        
+        return new PlanetRelativePosition(soi?.planet, offset);
+    }
 }
 
 

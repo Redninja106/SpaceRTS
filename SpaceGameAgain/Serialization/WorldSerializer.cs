@@ -12,6 +12,7 @@ internal class WorldSerializer
 {
     public GameWorld Deserialize(BinaryReader reader)
     {
+        Program.World = null;
         GameWorld world = new();
         SerializationContext serializationContext = new(world);
         // fieldSerializer.Deserialize(reader, world);
@@ -71,7 +72,7 @@ internal class WorldSerializer
         for (int i = 0; i < serializationLists.Length; i++)
         {
             serializationLists[i].SerializeFields(writer);
-        }
+        } 
 
         //foreach (var prototype in prototypes)
         //{

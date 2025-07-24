@@ -35,7 +35,10 @@ internal class Team : Actor
 
     public void Unlock(UnitPrototype unit)
     {
-        unlockedUnits.Add(unit);
+        if (unlockedUnits.Add(unit))
+        {
+            World.Chat.AddMessage("Unlocked " + unit.Title);
+        }
     }
 
     public bool IsUnlocked(UnitPrototype unit)

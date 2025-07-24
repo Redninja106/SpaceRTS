@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 namespace SpaceGame.Ships;
 
 [Serializable]
-internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(prototype, world, id), ITargetable
+internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(prototype, world, id)
 {
     public override ShipPrototype Prototype => (ShipPrototype)base.Prototype;
 
@@ -48,12 +48,6 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
     [Serialize]
     public Fleet? Fleet;
 
-    [Serialize]
-    public bool IsNavigating;
-
-    [Serialize]
-    public bool wasNavigating;
-
     public Stance stance;
 
     public WormholeStation? WormholeStation;
@@ -61,14 +55,15 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
     public override bool CanAttack => modules.Any(m => m is WeaponModule);
     public override bool CanReveal => base.CanReveal && WormholeStation == null;
 
-    [Serialize]
-    public DoubleVector velocity;
-    [Serialize]
-    public float angularVelocity;
+    public PlanetRelativePosition? TargetPosition { get; set; }
+    public float? TargetRotation { get; set; }
+    //public DoubleVector TargetVelocity { get; set; }
 
-    public DoubleVector Velocity => velocity;
-    public DoubleVector CurrentAcceleration { get; set; }
-    public DoubleVector LastAcceleration { get; set; }
+
+
+    //public DoubleVector Velocity => Transform.Position - PreviousTransform.Position;
+    //public DoubleVector CurrentAcceleration { get; set; }
+    //public DoubleVector LastAcceleration { get; set; }
 
     // PER CLIENT -- an order the player submitted that hasn't been processed yet
     public Order? potentialOrder = null;
@@ -103,6 +98,11 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
         canvas.PopState();
     }
 
+    public override void Teleport(Transform destination)
+    {
+        base.Teleport(destination);
+    }
+
     public override void RenderBackgroundOverlay(ICanvas canvas, Camera camera, bool selected)
     {
         if (this.Team == World.PlayerTeam)
@@ -127,11 +127,10 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
 
                     if (order is MoveOrder moveOrder)
                     {
-                        transform.Position = moveOrder.TargetPosition;
+                        transform.Position = moveOrder.Target.GetAbsolutePosition();
                     }
                 }
             }
-
         }
 
         base.RenderBackgroundOverlay(canvas, camera, selected);
@@ -160,18 +159,25 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
 
     public override void Tick()
     {
-        LastAcceleration = CurrentAcceleration;
-        CurrentAcceleration = DoubleVector.Zero;
+        
+        // LastAcceleration = CurrentAcceleration;
+        // CurrentAcceleration = DoubleVector.Zero;
+
+        // DoubleVector velocity = this.Transform.Position - this.PreviousTransform.Position;
+        // float angularVelocity = this.Transform.Rotation - this.PreviousTransform.Rotation;
 
         base.Tick();
 
+        SphereOfInfluence? soi = World.GetSphereOfInfluence(this.Transform.Position);
+        soi?.ApplyTickTo(this);
+
         if (height < Prototype.FlyHeight)
         {
-            SphereOfInfluence? soi = World.GetSphereOfInfluence(this.Transform.Position);
-            soi?.ApplyTickTo(this);
             height = MathHelper.Step(height, Prototype.FlyHeight, Program.Timestep * Prototype.RiseSpeed);
             return;
         }
+
+        TickNavigate();
 
         foreach (var module in modules)
         {
@@ -208,14 +214,12 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
 
         if (orders.Count > 0 && orders.Peek() is MoveOrder)
         {
-            this.Transform.Position += this.velocity * Program.Timestep;
-            this.Transform.Rotation += this.angularVelocity * Program.Timestep;
         }
-        else
+
+        if (true)
         {
-            SphereOfInfluence? soi = World.GetSphereOfInfluence(this.Transform.Position);
-            soi?.ApplyTickTo(this);
         }
+
 
         //if (health <= 0)
         //{
@@ -230,6 +234,31 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
         //Navigate();
     }
 
+    public void TickNavigate()
+    {
+        float? targetRotation = null;
+        if(TargetPosition != null)
+        {
+            DoubleVector delta = TargetPosition.Value.GetAbsolutePosition() - this.Transform.Position;
+
+            if (delta.LengthSquared() > 0)
+            {
+                targetRotation = Angle.FromVector(delta.ToVector2());
+            }
+        }
+
+        if (targetRotation != null)
+        {
+            this.Transform.Rotation = Angle.Step(this.Transform.Rotation, targetRotation.Value, Prototype.TurnSpeed * Program.Timestep);
+        }
+
+        if (TargetPosition != null)
+        {
+            this.Transform.Position = DoubleVector.Step(this.Transform.Position, TargetPosition.Value.GetAbsolutePosition(), Prototype.FlySpeed * Program.Timestep);
+        }
+    }
+
+
     public void EnqueueOrder(Order order)
     {
         bool wasNavigating = orders.Count == 0 || orders.Peek() is not MoveOrder;
@@ -243,7 +272,7 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
             SphereOfInfluence? soi = World.GetSphereOfInfluence(this.Transform.Position);
             if (soi != null)
             {
-                this.velocity = soi.planet.Transform.Position - soi.lastTickPosition;
+                //this.velocity = soi.planet.Transform.Position - soi.lastTickPosition;
             }
         }
     }
@@ -346,9 +375,9 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
         }
     }
 
-    public override bool TestPoint(DoubleVector point)
+    public override bool TestPoint(DoubleVector point, bool interpolated = false)
     {
-        return Util.TestPoint(verts.Select(v => v *= Prototype.Scale * 2).ToArray(), this.Transform, point.ToVector2(), Transform.Default);
+        return Util.TestPoint(verts.Select(v => v *= Prototype.Scale * 2).ToArray(), interpolated ? this.InterpolatedTransform : this.Transform, point.ToVector2(), Transform.Default);
     }
 
     public void RenderShadow(ICanvas canvas, float floorHeight)
@@ -426,13 +455,14 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
     public void DoAngularThrust(float throttle)
     {
         float turnAmount = (float.Tau * Prototype.TurnSpeed) * float.Clamp(throttle, -1, 1) * Program.Timestep;
-        this.angularVelocity += turnAmount;
+        this.Transform.Rotation += turnAmount * Program.Timestep;
+        //this.angularVelocity += turnAmount;
     }
 
-    internal void ApplyLinearThrust(float throttle, DoubleVector targetVelocity)
+    internal void ApplyLinearThrust(float throttle) // , DoubleVector targetVelocity
     {
         float distance = Prototype.FlySpeed * float.Clamp(throttle, -1, 1) * Program.Timestep;
-        velocity = Util.Step(velocity, targetVelocity, distance);
+        //velocity += Transform.Forward * distance; // Util.Step(velocity, targetVelocity, distance);
     }
 
     static string[] stanceDescs = [

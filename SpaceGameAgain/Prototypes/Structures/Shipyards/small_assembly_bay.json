@@ -17,5 +17,10 @@
   "production_cost": 20,
   "cost": 10,
   "reveal_radius": 1,
-  "category": "shipbuilding_category"
+  "category": "shipbuilding_category",
+  "unlocks": [
+    "missile_module_factory",
+    "chaingun_module_factory",
+    "construction_module_factory"
+  ]
 }

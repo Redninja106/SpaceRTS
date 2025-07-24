@@ -32,7 +32,7 @@ internal class ConstructionCommand : Command
         ShipNavigator navigator = new(ship.World);
         DoubleVector target = DoubleVector.FromVector2(Grid.Transform.LocalToWorld(Location.ToCartesian()) + Structure.Center.Rotated(Rotation * MathF.Tau / 6f));
 
-        List<MoveOrder> path = navigator.GetPath(ship, target);
+        List<MoveOrder> path = navigator.GetPath(ship, ship.World.GetPlanetRelativePosition(target));
 
         var order = new ConstructionOrder()
         {

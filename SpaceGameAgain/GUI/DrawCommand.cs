@@ -11,7 +11,7 @@ public abstract class DrawCommand
         public override void Render(ICanvas canvas)
         {
             canvas.Font(Program.font);
-            canvas.Fill(Color.FromHSV(0, 0, .05f));
+            canvas.Fill(Color.FromHSV(0, 0, .05f) with { A = color == null ? (byte)1 : color.Value.A }); 
             canvas.DrawText(text, size, position + new Vector2(1, 1), style);
             canvas.Fill(color ?? Color.FromHSV(0, 0, .65f));
             canvas.DrawText(text, size, position, style);

@@ -69,7 +69,12 @@ public struct DoubleVector : IEquatable<DoubleVector>
 
     public DoubleVector Normalized()
     {
-        return this * (1.0 / Length());
+        double length = Length();
+        if (length == 0)
+        {
+            return Zero;
+        }
+        return this * (1.0 / length);
     }
 
     public static double Distance(DoubleVector a, DoubleVector b)

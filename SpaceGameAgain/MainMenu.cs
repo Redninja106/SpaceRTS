@@ -144,6 +144,7 @@ class MainMenu : IScene
 
             var playerTeam = new Team(Prototypes.Get<PlayerTeamPrototype>("player_team"), Program.World, Program.World.NewID());
             playerTeam.Money += 1000;
+            playerTeam.Unlock(Prototypes.Get<UnitPrototype>("headquarters"));
             Program.World.PlayerTeam = playerTeam;
             Program.World.Add(playerTeam);
 
@@ -277,6 +278,23 @@ class OptionsMenu
             {
                 this.options.VSync = !this.options.VSync;
                 Graphics.SwapInterval = this.options.VSync ? 1 : 0;
+            }
+        }
+
+        using (window.Row())
+        {
+            window.Text("chat fade delay: " + this.options.ChatFadeDelay.ToString());
+            if (window.TextButton("+"))
+            {
+                this.options.ChatFadeDelay += 10;
+                this.options.ChatFadeDelay = int.Clamp(this.options.ChatFadeDelay, 0, 500);
+                window.HasNewLayout = true;
+            }
+            if (window.TextButton("-"))
+            {
+                this.options.ChatFadeDelay -= 10;
+                this.options.ChatFadeDelay = int.Clamp(this.options.ChatFadeDelay, 0, 500);
+                window.HasNewLayout = true;
             }
         }
 

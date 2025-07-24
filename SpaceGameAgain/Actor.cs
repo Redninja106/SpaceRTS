@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using SimulationFramework.Drawing;
 using SpaceGame.Debugging;
+using SpaceGame.Orders;
 using SpaceGame.Serialization;
 using System;
 using System.Collections.Generic;
@@ -43,6 +44,11 @@ public abstract class Actor(Prototype prototype, GameWorld world, ulong id) : II
         interpolatedTransform = Transform.Lerp(previousTransform, Transform, tickProgress);
     }
 
+    /// <summary>
+    /// The base implement Actor.Tick sets the previous transform of the actor to the current transform. Any 
+    /// calculations that require PreviousTransform should happen before it is called and any calculations 
+    /// that modify Transform should happen after it is called.
+    /// </summary>
     public virtual void Tick()
     {
         previousTransform = Transform;
@@ -59,7 +65,7 @@ public abstract class Actor(Prototype prototype, GameWorld world, ulong id) : II
     /// <summary>
     /// Moves the actor without interpolation.
     /// </summary>
-    public void Teleport(Transform destination)
+    public virtual void Teleport(Transform destination)
     {
         this.transform = destination;
         this.previousTransform = destination;
@@ -94,4 +100,6 @@ public abstract class Actor(Prototype prototype, GameWorld world, ulong id) : II
     {
         return base.ToString() + " (id: " + id + ")";
     }
+
+    internal PlanetRelativePosition GetPlanetRelativePosition() => World.GetPlanetRelativePosition(this.transform.Position);
 }

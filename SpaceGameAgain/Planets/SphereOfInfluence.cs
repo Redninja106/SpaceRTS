@@ -21,6 +21,10 @@ internal class SphereOfInfluence
     [Serialize]
     public DoubleVector lastTickPosition;
 
+    public DoubleVector lastTickVelocity;
+
+    public DoubleVector TickVelocity => planet.Transform.Position - lastTickPosition;
+
     public void Initialize()
     {
         this.lastUpdatePosition = planet.InterpolatedTransform.Position;
@@ -34,6 +38,7 @@ internal class SphereOfInfluence
 
     public void Tick()
     {
+        lastTickVelocity = TickVelocity;
         lastTickPosition = planet.Transform.Position;
     }
 

@@ -75,10 +75,10 @@ internal abstract class Unit(UnitPrototype prototype, GameWorld world, ulong id)
         return double.Max(GetCollisionRadius(), Prototype.RevealRadius);
     }
 
-    public virtual bool TestPoint(DoubleVector point)
+    public virtual bool TestPoint(DoubleVector point, bool interpolated = false)
     {
         double collisionRadius = this.GetCollisionRadius();
-        return DoubleVector.DistanceSquared(this.Transform.Position, point) <= collisionRadius * collisionRadius;
+        return DoubleVector.DistanceSquared(interpolated ? this.InterpolatedTransform.Position : this.Transform.Position, point) <= collisionRadius * collisionRadius;
     }
 
     public virtual DoubleVector GetCenter()
