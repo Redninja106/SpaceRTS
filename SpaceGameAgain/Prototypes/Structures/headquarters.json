@@ -28,6 +28,16 @@
   "cost": 100,
   "unlocks": [
     "power_plant",
-    "small_assembly_bay"
+    "small_shipyard",
+
+    "headquarters",
+    "urban_district",
+    "construction_module_factory",
+    "manufactory",
+    "missile_turret",
+    "chaingun_turret",
+    "missile_module_factory",
+    "chaingun_module_factory",
+    "radar"
   ]
 }

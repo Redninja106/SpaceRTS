@@ -160,6 +160,17 @@ class MainMenu : IScene
             GalaxyGenerator generator = new GalaxyGenerator();
             generator.Generate(Program.World, Random.Shared);
 
+            foreach (var planet in Program.World.Planets)
+            {
+                planet.TickOrbit();
+                planet.SphereOfInfluence.Tick();
+                planet.SphereOfInfluence.lastUpdatePosition = planet.SphereOfInfluence.lastTickPosition;
+            }
+
+            var lastPlanet = Program.World.Planets.Last();
+            starterShip.Teleport(lastPlanet.Transform);
+            Program.World.Camera.Transform = Program.World.Camera.SmoothTransform = lastPlanet.Transform;
+            
             Program.CurrentScene = Program.World;
         }
     }

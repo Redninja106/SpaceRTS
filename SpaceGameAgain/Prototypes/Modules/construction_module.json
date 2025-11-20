@@ -8,7 +8,7 @@
   ],
   "buildable_structures": [
     "headquarters",
-    "small_assembly_bay",
+    "small_shipyard",
     "urban_district",
     "construction_module_factory",
     "manufactory",

@@ -1,18 +1,25 @@
 {
   "prototype": "AssemblyBayPrototype",
-  "name": "small_assembly_bay",
-  "title": "Small Assembly Bay",
+  "name": "small_shipyard",
+  "title": "Small Shipyard",
   "price": 100,
   "can_be_rotated": true,
   "footprint": [
     [ 0, 0 ],
+    [ 1, 0 ],
+    [ -1, 0 ],
+    [ -1, 1 ],
+    [ 1, -1 ],
+    [ 0, -1 ]
+  ],
+  "module_slots": [
     [ 0, 1 ]
   ],
   "max_health": 10,
   "ship_prototype": "small_ship",
   "power_consumed": 1,
   "model": "small_assembly_bay_model",
-  "description": "Produces small ships. Requires at least one adjacent manufactory.",
+  "description": "Produces small ships.",
   "production_time": 1000,
   "production_cost": 20,
   "cost": 10,

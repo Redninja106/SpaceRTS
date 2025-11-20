@@ -152,6 +152,8 @@ class AssemblyBayPrototype : StructurePrototype
     public int ProductionTime { get; set; }
     public int ProductionCost { get; set; }
 
+    public HexCoordinate[] ModuleSlots { get; set; } = [];
+
     //public override Structure CreateStructure(ulong id, ActorReference<Team> team, ActorReference<Grid> grid, HexCoordinate location, int rotation)
     //{
     //    return new AssemblyBay(this, id, grid, location, rotation, team);

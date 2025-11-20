@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SpaceGame.Planets;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace SpaceGame.GUI;
 
-internal class TextWidget(Transform transform, string text, float? size = null, Color? color = null)
+internal class TextWidget(Transform transform, string text, float? size = null, Color? color = null, SphereOfInfluence? soi = null)
 {
     public Transform Transform = transform;
     public string Text = text;
     public float Size = size ?? .5f;
     public Color Color = color ?? GUIWindow.DefaultTextColor;
     public int Age;
-
+    public SphereOfInfluence? soi = soi;
 
     public void Render(ICanvas canvas, Camera camera, bool alwaysLegible)
     {
@@ -34,6 +35,7 @@ internal class TextWidget(Transform transform, string text, float? size = null, 
 
     public void Tick()
     {
+        soi?.ApplyTickTo(ref this.Transform);
         Transform.Position.Y -= Program.Timestep;
         Age++;
     }

@@ -38,7 +38,7 @@ internal class UrbanDistrict : Structure
             this.Team.Money += payout;
             payoutCooldown = Prototype.PayoutInterval;
 
-            World.TextWidgets.AddEventWidget(new TextWidget(this.Transform with { Rotation = 0 }, $"${payout}k"));
+            World.TextWidgets.AddEventWidget(new TextWidget(this.Transform with { Rotation = 0 }, $"${payout}k", soi: World.GetSphereOfInfluence(this.Transform.Position)));
         }
 
         base.Tick();

@@ -77,7 +77,7 @@ internal class FreeCamera : Camera
         
         if (DoubleVector.Distance(this.Transform.Position, DoubleVector.Zero) > 25000)
         {
-            this.Transform.Position = this.Transform.Position.Normalized() * 25000;
+            //this.Transform.Position = this.Transform.Position.Normalized() * 25000;
         }
 
     }
