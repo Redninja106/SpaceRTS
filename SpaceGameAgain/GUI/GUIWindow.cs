@@ -235,19 +235,28 @@ public sealed class GUIWindow
 
         InsertItem(itemBounds);
         
+        // non-hovered button background
         if (!LastItemHovered())
         {
             AddCommand(new DrawCommand.Rectangle(buttonBounds, Color.FromHSV(.6f, .25f, .25f), true));
         }
 
+        // border
         AddCommand(new DrawCommand.Rectangle(buttonBounds with { X = buttonBounds.X + 1, Y = buttonBounds.Y + 1 }, new Color(28, 33, 38), false));
         AddCommand(new DrawCommand.Rectangle(buttonBounds, new Color(70, 79, 89), false));
         
-        if (LastItemHovered())
+        if (LastItemClicked(MouseButton.Left))
         {
-            AddCommand(new DrawCommand.Rectangle(buttonBounds, Color.Gray, true));
+            // clicked background
+            AddCommand(new DrawCommand.Rectangle(buttonBounds, new Color(0xC0, 0xC0, 0xC0), true));
+        }
+        else if (LastItemHovered())
+        {
+            // hovered background
+            AddCommand(new DrawCommand.Rectangle(buttonBounds, new Color(0x80, 0x80, 0x80), true));
         }
 
+        // button text
         AddCommand(new DrawCommand.Text(text, size, baseline));
 
         return AreaClicked(buttonBounds, MouseButton.Left);
@@ -310,7 +319,7 @@ public sealed class GUIWindow
 
         if (RenderBackground)
         {
-            canvas.Fill(new Color(12, 17, 23));
+            canvas.Fill(new Color(3, 3, 3));
             canvas.DrawRoundedRect(this.currentWindowBounds, CornerRadius);
 
             canvas.Stroke(new Color(28, 33, 38));

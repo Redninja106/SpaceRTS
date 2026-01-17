@@ -2,7 +2,7 @@
   "prototype": "PlanetGenerator",
   "name": "scale_sol_generator",
   "minimum_size": 2782.8,
-  "planet_prototype": "star",
+  "planet_prototypes": [ "star_class_g" ],
   "moon_passes": [
     {
       "type": "constant",
@@ -23,7 +23,7 @@
               "generators": [
                 { // the moon
                   "minimum_size": 6.948,
-                  "planet_prototype": "rocky_planet"
+                  "planet_prototypes": [ "rocky_planet" ]
                 }
               ]
             }
@@ -70,7 +70,7 @@
               "generators": [
                 { // titan
                   "minimum_size": 10.298,
-                  "planet_prototype": [ "sandy_planet" ]
+                  "planet_prototypes": [ "sandy_planet" ]
                 }
               ]
             }
@@ -78,18 +78,18 @@
         },
         { // uranus
           "minimum_size": 101.448,
-          "planet_prototype": [ "sandy_planet" ]
+          "planet_prototypes": [ "sandy_planet" ]
         },
         { // neptune
           "minimum_size": 98.488,
-          "planet_prototype": [ "sandy_planet" ],
+          "planet_prototypes": [ "sandy_planet" ],
           "moon_passes": [
             {
               "type": "constant",
               "generators": [
                 { // triton
                   "minimum_size": 5.413,
-                  "planet_prototype": [ "sandy_planet" ]
+                  "planet_prototypes": [ "sandy_planet" ]
                 }
               ]
             }
@@ -97,7 +97,7 @@
         },
         { // pluto
           "minimum_size": 4.753,
-          "planet_prototype": [ "sandy_planet" ]
+          "planet_prototypes": [ "sandy_planet" ]
         }
       ]
     }

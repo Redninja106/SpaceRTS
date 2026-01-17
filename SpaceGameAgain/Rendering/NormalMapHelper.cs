@@ -9,7 +9,7 @@ static class NormalMapHelper
 
     public static float CalcBrightness(Vector3 normal, Vector3 lightDirection)
     {
-        const float ambientLight = .15f;
+        const float ambientLight = .1f;
         float brightness = float.Clamp(Vector3.Dot(normal, -lightDirection), 0, 1);
         return ambientLight + (1 - ambientLight) * brightness;
     }

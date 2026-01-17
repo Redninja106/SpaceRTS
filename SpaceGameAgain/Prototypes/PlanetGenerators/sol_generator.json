@@ -2,7 +2,7 @@
   "prototype": "PlanetGenerator",
   "name": "sol_generator",
   "minimum_size": 100,
-  "planet_prototype": "star",
+  "planet_prototypes": [ "star_class_g" ],
   "moon_passes": [
     {
       "type": "constant",

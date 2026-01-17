@@ -1,0 +1,65 @@
+TODO
+
+- add blendmodes to sf
+- ship movement
+- supply lines prototypes
+- lights/shadow/deferred light renderer
+
+supply lines
+- no invisible number resources
+- resources are deposits on map
+	- resources can be farmed to support growth or harvested for one-time boost
+	- resources include:
+		- early game:
+			- hydrocarbons 
+				- simple energy resource
+				- only on planets with life
+				- optionally refined (1 raw -> 2 refined)
+			- lightweight metals
+				- abundant building block material
+				- must be refined
+		- mid game
+			- alkali metals (energy weapons, shields)
+				- drives midgame tech progression
+				- must be refined
+			- radioactive materials (midgame energy source) 
+				- requires water?
+			- rare metals
+				- refined with with lots of lightweight metals
+			- quantum sludge 
+				- unlocks wormhole technology
+		- late game
+			- deuterium (scraped from stars using a special space station)
+				- alternative to nuclear fission that doesnt require water and is easier to set up
+			- antimatter
+				- insane energy tier to start megastructures
+				- produced in particle accelerators
+
+- megastructure early game
+	- system laser array
+	- dyson sphere
+		- built on a star
+		- darkens the star's system
+		- allows construction on the star
+		- provides absurd power tier to all buildings
+	- orbital ring
+	- moon eater
+		- destroys moons for insane amounts of metals
+
+- megastructure late game
+	- supernova initiator
+		- destroys star systems, turning the star into either a black hole or dwarf star, depending on class
+		- can detonate singularity on the supermassive black hole in the galactic center to win the game
+
+- win by being the last one standing OR the one destroys the galaxy
+	 
+- buildings consume and produce things, must be physically provided resources by adjacency or an automatic shipment 
+- buildings with adjacent shipyards will automatically ship their produced resources to storage or requesting destinations
+- power is still adjacency only 
+	- maybe a transformer building to distribute power further (downgrading by 1 tier ?)
+
+- stations:
+	- listening post
+		- cloaked, has high view distance
+	- orbital platform?
+	- 

@@ -132,15 +132,19 @@ partial class Program : Simulation
         {
             viewTexture?.Dispose();
             viewTexture = Graphics.CreateTexture(targetViewWidth, ViewportPixels);
-            
+            viewTexture.WrapModeX = viewTexture.WrapModeY = WrapMode.None;
+
             visibilityTexture?.Dispose();
             visibilityTexture = Graphics.CreateTexture(targetViewWidth, ViewportPixels);
+            visibilityTexture.WrapModeX = viewTexture.WrapModeY = WrapMode.Clamp;
 
             groundTexture?.Dispose();
             groundTexture = Graphics.CreateTexture(targetViewWidth, ViewportPixels);
+            groundTexture.WrapModeX = viewTexture.WrapModeY = WrapMode.Clamp;
 
             skyTexture?.Dispose();
             skyTexture = Graphics.CreateTexture(targetViewWidth, ViewportPixels);
+            skyTexture.WrapModeX = viewTexture.WrapModeY = WrapMode.Clamp;
         }
 
         DebugMenu.Layout();

@@ -402,15 +402,15 @@ public class GameWorld : IScene
         {
             return null;
         }
-        Planet p = soi.planet;
-        while (p.orbit != null)
+        Planet? p = soi.planet;
+        while (p != null)
         {
             if (p is Star s)
             {
                 return s;
             }
 
-            p = (Planet)p.orbit.center;
+            p = (Planet?)p.orbit?.center;
         }
 
         return null;

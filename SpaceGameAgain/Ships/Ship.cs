@@ -1,6 +1,4 @@
 ﻿using ImGuiNET;
-using Silk.NET.Core.Native;
-using Silk.NET.Input;
 using SimulationFramework;
 using SimulationFramework.Drawing;
 using SpaceGame.Combat;
@@ -37,16 +35,11 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
         new(-.5f / 2f, -.2f / 2f),
     ];
 
-    [Serialize]
-    public float height = 0;
-
-    [Serialize]
-    private Queue<Order> orders = [];
-    [Serialize]
-    public List<Module> modules = [];
-
-    [Serialize]
-    public Fleet? Fleet;
+    [Serialize] public float height = 0;
+    [Serialize] private Queue<Order> orders = [];
+    
+    [Serialize] public List<Module> modules = [];
+    [Serialize] public Fleet? Fleet;
 
     public Stance stance;
 
@@ -192,46 +185,8 @@ internal class Ship(ShipPrototype prototype, GameWorld world, ulong id) : Unit(p
             if (order.IsCompleted)
             {
                 orders.Dequeue();
-
-                //if (IsNavigating)
-                //{
-                //    if (orders.Count > 0 && orders.Peek() is MoveOrder)
-                //    {
-                //        IsNavigating = true;
-                //        SphereOfInfluence? soi = World.GetSphereOfInfluence(this.Transform.Position);
-                //        if (soi != null)
-                //        {
-                //            this.velocity = soi.planet.Transform.Position - soi.lastTickPosition;
-                //        }
-                //    }
-                //}
-                //else
-                //{
-                //    IsNavigating = false;
-                //}
             }
         }
-
-        if (orders.Count > 0 && orders.Peek() is MoveOrder)
-        {
-        }
-
-        if (true)
-        {
-        }
-
-
-        //if (health <= 0)
-        //{
-        //    IsDestroyed = true;
-        //    if (World.SelectionHandler.IsSelected(this))
-        //        World.SelectionHandler.Deselect(this);
-        //}
-
-        //SphereOfInfluence? targetSoi = World.GetSphereOfInfluence(targetPosition);
-        //targetPosition = targetSoi?.ApplyTickTo(targetPosition) ?? targetPosition;
-
-        //Navigate();
     }
 
     public void TickNavigate()

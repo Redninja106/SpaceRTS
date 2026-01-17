@@ -85,22 +85,7 @@ internal class Planet : Actor
 
     public override void Render(ICanvas canvas)
     {
-        shader.rad = this.Radius; 
-        Star? star = World.GetStar(this.InterpolatedTransform.Position);
-        if (star != null)
-        {
-            Vector2 v = (this.Transform.Position - star.Transform.Position).ToVector2().Normalized();
-            shader.lightDir = new Vector3(v.X, -v.Y, -1).Normalized();
-            shader.tint = ColorF.Lerp(ColorF.White, star.Prototype.Color, .2f);
-        }
-        shader.time = Time.TotalTime;
-        shader.texture = Prototype.Material.Texture;
-        shader.texScale = (128 * float.Sqrt(3));
-        if (Prototype.Material.NormalMap != null)
-        {
-            shader.normalMap = Prototype.Material.NormalMap;
-            shader.normalMapEffect = 1;
-        }
+        shader.Setup(this);
         canvas.Fill(shader);
         canvas.DrawCircle(0, 0, Radius);
 

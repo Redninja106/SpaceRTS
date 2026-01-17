@@ -457,6 +457,7 @@ class ShipNavigator(GameWorld World)
             }
         }
 
+        DebugLog.Error("Ship has no path!");
         return []; // no path?
 
         //float baseTravelTime = CalculateTravelTime(ship.Prototype, ship.Transform.Position, target);

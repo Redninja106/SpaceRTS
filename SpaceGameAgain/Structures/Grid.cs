@@ -72,7 +72,7 @@ internal class Grid : Actor
     public override void Render(ICanvas canvas)
     {
         canvas.Stroke(Color.LightGray with { A = 50 });
-
+        return;
         foreach (var (coord, cell) in cells)
         {
             canvas.PushState();

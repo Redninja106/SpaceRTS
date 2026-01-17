@@ -1,4 +1,6 @@
-﻿using SimulationFramework.Drawing.Shaders;
+﻿using Silk.NET.OpenGL;
+using SimulationFramework.Drawing.Shaders;
+using SpaceGame.Planets;
 using SpaceGame.Structures;
 
 namespace SpaceGame.Rendering;
@@ -19,37 +21,43 @@ class PlanetShader : CanvasShader
     {
         Vector2 dir = position / rad;
         float h = MathF.Sqrt(1f - dir.LengthSquared());
-
-        // Vector3 normal = new(dir.X, h , dir.Y);
-
-        // float brightness = MathF.Min(MathF.Max(-Vector3.Dot(normal.Normalized(), lightDir.Normalized()) * 2, 0), 1);
-        // brightness += .01f * (Util.ShaderNoise(new Vector2(position.X * time, position.Y * time)) * 2 - 1);
-        // brightness = .5f + .5f * brightness;
-        //return this.color * brightness;
+        float weakH = MathF.Sqrt(1f - .6f * dir.LengthSquared());
+        Vector3 surfaceNormal = new(dir.X, dir.Y, h);
 
         HexCoordinate hexCoord = HexCoordinate.FromCartesian(position);
 
-        float jitter = Util.ShaderNoise(new(hexCoord.Q, hexCoord.R));
+        Vector2 p = position * texScale * (1 / weakH);
+        Vector2 texPos = p + 10000f * new Vector2(Util.ShaderNoise(hexCoord.R + 245, hexCoord.S + 534), Util.ShaderNoise(hexCoord.S + 1563, hexCoord.Q - 151));
 
-        Vector2 texPos = position * 1f * texScale + 10000f * new Vector2(Util.ShaderNoise(hexCoord.R, hexCoord.S), Util.ShaderNoise(hexCoord.S, hexCoord.Q));
-        Vector3 normal = NormalMapHelper.ExtractNormal(normalMap.Sample(texPos));
-        float brightness = NormalMapHelper.CalcBrightness(normal, lightDir);
-
-        // float brightness = float.Clamp(Vector3.Dot(normalMapNormal.Normalized(), -lightDir), 0, 1);
-
-        ColorF color = this.tint * texture.Sample(texPos);
-
-
-        // color.R += jitter * 0.02f;
-        // color.G += jitter * 0.02f;
-
-        // color.B += jitter * 0.02f;
+        float brightness = NormalMapHelper.CalcBrightness(surfaceNormal, lightDir);
         if (normalMapEffect > 0)
         {
-            color *= new ColorF(brightness, brightness, brightness, 1);
+            Vector3 pixelNormal = NormalMapHelper.ExtractNormal(normalMap.Sample(texPos));
+            brightness *= NormalMapHelper.CalcBrightness(pixelNormal, lightDir);
         }
+
+        ColorF color = brightness * this.tint * texture.Sample(texPos);
         color.A = 1;
         return color;
     }
 
+    internal void Setup(Planet planet)
+    {
+        rad = planet.Radius;
+        Star? star = planet.World.GetStar(planet.InterpolatedTransform.Position);
+        if (star != null)
+        {
+            Vector2 v = (planet.Transform.Position - star.Transform.Position).ToVector2().Normalized();
+            lightDir = new Vector3(v.X, v.Y, -1).Normalized();
+            tint = ColorF.Lerp(ColorF.White, star.Prototype.Color, .2f);
+        }
+        time = Time.TotalTime;
+        texture = planet.Prototype.Material.Texture;
+        texScale = (128 * float.Sqrt(3));
+        if (planet.Prototype.Material.NormalMap != null)
+        {
+            normalMap = planet.Prototype.Material.NormalMap;
+            normalMapEffect = 1;
+        }
+    }
 }

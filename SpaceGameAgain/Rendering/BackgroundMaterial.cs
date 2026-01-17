@@ -22,12 +22,16 @@ internal class BackgroundMaterial : AssetPrototype
         Texture = Graphics.LoadTexture(Path.Combine(prototypeDirectory, TextureFile));
         Graphics.GenerateMipmaps(Texture);
         Texture.Filter = TextureFilter.MipmapLinear;
+        Texture.WrapModeX = WrapMode.Mirror;
+        Texture.WrapModeY = WrapMode.Mirror;
 
         if (NormalMapFile != null)
         {
             NormalMap = Graphics.LoadTexture(prototypeDirectory + NormalMapFile, TextureOptions.Constant);
             Graphics.GenerateMipmaps(NormalMap);
             NormalMap.Filter = TextureFilter.MipmapLinear;
+            NormalMap.WrapModeX = WrapMode.Mirror;
+            NormalMap.WrapModeY = WrapMode.Mirror;
         }
     }
 }

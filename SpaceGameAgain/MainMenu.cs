@@ -25,7 +25,6 @@ class MainMenu : IScene
         GUIViewport = new();
         
         Camera = new Camera();
-        Camera.VerticalSize = 30000;
         Camera.InterpolationFactor = .001f;
 
         mainWindow = new(MainMenuLayout);

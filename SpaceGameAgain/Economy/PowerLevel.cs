@@ -8,9 +8,9 @@ namespace SpaceGame.Economy;
 internal enum PowerLevel
 {
     None,
-    Low,
-    Medium,
-    High,
-    Insane,
-    Absurd // dyson sphere???
+    Low, // solar panels
+    Medium, // hydrocarbons
+    High, // nuclear fission, fusion
+    Insane, // antimatter
+    Absurd // dyson sphere
 }

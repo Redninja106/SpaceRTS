@@ -19,43 +19,51 @@ internal class FreeCamera : Camera
         SmoothVerticalSize = VerticalSize = MathF.Pow(1.1f, zoom);
     }
 
-    public override void Update(int width, int height, float tickProgress)
+    public void ZoomTowards(float amount, Vector2 screenSpaceTarget)
     {
-        base.Update(width, height, tickProgress);
+        DoubleVector zoomTarget = DoubleVector.FromVector2(this.ScreenToWorld(screenSpaceTarget, false));
 
-        if (!Program.World.GUIViewport.IsAnyWindowHovered)
-        {
-            zoom -= Program.UserOptions.ScrollSpeed * Mouse.ScrollWheelDelta;
-
-            if (Keyboard.IsKeyDown(Key.Plus))
-            {
-                zoom -= Time.DeltaTime * 20;
-            }
-            if (Keyboard.IsKeyDown(Key.Minus))
-            {
-                zoom += Time.DeltaTime * 20;
-            }
-        }
-
-        DoubleVector delta = DoubleVector.Zero;
-        DoubleVector zoomTarget = DoubleVector.FromVector2(this.ScreenToWorld(Program.ViewportMousePosition, false));
+        zoom += amount;
 
         float viewSize = 2 * float.Min(this.DisplayWidth, this.DisplayHeight);
         float minZoom = float.Log(viewSize / (128 * float.Sqrt(3)), 1.1f);
         float maxZoom = float.Log(50000, 1.1f);
 
-        zoom = float.Clamp(zoom, minZoom, maxZoom);
-        
+        this.zoom = float.Clamp(zoom, minZoom, maxZoom);
 
         float zoomFac = float.Pow(1.1f, zoom);
-        VerticalSize = zoomFac;
+        this.VerticalSize = zoomFac;
+
+        DoubleVector newZoomTarget = DoubleVector.FromVector2(this.ScreenToWorld(screenSpaceTarget, false));
+        
+        this.Transform.Position -= newZoomTarget - zoomTarget;
+    }
+
+    public override void Update(int width, int height, float tickProgress)
+    {
+        base.Update(width, height, tickProgress);
+
+        float z = 0;
+        if (!Program.World.GUIViewport.IsAnyWindowHovered)
+        {
+            z -= Program.UserOptions.ScrollSpeed * Mouse.ScrollWheelDelta;
+
+            if (Keyboard.IsKeyDown(Key.Plus))
+            {
+                z -= Time.DeltaTime * 20;
+            }
+            if (Keyboard.IsKeyDown(Key.Minus))
+            {
+                z += Time.DeltaTime * 20;
+            }
+        }
 
         if (Mouse.ScrollWheelDelta != 0)
         {
-            DoubleVector newZoomTarget = DoubleVector.FromVector2(this.ScreenToWorld(Program.ViewportMousePosition, false));
-            this.Transform.Position -= newZoomTarget - zoomTarget;
+            ZoomTowards(z, Program.ViewportMousePosition);
         }
 
+        DoubleVector delta = DoubleVector.Zero;
         if (Keyboard.IsKeyDown(Key.W))
         {
             delta -= DoubleVector.FromVector2(0, 1);
@@ -73,12 +81,11 @@ internal class FreeCamera : Camera
             delta += DoubleVector.FromVector2(1, 0);
         }
 
-        Transform.Position += zoomFac * delta * Time.DeltaTime;
+        Transform.Position += float.Pow(1.1f, zoom) * delta * Time.DeltaTime;
         
         if (DoubleVector.Distance(this.Transform.Position, DoubleVector.Zero) > 25000)
         {
             //this.Transform.Position = this.Transform.Position.Normalized() * 25000;
         }
-
     }
 }
