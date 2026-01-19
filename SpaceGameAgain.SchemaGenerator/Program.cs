@@ -40,7 +40,7 @@ foreach (var prototypeFile in prototypeFileNames)
 }
 
 // ==== ==== ==== ==== PART 2 ==== ==== ==== ====
-// create a set the file schemas in visual studio
+// set the file schemas in visual studio
 
 // <ProjectExtensions><VisualStudio><UserProperties prototypes_4small_3ship_1json__JsonSchema="..\Schemas\StructurePrototype.schema.json" prototypes_4structures_4shipyards_4large_3assembly_3bay_1json__JsonSchema="..\..\..\Schemas\AssemblyBayPrototype.json" prototypes_4structures_4shipyards_4manufactory_1json__JsonSchema="..\..\..\Schemas\ManufactoryPrototype.schema.json" /></VisualStudio></ProjectExtensions>
 string propsFile = $"""
@@ -76,7 +76,7 @@ foreach (var prototypeClass in Prototypes.PrototypeClasses)
     string schemaText = schema.ToString();
     string file = $"{outputDirectory}{prototypeClass.Name}.json";
     File.WriteAllText(file, schemaText);
-
+    Console.WriteLine($"{file}");
 }
 
 Console.WriteLine("done!");

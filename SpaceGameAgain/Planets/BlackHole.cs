@@ -43,19 +43,19 @@ class BlackHolePrototype : PlanetPrototype
 
 static class NoiseTexture
 {
-    private static readonly Dictionary<int, ITexture> textures = [];
+    private static readonly Dictionary<(int, int), ITexture> textures = [];
 
-    public static ITexture Get(int size = 1024)
+    public static ITexture Get(int size = 1024, int blur = 0)
     {
-        if (!textures.TryGetValue(size, out ITexture? texture))
+        if (!textures.TryGetValue((size, blur), out ITexture? texture))
         {
-            textures[size] = texture = Create(size);
+            textures[(size, blur)] = texture = Create(size, blur);
         }
 
         return texture;
     }
 
-    private static ITexture Create(int size)
+    public static ITexture Create(int size, int blur = 0)
     {
         var texture = Graphics.CreateTexture(size, size);
         for (int y = 0; y < size; y++)
@@ -70,6 +70,81 @@ static class NoiseTexture
                     );
             }
         }
+
+        if (blur > 0)
+        {
+            int Wrap(int i)
+            {
+                return (i % size + size) % size;
+            }
+
+            float s = blur / 3f;
+            float[] weights = new float[blur];
+            float sum = 0;
+            for (int i = 0; i < blur; i++)
+            {
+                float a = ((i - blur / 2f) / s);
+                sum += weights[i] = MathF.Exp(-0.5f * a * a);
+            }
+            for (int i = 0; i < blur; i++)
+            {
+                weights[i] /= sum;
+            }   
+            
+            Color[] blurredImage = new Color[size * size];
+            // vertical blur
+            for (int x = 0; x < size; x++)
+            {
+                for (int y = 0; y < size; y++)
+                {
+                    float r = 0, g = 0, b = 0, a = 0;
+                    for (int i = 0; i < blur; i++)
+                    {
+                        Color color = texture[x, Wrap(y + i - blur/2)];
+                        r += color.R * weights[i];
+                        g += color.G * weights[i];
+                        b += color.B * weights[i];
+                        a += color.A * weights[i];
+                    }
+
+                    blurredImage[y * size + x] = new(
+                        (byte)(r),
+                        (byte)(g),
+                        (byte)(b),
+                        (byte)(a)
+                        );
+                }
+            }
+
+            blurredImage.AsSpan().CopyTo(texture.Pixels);
+
+            // horizontal blur
+            for (int x = 0; x < size; x++)
+            {
+                for (int y = 0; y < size; y++)
+                {
+                    float r = 0, g = 0, b = 0, a = 0;
+                    for (int i = 0; i < blur; i++)
+                    {
+                        Color color = texture[Wrap(x + i - blur / 2), y];
+                        r += color.R * weights[i];
+                        g += color.G * weights[i];
+                        b += color.B * weights[i];
+                        a += color.A * weights[i];
+                    }
+
+                    blurredImage[y * size + x] = new(
+                        (byte)(r),
+                        (byte)(g),
+                        (byte)(b),
+                        (byte)(a)
+                        );
+                }
+            }
+
+            blurredImage.AsSpan().CopyTo(texture.Pixels);
+        }
+
         texture.ApplyChanges();
         Graphics.GenerateMipmaps(texture);
         texture.Filter = TextureFilter.MipmapLinear;

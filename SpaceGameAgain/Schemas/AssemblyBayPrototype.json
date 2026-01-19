@@ -14,6 +14,9 @@
     "production_cost": {
       "type": "integer"
     },
+    "module_slots": {
+      "type": "array"
+    },
     "footprint": {
       "type": "array"
     },

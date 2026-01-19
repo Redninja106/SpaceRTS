@@ -12,7 +12,7 @@
         {
           "minimum_size": 10,
           "maximum_size": 20,
-          "planet_prototypes": [ "mars" ]
+          "planet_prototypes": [ "jupiter", "saturn" ]
         }
       ]
     }

@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "properties": {
+    "material": {
+      "enum": [
+        "grassy_material",
+        "mars_material",
+        "sandy_material",
+        "rocky_material",
+        "mud_material",
+        "star_material"
+      ]
+    },
+    "can_build": {
+      "type": "boolean"
+    },
+    "color": {
+      "type": "object",
+      "properties": {
+        "r": {
+          "type": "number"
+        },
+        "g": {
+          "type": "number"
+        },
+        "b": {
+          "type": "number"
+        },
+        "a": {
+          "type": "number"
+        }
+      }
+    },
+    "name": {
+      "type": "string"
+    },
+    "prototype": {
+      "const": "GasGiantPrototype"
+    }
+  }
+}
