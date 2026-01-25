@@ -1,0 +1,9 @@
+{
+  "prototype": "GasGiantPrototype",
+  "name": "gas_giant",
+  "minimum_size": 50,
+  "can_build": true,
+  "color": "0xFFFFFF",
+  "material": "star_material",
+  "randomize": true
+}

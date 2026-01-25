@@ -5,21 +5,24 @@
   "can_build": true,
   "color": "0xFFFFFF",
   "material": "star_material",
-  "vorticity": 0.2,
-  "colors": [
-    "7f6d60",
-    "a6896d",
-    "b99875",
-    "ceb491",
-    "cfae8a",
-    "d0b28c",
-    "cfaa80",
-    "be986f",
-    "efdaac",
-    "d5bc96",
-    "a6896d",
-    "b99875",
-    "ceb491"
-  ]
+  "parameters": {
+    "vorticity": 0.2,
+    "has_rings": true,
+    "colors": [
+      "7f6d60",
+      "a6896d",
+      "b99875",
+      "ceb491",
+      "cfae8a",
+      "d0b28c",
+      "cfaa80",
+      "be986f",
+      "efdaac",
+      "d5bc96",
+      "a6896d",
+      "b99875",
+      "ceb491"
+    ]
+  }
 
 }

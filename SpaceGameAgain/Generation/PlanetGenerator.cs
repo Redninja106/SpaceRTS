@@ -1,4 +1,5 @@
 ﻿using SpaceGame.Data.Converters;
+using SpaceGame.Planets;
 using SpaceGame.Rendering;
 using SpaceGame.Structures;
 using System;
@@ -7,17 +8,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpaceGame.Planets.Generation;
+namespace SpaceGame.Generation;
 internal class PlanetGenerator : DataPrototype
 {
+    public RandomNumber Size { get; set; } = RandomNumber.Zero;
+
     public float MinimumSize { get; set; } = 0;
     public float MaximumSize { get; set; } = 0;
+
     public required PlanetPrototype[] PlanetPrototypes { get; set; }
 
     public MoonPass[] MoonPasses { get; set; } = [];
 
     public virtual Planet Generate(GameWorld world, Random random)
     {
+        DebugLog.Assert(PlanetPrototypes != null && PlanetPrototypes.Length > 0, $"Prototype {Name ?? "$anonymous"} requires a planet type!");
+        
         var prototype = random.GetItems(PlanetPrototypes, 1)[0];
         var planet = prototype.CreateActor(world, world.NewID());
         world.Add(planet);
@@ -62,27 +68,29 @@ abstract class MoonPass
 
 class GapMoonPass : MoonPass
 {
-    public float Size { get; set; }
+    public RandomNumber Size { get; set; } = RandomNumber.Zero;
 
     public override void Generate(GameWorld world, Random random, ref float distance, Planet planet)
     {
-        distance += Size;
+        distance += (float)Size.Get(random);
     }
 }
 
 class RandomMoonPass : MoonPass
 {
+    // public RandomNumber Count { get; set; } = RandomNumber.Zero;
     public int MinimumCount { get; set; } = 0;
     public int MaximumCount { get; set; } = 0;
 
-    public required PlanetGenerator[] Generators { get; set; }
+    // public required PlanetGenerator[] Generators { get; set; }
+    public required RandomPrototype<PlanetGenerator> Generators { get; set; }
 
     public override void Generate(GameWorld world, Random random, ref float distance, Planet planet)
     {
         int count = random.Next(MinimumCount, MaximumCount + 1);
         for (int i = 0; i < count; i++)
         {
-            PlanetGenerator moonGenerator = random.GetItems(Generators, 1)[0];
+            PlanetGenerator moonGenerator = Generators.Get(random);
             Planet moon = moonGenerator.Generate(world, random);
             distance += moon.SphereOfInfluence.Radius;
             moon.orbit = new(planet, distance, random.NextSingle() * MathF.Tau * distance);

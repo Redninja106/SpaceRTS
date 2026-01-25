@@ -1,14 +1,14 @@
 {
   "prototype": "PlanetGenerator",
-  "name": "terrestrial_planet_generator",
-  "planet_prototypes": [ "grassy_planet" ],
-  "minimum_size": 10,
+  "name": "gas_giant_generator",
+  "planet_prototypes": [ "gas_giant" ],
+  "minimum_size": 50,
   "maximum_size": 25,
   "moon_passes": [
     {
       "type": "random",
       "minimum_count": 0,
-      "maximum_count": 2,
+      "maximum_count": 4,
       "generators": [
         {
           "weight": 1,

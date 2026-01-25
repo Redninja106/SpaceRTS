@@ -238,22 +238,22 @@ public sealed class GUIWindow
         // non-hovered button background
         if (!LastItemHovered())
         {
-            AddCommand(new DrawCommand.Rectangle(buttonBounds, Color.FromHSV(.6f, .25f, .25f), true));
+            AddCommand(new DrawCommand.Rectangle(buttonBounds, Color.FromHSV(.6f, .25f, .25f), true, 4));
         }
 
         // border
-        AddCommand(new DrawCommand.Rectangle(buttonBounds with { X = buttonBounds.X + 1, Y = buttonBounds.Y + 1 }, new Color(28, 33, 38), false));
-        AddCommand(new DrawCommand.Rectangle(buttonBounds, new Color(70, 79, 89), false));
+        AddCommand(new DrawCommand.Rectangle(buttonBounds with { X = buttonBounds.X + 1, Y = buttonBounds.Y + 1 }, new Color(28, 33, 38), false, 4));
+        AddCommand(new DrawCommand.Rectangle(buttonBounds, new Color(70, 79, 89), false, 4));
         
         if (LastItemClicked(MouseButton.Left))
         {
             // clicked background
-            AddCommand(new DrawCommand.Rectangle(buttonBounds, new Color(0xC0, 0xC0, 0xC0), true));
+            AddCommand(new DrawCommand.Rectangle(buttonBounds, new Color(0xC0, 0xC0, 0xC0), true, 4));
         }
         else if (LastItemHovered())
         {
             // hovered background
-            AddCommand(new DrawCommand.Rectangle(buttonBounds, new Color(0x80, 0x80, 0x80), true));
+            AddCommand(new DrawCommand.Rectangle(buttonBounds, new Color(0x80, 0x80, 0x80), true, 4));
         }
 
         // button text

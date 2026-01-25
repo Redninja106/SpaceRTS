@@ -10,9 +10,12 @@
       "maximum_count": 7,
       "generators": [
         {
-          "minimum_size": 10,
-          "maximum_size": 20,
-          "planet_prototypes": [ "jupiter", "saturn" ]
+          "weight": 1,
+          "choice": {
+            "minimum_size": 10,
+            "maximum_size": 20,
+            "planet_prototypes": [ "jupiter", "saturn" ]
+          }
         }
       ]
     }

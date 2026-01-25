@@ -1,10 +1,11 @@
-﻿using System;
+﻿using SpaceGame.Planets;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpaceGame.Planets.Generation;
+namespace SpaceGame.Generation;
 internal class GalaxyGenerator
 {
     PlanetGenerator galacticCoreGenerator = Prototypes.Get<PlanetGenerator>("galactic_core_generator");

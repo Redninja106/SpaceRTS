@@ -1,7 +1,7 @@
 ﻿using Silk.NET.OpenGL;
+using SpaceGame.Generation;
 using SpaceGame.GUI;
 using SpaceGame.Planets;
-using SpaceGame.Planets.Generation;
 using SpaceGame.Rendering;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;

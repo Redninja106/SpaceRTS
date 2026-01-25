@@ -7,7 +7,7 @@ using SpaceGame.GUI;
 using SpaceGame.Interaction;
 using SpaceGame.Networking;
 using SpaceGame.Planets;
-using SpaceGame.Planets.Generation;
+using SpaceGame.Generation;
 using SpaceGame.Ships;
 using SpaceGame.Ships.Modules;
 //using SpaceGame.Stations;
@@ -62,7 +62,7 @@ else
 
 partial class Program : Simulation
 {
-    public const int ViewportPixels = 480;
+    public const int ViewportPixels = 540;
 
     public static IFont font;
     public static Vector2 ViewportMousePosition;

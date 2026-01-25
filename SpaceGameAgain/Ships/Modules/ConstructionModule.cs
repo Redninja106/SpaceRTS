@@ -97,7 +97,7 @@ class ConstructionMenu(ConstructionModule module)
                 window.Text("x");
                 if (window.LastItemHovered())
                 {
-                    window.AddCommand(new DrawCommand.RoundedRectangle(window.LastItemBounds, 8, Color.White with { A = 100 }, true));
+                    window.AddCommand(new DrawCommand.Rectangle(window.LastItemBounds, Color.White with { A = 100 }, true, 8));
                 }
                 if (window.LastItemClicked(MouseButton.Left))
                 {
@@ -110,7 +110,7 @@ class ConstructionMenu(ConstructionModule module)
                     if (window.LastItemHovered())
                     {
                         window.Viewport.SetTooltip(w => w.Text(category.Key.Title));
-                        window.AddCommand(new DrawCommand.RoundedRectangle(window.LastItemBounds, 8, Color.White with { A = 100 }, true));
+                        window.AddCommand(new DrawCommand.Rectangle(window.LastItemBounds, Color.White with { A = 100 }, true, 8));
                     }
                     if (window.LastItemClicked(MouseButton.Left))
                     {
@@ -130,7 +130,7 @@ class ConstructionMenu(ConstructionModule module)
                     {
                         if (window.LastItemHovered())
                         {
-                            window.AddCommand(new DrawCommand.RoundedRectangle(window.LastItemBounds, 8, Color.White with { A = 25 }, true));
+                            window.AddCommand(new DrawCommand.Rectangle(window.LastItemBounds, Color.White with { A = 25 }, true, 8));
                         }
                         if (window.LastItemClicked(MouseButton.Left))
                         {
@@ -228,7 +228,7 @@ struct GUIScrollBar
         interpolatedScrollAmount = float.Lerp(interpolatedScrollAmount, scrollAmount, 1 - MathF.Pow(0.001f, Time.DeltaTime));
         window.Offset.Y = this.baseOffset.Y + this.margin + -interpolatedScrollAmount;
 
-        window.AddCommand(new DrawCommand.RoundedRectangle(bounds, Width / 2f, scrollBarColor, true));
+        window.AddCommand(new DrawCommand.Rectangle(bounds, scrollBarColor, true, Width / 2f));
     }
 }
 

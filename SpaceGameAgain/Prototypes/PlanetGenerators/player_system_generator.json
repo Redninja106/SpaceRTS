@@ -8,8 +8,18 @@
       "type": "random",
       "minimum_count": 2,
       "maximum_count": 6,
+      "generators": [ "terrestrial_planet_generator" ]
+    },
+    {
+      "type": "gap",
+      "size": 100
+    },
+    {
+      "type": "random",
+      "minimum_count": 1,
+      "maximum_count": 4,
       "generators": [
-        "terrestrial_planet_generator"
+        "gas_giant_generator"
       ]
     }
   ]

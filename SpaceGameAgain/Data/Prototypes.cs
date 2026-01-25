@@ -145,6 +145,9 @@ public static class Prototypes
             {
                 ContractResolver = contractResolver,
                 Converters = [
+                    new RandomNumberConverter(),
+                    new RandomIntConverter(),
+                    new RandomPrototypeConverter(),
                     new HexCoordinateConverter(),
                     new Vector2Converter(),
                     new ColorConverter(),

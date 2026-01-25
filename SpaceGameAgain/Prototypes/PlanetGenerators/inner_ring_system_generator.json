@@ -10,9 +10,12 @@
       "maximum_count": 20,
       "generators": [
         {
-          "minimum_size": 2,
-          "maximum_size": 5,
-          "planet_prototypes": [ "sandy_planet" ]
+          "weight": 1,
+          "choice": {
+            "minimum_size": 2,
+            "maximum_size": 5,
+            "planet_prototypes": [ "sandy_planet" ]
+          }
         }
       ]
     }

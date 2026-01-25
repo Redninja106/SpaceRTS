@@ -5,15 +5,16 @@
   "can_build": true,
   "color": "0xFFFFFF",
   "material": "star_material",
-  "vorticity": 1,
-  "colors": [
-    "b5a379",
-    "c3c8cf",
-    "ca936a",
-    "e0ddcc",
-    "d1cfca",
-    "ada793",
-    "827459"
-  ]
-    
+  "parameters": {
+    "vorticity": 1,
+    "colors": [
+      "b5a379",
+      "c3c8cf",
+      "ca936a",
+      "e0ddcc",
+      "d1cfca",
+      "ada793",
+      "827459"
+    ]
+  }
 }

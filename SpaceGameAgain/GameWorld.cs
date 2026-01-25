@@ -87,7 +87,7 @@ public class GameWorld : IScene
 
     public GameWorld()
     {
-        GUIViewport.Register(new GUIWindow(ResourceBar.Layout));
+        //GUIViewport.Register(new GUIWindow(ResourceBar.Layout));
         GUIViewport.Register(new GUIWindow(UnitBar.Layout));
         GUIViewport.Register(new GUIWindow(Minimap.Layout));
         GUIViewport.Register(new GUIWindow(new EscapeMenu().Layout) { Visible = false } );

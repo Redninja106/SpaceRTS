@@ -18,8 +18,8 @@ internal class Star : Planet
 
     public override void Render(ICanvas canvas)
     {
-        coronaShader.time = Time.TotalTime ;
-        starShader.time = Time.TotalTime * .5f;
+        coronaShader.time = Time.TotalTime;
+        starShader.time = Time.TotalTime;
         coronaShader.starColor = starShader.starColor = this.Prototype.Color;
         coronaShader.radius = starShader.radius = this.Radius;
 
@@ -46,9 +46,14 @@ class StarShader : CanvasShader
     public override ColorF GetPixelColor(Vector2 position)
     {
         const int iterations = 12;
-        const float initialScale = 10f;
+        const float initialScale = 100f;
         const float scaleDecay = .75f;
-        const float baseBrightness = .667f;
+        const float baseBrightness = 1.4f;
+        const float timeScale = 0.1f;
+
+        Vector2 p = position / radius;
+        float h = MathF.Sqrt(1f - .6f * p.LengthSquared());
+        p /= h;
 
         float brightness = 0;
         float scale = initialScale;
@@ -59,8 +64,8 @@ class StarShader : CanvasShader
             layerNoise.R = .5f + .5f * layerNoise.R;
 
             Vector2 offset = Vector2.Zero;
-            offset += new Vector2(time * float.Cos(float.Tau * layerNoise.R), time * float.Sin(float.Tau * layerNoise.R));
-            ColorF colorNoise = noiseTexture.Sample((1f / scale) * position + offset);
+            offset += 0.01f * new Vector2(timeScale * time * float.Cos(float.Tau * layerNoise.R), timeScale * time * float.Sin(float.Tau * layerNoise.R));
+            ColorF colorNoise = noiseTexture.SampleUV((1f / scale) * p + offset);
             brightness += scale * colorNoise.R;
             scaleSum += scale;
             scale *= scaleDecay;
@@ -68,11 +73,16 @@ class StarShader : CanvasShader
         brightness /= scaleSum;
 
         float sd = position.Length() - radius;
+        float sdClamp = ShaderIntrinsics.Clamp(-sd, 0, 1);
+        float alpha = sdClamp;// ShaderIntrinsics.Pow(-sd, 3f) / radius;
+        
+        ColorF starCol = starColor;
+        float m = starCol.R + starCol.G + starCol.B;
+        starCol.R /= m;
+        starCol.G /= m;
+        starCol.B /= m;
 
-        float alpha = ShaderIntrinsics.Pow(-sd, 1.4f) / radius;
-
-        ColorF col = starColor * (baseBrightness + brightness);
-
+        ColorF col = starCol * (baseBrightness + brightness);
         return col with { A = alpha };
     }
 
@@ -87,7 +97,7 @@ class CoronaShader : CanvasShader
 
     public override ColorF GetPixelColor(Vector2 position)
     {
-        const float coronaScale = .3f;
+        const float coronaScale = .75f;
 
         float signedDistance = position.Length() - radius;
         float dist = 1f - (signedDistance / (radius * coronaScale));
@@ -106,7 +116,7 @@ class CoronaShader : CanvasShader
         float sum = 0;
         for (int i = 0; i < 5; i++)
         {
-            result += weight * CoronaLayer(sampleAngle / weight, dist* weight, i / 6f);
+            result += weight * CoronaLayer(sampleAngle / weight, dist, i / 6f);
             sum += weight;
             weight *= .666f;
         }
@@ -126,13 +136,13 @@ class CoronaShader : CanvasShader
 
         ColorF angleNoise = noiseTexture.SampleUV(new(a, offset));
         // curvature based on distance
-        a += .02f * d * (angleNoise.R * 2 - 1);
+        a += .075f * d * (angleNoise.R * 2 - 1);
 
         ColorF noise = noiseTexture.SampleUV(new(a, offset));
 
-        d -= noise.A * .75f;
+        d -= noise.A * .5f;
 
-        ColorF result = d * starColor * (.9f + .1f * noise.R);// * (.9f + .1f * noise.R) * d);
+        ColorF result = (d) * starColor * (.9f + .1f * noise.R + 0.25f * noise.G);// * (.9f + .1f * noise.R) * d);
         return result;
     }
 }

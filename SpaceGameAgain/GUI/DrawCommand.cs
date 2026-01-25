@@ -11,8 +11,8 @@ public abstract class DrawCommand
         public override void Render(ICanvas canvas)
         {
             canvas.Font(Program.font);
-            canvas.Fill(Color.FromHSV(0, 0, .05f) with { A = color == null ? (byte)1 : color.Value.A }); 
-            canvas.DrawText(text, size, position + new Vector2(1, 1), style);
+            canvas.Fill(Color.FromHSV(0, 0, .2f) with { A = color == null ? (byte)255 : color.Value.A }); 
+            canvas.DrawText(text, size, position + new Vector2(size/24f), style);
             canvas.Fill(color ?? Color.FromHSV(0, 0, .65f));
             canvas.DrawText(text, size, position, style);
         }
@@ -24,24 +24,8 @@ public abstract class DrawCommand
             canvas.DrawTexture(image, destination, tint);
         }
     }
-    public class Rectangle(SimulationFramework.Rectangle rectangle, Color color, bool fill) : DrawCommand
-    {
-        public override void Render(ICanvas canvas)
-        {
-            if (fill)
-            {
-                canvas.Fill(color);
-            }
-            else
-            {
-                canvas.Stroke(color);
-                canvas.StrokeWidth(1);
-            }
-            canvas.DrawRect(rectangle);
-        }
-    }
 
-    public class RoundedRectangle(SimulationFramework.Rectangle rectangle, float radius, Color color, bool fill) : DrawCommand
+    public class Rectangle(SimulationFramework.Rectangle rectangle, Color color, bool fill, float radius = 0) : DrawCommand
     {
         public override void Render(ICanvas canvas)
         {
@@ -54,7 +38,15 @@ public abstract class DrawCommand
                 canvas.Stroke(color);
                 canvas.StrokeWidth(1);
             }
-            canvas.DrawRoundedRect(rectangle, radius);
+
+            if (radius > 0)
+            {
+                canvas.DrawRoundedRect(rectangle, radius);
+            }
+            else
+            {
+                canvas.DrawRect(rectangle);
+            }
         }
     }
 
